@@ -16,6 +16,8 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 .hidden { display: none; }
 .tab-btn { padding: 10px; border-radius: 8px; background: #2c2c2c; }
 .tab-btn.active { background: #facc15; color: black; font-weight: 700; }
+.channel-btn { border: 1px solid #444; padding: 10px; border-radius: 10px; text-align: left; cursor: pointer; }
+.channel-btn.active { border: 2px solid #facc15; background: #2c2c2c; }
 </style>
 </head>
 <body>
@@ -52,7 +54,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <p class="text-sm opacity-80">Total Balance</p>
     <p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
     <div class="grid grid-cols-2 gap-3 mt-4">
-      <button onclick="showModal('recharge')" class="bg-white text-black font-bold py-2 rounded-lg">Recharge</button>
+      <button onclick="openRechargePage()" class="bg-white text-black font-bold py-2 rounded-lg">Recharge</button>
       <button onclick="showModal('withdraw')" class="bg-white text-black font-bold py-2 rounded-lg">Withdraw</button>
     </div>
   </div>
@@ -78,6 +80,78 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
   </div>
 </div>
 
+<!-- RECHARGE PAGE -->
+<div id="rechargePage" class="hidden min-h-screen">
+  <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
+    <button onclick="closeRechargePage()">← Back</button>
+    <h2 class="font-bold">Recharge</h2>
+    <button onclick="showRechargeHistory()" class="text-yellow-400 text-sm">Recharge History</button>
+  </div>
+
+  <div class="p-4">
+    <div class="bg-gradient-to-r from-green-400 to-blue-500 rounded-xl p-6 text-center mb-4">
+      <p class="text-sm opacity-80">Balance</p>
+      <p class="text-3xl font-bold" id="rechargeBalance">0.00 (USDT)</p>
+    </div>
+
+    <p class="text-gray-400 text-sm mb-2">Recharge Amount</p>
+    <div class="flex items-center gap-2 mb-4">
+      <button onclick="changeAmount(-10)" class="bg-[#2c2c2c] px-4 py-3 rounded-lg">-</button>
+      <input type="number" id="rechargeAmt" value="0" class="input text-center" readonly>
+      <button onclick="changeAmount(10)" class="bg-[#2c2c2c] px-4 py-3 rounded-lg">+</button>
+    </div>
+
+    <p class="text-gray-400 text-sm mb-2">Recharge Channel</p>
+    <div class="space-y-2 mb-4" id="channelList"></div>
+
+    <button onclick="createRechargeOrder()" class="btn-yellow mb-4">Recharge Now</button>
+
+    <div class="bg-orange-900/30 border-orange-600 rounded-lg p-4">
+      <p class="font-bold text-orange-400 mb-2">⚠️ Recharge Notes</p>
+      <ul class="text-sm text-gray-300 space-y-1">
+        <li>1. Please make payment to the latest obtained wallet address</li>
+        <li>2. The payment validity period is 60 minutes</li>
+        <li>3. The recharge amount you fill in must be consistent with the amount you transfer</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- RECHARGE ORDER PAGE -->
+<div id="rechargeOrderPage" class="hidden min-h-screen bg-[#0f0f0f]">
+  <div class="p-6 text-center">
+    <div class="w-16 h-16 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
+      <span class="text-3xl">T</span>
+    </div>
+    <p class="text-gray-400 text-sm">Order Number</p>
+    <p class="font-mono text-sm mb-4" id="orderNumber"></p>
+
+    <div class="card mb-3">
+      <p class="text-gray-400 text-sm">Recharge Amount</p>
+      <div class="flex justify-between items-center">
+        <p class="text-2xl font-bold text-green-400" id="orderAmount">0 USDT</p>
+        <button onclick="copyText('orderAmount')" class="text-yellow-400 text-sm">Copy</button>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <p class="text-gray-400 text-sm" id="addressLabel">USDT-BEP20 address</p>
+      <div class="flex justify-between items-center">
+        <p class="font-mono text-xs break-all" id="walletAddress"></p>
+        <button onclick="copyText('walletAddress')" class="text-yellow-400 text-sm ml-2">Copy</button>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <p class="text-gray-400 text-sm mb-2">Scan the QR code or copy the address to recharge</p>
+      <div id="qrCode" class="bg-white p-4 rounded-lg inline-block"></div>
+    </div>
+
+    <p class="text-orange-400 text-sm">Valid Time: <span id="timer">01:00:00</span></p>
+    <p class="text-red-500 text-xs mt-2">⚠️ Do not pay after expiration</p>
+  </div>
+</div>
+
 <!-- ADMIN PANEL -->
 <div id="adminSection" class="hidden pb-24">
   <div class="p-4 bg-[#1c1c1c] sticky top-0 z-10">
@@ -86,15 +160,14 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
   </div>
   
-  <!-- Tabs -->
   <div class="flex gap-2 p-4 overflow-x-auto">
     <button onclick="switchTab('dashboard')" class="tab-btn active" id="tab-dashboard">Dashboard</button>
     <button onclick="switchTab('users')" class="tab-btn" id="tab-users">All Users</button>
     <button onclick="switchTab('recharge')" class="tab-btn" id="tab-recharge">Recharge</button>
     <button onclick="switchTab('withdraw')" class="tab-btn" id="tab-withdraw">Withdraw</button>
+    <button onclick="switchTab('settings')" class="tab-btn" id="tab-settings">Settings</button>
   </div>
 
-  <!-- Dashboard Tab -->
   <div id="content-dashboard" class="p-4">
     <div class="grid grid-cols-2 gap-3">
       <div class="card"><p class="text-gray-400">Total Users</p><p class="text-2xl font-bold" id="totalUsers">0</p></div>
@@ -104,31 +177,46 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     </div>
   </div>
 
-  <!-- Users Tab -->
   <div id="content-users" class="hidden p-4">
     <h3 class="font-bold mb-3">All Members</h3>
     <div id="allUsers"></div>
   </div>
 
-  <!-- Recharge Tab -->
   <div id="content-recharge" class="hidden p-4">
     <h3 class="font-bold mb-3">Pending Recharges</h3>
     <div id="pendingRecharges"></div>
   </div>
 
-  <!-- Withdraw Tab -->
   <div id="content-withdraw" class="hidden p-4">
     <h3 class="font-bold mb-3">Pending Withdrawals</h3>
     <div id="pendingWithdrawals"></div>
   </div>
-</div>
 
-<!-- MODALS -->
-<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-  <div class="bg-[#1c1c1c] p-6 rounded-2xl w-full max-w-sm">
-    <h2 id="modalTitle" class="text-xl font-bold mb-4"></h2>
-    <div id="modalContent"></div>
-    <button onclick="closeModal()" class="w-full mt-4 text-gray-400">Close</button>
+  <!-- Settings Tab -->
+  <div id="content-settings" class="hidden p-4">
+    <h3 class="font-bold mb-3">Deposit Addresses</h3>
+    <div class="space-y-4">
+      <div class="card">
+        <p class="font-bold mb-2">USDT-TRC20</p>
+        <input type="text" id="addr-TRC20" class="input mb-2" placeholder="Enter TRC20 Address">
+        <button onclick="saveAddress('USDT-TRC20')" class="btn-green">Save</button>
+      </div>
+      <div class="card">
+        <p class="font-bold mb-2">USDT-BEP20</p>
+        <input type="text" id="addr-BEP20" class="input mb-2" placeholder="Enter BEP20 Address">
+        <button onclick="saveAddress('USDT-BEP20')" class="btn-green">Save</button>
+      </div>
+      <div class="card">
+        <p class="font-bold mb-2">USDT-ERC20</p>
+        <input type="text" id="addr-ERC20" class="input mb-2" placeholder="Enter ERC20 Address">
+        <button onclick="saveAddress('USDT-ERC20')" class="btn-green">Save</button>
+      </div>
+      <div class="card">
+        <p class="font-bold mb-2">USDC-POLYGON</p>
+        <input type="text" id="addr-POLYGON" class="input mb-2" placeholder="Enter Polygon Address">
+        <button onclick="saveAddress('USDC-POLYGON')" class="btn-green">Save</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -160,6 +248,9 @@ let isLoginMode = false;
 let userData = {};
 let isAdmin = false;
 let allUsersData = [];
+let walletAddresses = {};
+let selectedChannel = 'USDT-BEP20';
+let timerInterval = null;
 
 const vipPackages = [
   {id: 1, name: "VIP 1", price: 10, daily: 1.5, days: 30},
@@ -168,10 +259,27 @@ const vipPackages = [
   {id: 4, name: "VIP 4", price: 500, daily: 100, days: 30}
 ];
 
+// Load Wallet Addresses from Firebase
+async function loadWalletAddresses() {
+  const docSnap = await getDoc(doc(db, "settings", "wallets"));
+  if(docSnap.exists()) {
+    walletAddresses = docSnap.data();
+  } else {
+    walletAddresses = {
+      'USDT-TRC20': 'Not Set',
+      'USDT-BEP20': 'Not Set', 
+      'USDT-ERC20': 'Not Set',
+      'USDC-POLYGON': 'Not Set'
+    };
+    await setDoc(doc(db, "settings", "wallets"), walletAddresses);
+  }
+}
+
 // Auth State
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
+    await loadWalletAddresses();
     const docSnap = await getDoc(doc(db, "users", user.uid));
     if (docSnap.exists()) {
       userData = docSnap.data();
@@ -182,21 +290,36 @@ onAuthStateChanged(auth, async (user) => {
         document.getElementById('adminSection').classList.remove('hidden');
         document.getElementById('adminEmail').innerText = user.email;
         loadAdminData();
+        loadSettings();
       } else {
         document.getElementById('homeSection').classList.remove('hidden');
         loadUserData();
       }
     }
-  } else {
-    document.getElementById('authSection').classList.remove('hidden');
-    document.getElementById('homeSection').classList.add('hidden');
-    document.getElementById('adminSection').classList.add('hidden');
   }
 });
 
+// Load Settings in Admin Panel
+function loadSettings() {
+  document.getElementById('addr-TRC20').value = walletAddresses['USDT-TRC20'] || '';
+  document.getElementById('addr-BEP20').value = walletAddresses['USDT-BEP20'] || '';
+  document.getElementById('addr-ERC20').value = walletAddresses['USDT-ERC20'] || '';
+  document.getElementById('addr-POLYGON').value = walletAddresses['USDC-POLYGON'] || '';
+}
+
+// Save Address
+window.saveAddress = async function(channel) {
+  let key = channel.replace('USDT-', '').replace('USDC-', '');
+  let addr = document.getElementById('addr-' + key).value;
+  
+  walletAddresses[channel] = addr;
+  await setDoc(doc(db, "settings", "wallets"), walletAddresses);
+  alert(channel + ' address updated!');
+}
+
 // Tab Switch
 window.switchTab = function(tab) {
-  ['dashboard', 'users', 'recharge', 'withdraw'].forEach(t => {
+  ['dashboard', 'users', 'recharge', 'withdraw', 'settings'].forEach(t => {
     document.getElementById(`content-${t}`).classList.add('hidden');
     document.getElementById(`tab-${t}`).classList.remove('active');
   });
@@ -204,7 +327,106 @@ window.switchTab = function(tab) {
   document.getElementById(`tab-${tab}`).classList.add('active');
 }
 
-// Load Admin Data
+// Recharge Page
+window.openRechargePage = function() {
+  document.getElementById('homeSection').classList.add('hidden');
+  document.getElementById('rechargePage').classList.remove('hidden');
+  document.getElementById('rechargeBalance').innerText = userData.balance.toFixed(2) + ' (USDT)';
+  loadChannels();
+}
+
+window.closeRechargePage = function() {
+  document.getElementById('rechargePage').classList.add('hidden');
+  document.getElementById('homeSection').classList.remove('hidden');
+}
+
+function loadChannels() {
+  const channelList = document.getElementById('channelList');
+  channelList.innerHTML = '';
+  
+  Object.keys(walletAddresses).forEach((channel, i) => {
+    const isActive = i === 0? 'active' : '';
+    if(i === 0) selectedChannel = channel;
+    
+    channelList.innerHTML += `
+      <div class="channel-btn ${isActive}" onclick="selectChannel('${channel}')">
+        <p class="font-bold">${channel}</p>
+        <p class="text-xs text-gray-400">${channel.includes('TRC20')? 'Tron' : channel.includes('BEP20')? 'BSC' : channel.includes('ERC20')? 'Ethereum' : 'Polygon'} Network</p>
+      </div>
+    `;
+  });
+}
+
+window.changeAmount = function(val) {
+  let amt = parseFloat(document.getElementById('rechargeAmt').value) + val;
+  if(amt < 0) amt = 0;
+  document.getElementById('rechargeAmt').value = amt.toFixed(2);
+}
+
+window.selectChannel = function(channel) {
+  selectedChannel = channel;
+  document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+}
+
+window.createRechargeOrder = async function() {
+  const amt = parseFloat(document.getElementById('rechargeAmt').value);
+  if(amt < 10) {
+    alert('Minimum recharge is 10 USDT');
+    return;
+  }
+
+  if(walletAddresses[selectedChannel] === 'Not Set') {
+    alert('This payment method is currently unavailable');
+    return;
+  }
+
+  const orderNum = 'ORD' + Date.now();
+  
+  await addDoc(collection(db, "recharges"), {
+    uid: currentUser.uid,
+    amount: amt,
+    channel: selectedChannel,
+    address: walletAddresses[selectedChannel],
+    orderNumber: orderNum,
+    status: 'pending',
+    createdAt: new Date()
+  });
+
+  document.getElementById('rechargePage').classList.add('hidden');
+  document.getElementById('rechargeOrderPage').classList.remove('hidden');
+  
+  document.getElementById('orderNumber').innerText = orderNum;
+  document.getElementById('orderAmount').innerText = amt + ' USDT';
+  document.getElementById('addressLabel').innerText = selectedChannel + ' address';
+  document.getElementById('walletAddress').innerText = walletAddresses[selectedChannel];
+  
+  document.getElementById('qrCode').innerHTML = '<div class="w-48 h-48 bg-gray-200 flex items-center justify-center text-black">QR CODE</div>';
+  
+  startTimer(3600);
+}
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  let time = seconds;
+  timerInterval = setInterval(() => {
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60);
+    const s = time % 60;
+    document.getElementById('timer').innerText = 
+      String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    time--;
+    if(time < 0) clearInterval(timerInterval);
+  }, 1000);
+}
+
+window.copyText = function(id) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text);
+  alert('Copied!');
+}
+
+// Admin Functions
 async function loadAdminData() {
   const usersSnap = await getDocs(collection(db, "users"));
   allUsersData = [];
@@ -226,8 +448,10 @@ async function loadAdminData() {
       rechargeDiv.innerHTML += `
         <div class="card mb-2">
           <p class="font-bold">${user?.name || 'Unknown'}</p>
-          <p class="text-sm text-gray-400">Email: ${user?.email}</p>
-          <p>Amount: $${data.amount}</p>
+          <p class="text-sm text-gray-400">${user?.email}</p>
+          <p>Amount: ${data.amount} USDT</p>
+          <p>Channel: ${data.channel}</p>
+          <p class="text-xs font-mono break-all">Address: ${data.address}</p>
           <p class="text-xs text-gray-500">${new Date(data.createdAt?.seconds*1000).toLocaleString()}</p>
           <button onclick="approveRecharge('${doc.id}', ${data.amount}, '${data.uid}')" class="btn-green mt-2">Approve</button>
         </div>
@@ -235,38 +459,23 @@ async function loadAdminData() {
     }
   });
   document.getElementById('totalRecharge').innerText = '$' + totalRecharge;
-
-  const withdrawSnap = await getDocs(collection(db, "withdrawals"));
-  let totalWithdraw = 0;
-  let pendingWithdraw = 0;
-  const withdrawDiv = document.getElementById('pendingWithdrawals');
-  withdrawDiv.innerHTML = '';
-  withdrawSnap.forEach(doc => {
-    const data = doc.data();
-    if(data.status === 'approved') totalWithdraw += data.amount;
-    if(data.status === 'pending') {
-      pendingWithdraw++;
-      const user = allUsersData.find(u => u.id === data.uid);
-      withdrawDiv.innerHTML += `
-        <div class="card mb-2">
-          <p class="font-bold">${user?.name || 'Unknown'}</p>
-          <p class="text-sm text-gray-400">Email: ${user?.email}</p>
-          <p>Amount: $${data.amount}</p>
-          <p>Number: ${data.number}</p>
-          <p class="text-xs text-gray-500">${new Date(data.createdAt?.seconds*1000).toLocaleString()}</p>
-          <div class="grid grid-cols-2 gap-2 mt-2">
-            <button onclick="approveWithdraw('${doc.id}', '${data.uid}', ${data.amount})" class="btn-green">Approve</button>
-            <button onclick="rejectWithdraw('${doc.id}', '${data.uid}', ${data.amount})" class="btn-red">Reject</button>
-          </div>
-        </div>
-      `;
-    }
-  });
-  document.getElementById('totalWithdraw').innerText = '$' + totalWithdraw;
-  document.getElementById('pendingCount').innerText = pendingRecharge + pendingWithdraw;
 }
 
-// Load All Users with Password Reset
+window.approveRecharge = async function(id, amount, uid) {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+  const userBal = userSnap.data().balance || 0;
+  const totalRecharge = userSnap.data().totalRecharge || 0;
+  
+  await updateDoc(userRef, { 
+    balance: userBal + amount,
+    totalRecharge: totalRecharge + amount
+  });
+  await updateDoc(doc(db, "recharges", id), { status: 'approved' });
+  alert('Recharge Approved!');
+  loadAdminData();
+}
+
 function loadAllUsers() {
   const usersDiv = document.getElementById('allUsers');
   usersDiv.innerHTML = '';
@@ -311,7 +520,6 @@ function loadAllUsers() {
   });
 }
 
-// Password Reset
 window.resetPassword = async function(email) {
   try {
     await sendPasswordResetEmail(auth, email);
@@ -321,49 +529,6 @@ window.resetPassword = async function(email) {
   }
 }
 
-// Approve Recharge
-window.approveRecharge = async function(id, amount, uid) {
-  const userRef = doc(db, "users", uid);
-  const userSnap = await getDoc(userRef);
-  const userBal = userSnap.data().balance || 0;
-  const totalRecharge = userSnap.data().totalRecharge || 0;
-  
-  await updateDoc(userRef, { 
-    balance: userBal + amount,
-    totalRecharge: totalRecharge + amount
-  });
-  await updateDoc(doc(db, "recharges", id), { status: 'approved' });
-  alert('Recharge Approved!');
-  loadAdminData();
-}
-
-// Approve Withdraw
-window.approveWithdraw = async function(id, uid, amount) {
-  const userRef = doc(db, "users", uid);
-  const userSnap = await getDoc(userRef);
-  const totalWithdraw = userSnap.data().totalWithdraw || 0;
-  
-  await updateDoc(userRef, { 
-    totalWithdraw: totalWithdraw + amount
-  });
-  await updateDoc(doc(db, "withdrawals", id), { status: 'approved' });
-  alert('Withdrawal Approved!');
-  loadAdminData();
-}
-
-// Reject Withdraw
-window.rejectWithdraw = async function(id, uid, amount) {
-  const userRef = doc(db, "users", uid);
-  const userSnap = await getDoc(userRef);
-  const userBal = userSnap.data().balance || 0;
-  
-  await updateDoc(userRef, { balance: userBal + amount });
-  await updateDoc(doc(db, "withdrawals", id), { status: 'rejected' });
-  alert('Withdrawal Rejected & Refunded!');
-  loadAdminData();
-}
-
-// User Functions
 window.toggleAuth = function() {
   isLoginMode =!isLoginMode;
   document.getElementById('formTitle').innerText = isLoginMode? 'Login' : 'Create Account';
@@ -394,22 +559,10 @@ window.handleAuth = async function() {
         refCode: Math.random().toString(36).substr(2, 8),
         refBy: refCode || null,
         vip: null,
-        vipExpiry: null,
         totalRecharge: 0,
         totalWithdraw: 0,
         createdAt: new Date()
       });
-
-      if(refCode) {
-        const refQuery = query(collection(db, "users"), where("refCode", "==", refCode));
-        const refSnap = await getDocs(refQuery);
-        if(!refSnap.empty) {
-          const referrer = refSnap.docs[0];
-          await updateDoc(doc(db, "users", referrer.id), {
-            balance: (referrer.data().balance || 0) + 1
-          });
-        }
-      }
     }
     errorMsg.classList.add('hidden');
   } catch(error) {
@@ -472,70 +625,10 @@ window.buyVIP = async function(pkgId) {
   loadUserData();
 }
 
-window.showModal = function(type) {
-  document.getElementById('modal').classList.remove('hidden');
-  const title = document.getElementById('modalTitle');
-  const content = document.getElementById('modalContent');
-  
-  if(type === 'recharge') {
-    title.innerText = 'Recharge';
-    content.innerHTML = `<input type="number" id="rechargeAmt" placeholder="Amount" class="input mb-3">
-    <button onclick="submitRecharge()" class="btn-yellow">Submit Request</button>`;
-  }
-  if(type === 'withdraw') {
-    title.innerText = 'Withdraw';
-    content.innerHTML = `<input type="number" id="withdrawAmt" placeholder="Amount" class="input mb-3">
-    <input type="text" id="bkashNum" placeholder="Bkash/Nagad Number" class="input mb-3">
-    <button onclick="submitWithdraw()" class="btn-yellow">Submit Request</button>`;
-  }
-  if(type === 'invite') {
-    title.innerText = 'Invite Friends';
-    content.innerHTML = `<p class="text-gray-400 mb-2">Your Refer Code:</p>
-    <div class="bg-[#2c2c2c] p-3 rounded-lg text-center font-bold">${userData.refCode}</div>
-    <p class="text-sm text-gray-400 mt-3">Share this code and earn $1 per referral</p>`;
-  }
-}
-
-window.closeModal = () => document.getElementById('modal').classList.add('hidden');
-
-window.submitRecharge = async function() {
-  const amt = parseFloat(document.getElementById('rechargeAmt').value);
-  await addDoc(collection(db, "recharges"), {
-    uid: currentUser.uid,
-    amount: amt,
-    status: 'pending',
-    createdAt: new Date()
-  });
-  alert('Request submitted! Wait for admin approval.');
-  closeModal();
-}
-
-window.submitWithdraw = async function() {
-  const amt = parseFloat(document.getElementById('withdrawAmt').value);
-  const num = document.getElementById('bkashNum').value;
-  if(userData.balance < amt) {
-    alert('Insufficient balance!');
-    return;
-  }
-  await addDoc(collection(db, "withdrawals"), {
-    uid: currentUser.uid,
-    amount: amt,
-    number: num,
-    status: 'pending',
-    createdAt: new Date()
-  });
-  await updateDoc(doc(db, "users", currentUser.uid), {
-    balance: userData.balance - amt
-  });
-  alert('Withdrawal request submitted!');
-  closeModal();
-  loadUserData();
-}
-
 window.logout = async function() {
   await signOut(auth);
   location.reload();
 }
 </script>
 </body>
-                                     </html>
+</html>
