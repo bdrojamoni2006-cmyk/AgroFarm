@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriCare Clone</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
+.card { background: #1c1c1c; border-radius: 16px; padding: 16px; }
+.btn-yellow { background: #facc15; color: black; font-weight: 700; padding: 12px; border-radius: 12px; width: 100%; }
+.btn-outline { border: 1px solid #444; padding: 12px; border-radius: 12px; text-align: center; width: 100%; }
+.input { background: #2c2c2c; border-radius: 10px; padding: 12px; width: 100%; border: none; outline: none; }
+.hidden { display: none; }
+.nav-item { text-align: center; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SECTION -->
+<div id="authSection" class="min-h-screen p-6">
+  <div class="text-center mb-8">
+    <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-black">AC</div>
+    <h1 class="text-3xl font-bold mt-4" id="formTitle">Create Account</h1>
+  </div>
+
+  <input type="text" id="name" placeholder="Full Name" class="input mb-3">
+  <input type="email" id="email" placeholder="Email" class="input mb-3">
+  <input type="password" id="password" placeholder="Password" class="input mb-3">
+  <input type="text" id="refCode" placeholder="Refer Code (Optional)" class="input mb-3">
+  
+  <p id="errorMsg" class="text-red-500 text-sm mb-3 hidden"></p>
+  
+  <button onclick="handleAuth()" class="btn-yellow mb-3" id="authBtn">Register</button>
+  <button onclick="toggleAuth()" class="btn-outline" id="switchBtn">Already have account? Login</button>
+</div>
+
+<!-- HOME SECTION -->
+<div id="homeSection" class="hidden pb-24">
+  <!-- Header -->
+  <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
+    <div>
+      <p class="text-gray-400 text-sm">Welcome</p>
+      <p class="font-bold" id="userName">User</p>
+    </div>
+    <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm">Logout</button>
+  </div>
+
+  <!-- Balance Card -->
+  <div class="card m-4 bg-gradient-to-r from-green-500 to-blue-600">
+    <p class="text-sm opacity-80">Total Balance</p>
+    <p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
+    <div class="grid grid-cols-2 gap-3 mt-4">
+      <button onclick="showModal('recharge')" class="bg-white text-black font-bold py-2 rounded-lg">Recharge</button>
+      <button onclick="showModal('withdraw')" class="bg-white text-black font-bold py-2 rounded-lg">Withdraw</button>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="grid grid-cols-4 gap-3 px-4 mb-4">
+    <div onclick="showModal('vip')" class="card text-center cursor-pointer">
+      <div class="text-2xl">👑</div>
+      <p class="text-xs mt-1">VIP</p>
+    </div>
+    <div onclick="showModal('spin')" class="card text-center cursor-pointer">
+      <div class="text-2xl">🎡</div>
+      <p class="text-xs mt-1">Spin</p>
+    </div>
+    <div onclick="showModal('invite')" class="card text-center cursor-pointer">
+      <div class="text-2xl">👥</div>
+      <p class="text-xs mt-1">Invite</p>
+    </div>
+    <div onclick="showModal('team')" class="card text-center cursor-pointer">
+      <div class="text-2xl">📊</div>
+      <p class="text-xs mt-1">Team</p>
+    </div>
+  </div>
+
+  <!-- VIP Packages -->
+  <div class="px-4 mb-4">
+    <h3 class="font-bold mb-3">VIP Packages</h3>
+    <div id="vipList"></div>
+  </div>
+
+  <!-- Support -->
+  <div class="px-4">
+    <h3 class="font-bold mb-3">Support</h3>
+    <div class="grid grid-cols-2 gap-3">
+      <a href="https://wa.me/8801XXXXXXXX" class="card text-center">WhatsApp</a>
+      <a href="https://t.me/username" class="card text-center">Telegram</a>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminSection" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c]">
+    <h2 class="text-2xl font-bold text-yellow-400">Admin Panel</h2>
+    <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
+  </div>
+  
+  <div class="p-4 grid-cols-2 gap-3">
+    <div class="card"><p class="text-gray-400">Total Users</p><p class="text-2xl font-bold" id="totalUsers">0</p></div>
+    <div class="card"><p class="text-gray-400">Total Recharge</p><p class="text-2xl font-bold" id="totalRecharge">$0</p></div>
+  </div>
+
+  <div class="p-4">
+    <h3 class="font-bold mb-3">Pending Recharges</h3>
+    <div id="pendingRecharges"></div>
+  </div>
+
+  <div class="p-4">
+    <h3 class="font-bold mb-3">Pending Withdrawals</h3>
+    <div id="pendingWithdrawals"></div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
+  <div class="bg-[#1c1c1c] p-6 rounded-2xl w-full max-w-sm">
+    <h2 id="modalTitle" class="text-xl font-bold mb-4"></h2>
+    <div id="modalContent"></div>
+    <button onclick="closeModal()" class="w-full mt-4 text-gray-400">Close</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, onSnapshot } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+// 1. এখানে তোমার Firebase Config বসাও
+const firebaseConfig = {
+  apiKey: "AIzaSyAKi3cFh6B0hIwGwl-9ZEKTtf-INwlwF4k",
+  authDomain: "agrofarm-4e772.firebaseapp.com",
+  projectId: "agrofarm-4e772",
+  storageBucket: "agrofarm-4e772.firebasestorage.app",
+  messagingSenderId: "21830970925",
+  appId: "1:21830970925:web:3be2ba09a09af3141192a4",
+  measurementId: "G-149RFPS79K"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let isLoginMode = false;
+let userData = {};
+let isAdmin = false;
+
+// VIP Packages Data
+const vipPackages = [
+  {id: 1, name: "VIP 1", price: 10, daily: 1.5, days: 30},
+  {id: 2, name: "VIP 2", price: 50, daily: 8, days: 30},
+  {id: 3, name: "VIP 3", price: 100, daily: 18, days: 30},
+  {id: 4, name: "VIP 4", price: 500, daily: 100, days: 30}
+];
+
+// Auth State
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const docSnap = await getDoc(doc(db, "users", user.uid));
+    if (docSnap.exists()) {
+      userData = docSnap.data();
+      isAdmin = userData.email === "admin@gmail.com"; // এখানে তোমার এডমিন ইমেইল দাও
+      
+      document.getElementById('authSection').classList.add('hidden');
+      if(isAdmin) {
+        document.getElementById('adminSection').classList.remove('hidden');
+        loadAdminData();
+      } else {
+        document.getElementById('homeSection').classList.remove('hidden');
+        loadUserData();
+      }
+    }
+  }
+});
+
+// Toggle Auth
+window.toggleAuth = function() {
+  isLoginMode = !isLoginMode;
+  document.getElementById('formTitle').innerText = isLoginMode ? 'Login' : 'Create Account';
+  document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
+  document.getElementById('switchBtn').innerText = isLoginMode ? 'Create account' : 'Already have account? Login';
+  document.getElementById('name').style.display = isLoginMode ? 'none' : 'block';
+  document.getElementById('refCode').style.display = isLoginMode ? 'none' : 'block';
+}
+
+// Handle Auth
+window.handleAuth = async function() {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  const errorMsg = document.getElementById('errorMsg');
+
+  try {
+    if (isLoginMode) {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      const name = document.getElementById('name').value;
+      const refCode = document.getElementById('refCode').value;
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(userCred.user, { displayName: name });
+      
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        name: name,
+        email: email,
+        balance: 0,
+        refCode: Math.random().toString(36).substr(2, 8),
+        refBy: refCode,
+        vip: null,
+        vipExpiry: null,
+        createdAt: new Date()
+      });
+    }
+  } catch(error) {
+    errorMsg.innerText = error.message;
+    errorMsg.classList.remove('hidden');
+  }
+}
+
+// Load User Data
+async function loadUserData() {
+  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+  if (docSnap.exists()) {
+    userData = docSnap.data();
+    document.getElementById('userName').innerText = userData.name;
+    document.getElementById('balance').innerText = userData.balance.toFixed(2);
+    loadVIPPackages();
+  }
+}
+
+// Load VIP Packages
+function loadVIPPackages() {
+  const vipList = document.getElementById('vipList');
+  vipList.innerHTML = '';
+  vipPackages.forEach(pkg => {
+    const isActive = userData.vip === pkg.id;
+    vipList.innerHTML += `
+      <div class="card mb-3 ${isActive ? 'border-2 border-yellow-400' : ''}">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-bold">${pkg.name}</p>
+            <p class="text-sm text-gray-400">Daily: $${pkg.daily} for ${pkg.days} days</p>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-yellow-400">$${pkg.price}</p>
+            <button onclick="buyVIP(${pkg.id})" class="btn-yellow mt-2" ${isActive ? 'disabled' : ''}>
+              ${isActive ? 'Active' : 'Buy'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+// Buy VIP
+window.buyVIP = async function(pkgId) {
+  const pkg = vipPackages.find(p => p.id === pkgId);
+  if(userData.balance < pkg.price) {
+    alert('Insufficient balance!');
+    return;
+  }
+  
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + pkg.days);
+  
+  await updateDoc(doc(db, "users", currentUser.uid), {
+    balance: userData.balance - pkg.price,
+    vip: pkgId,
+    vipExpiry: expiryDate
+  });
+  
+  alert('VIP Package Activated!');
+  loadUserData();
+}
+
+// Modal System
+window.showModal = function(type) {
+  document.getElementById('modal').classList.remove('hidden');
+  const title = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
+  
+  if(type === 'recharge') {
+    title.innerText = 'Recharge';
+    content.innerHTML = `<input type="number" id="rechargeAmt" placeholder="Amount" class="input mb-3">
+    <button onclick="submitRecharge()" class="btn-yellow">Submit Request</button>`;
+  }
+  if(type === 'withdraw') {
+    title.innerText = 'Withdraw';
+    content.innerHTML = `<input type="number" id="withdrawAmt" placeholder="Amount" class="input mb-3">
+    <input type="text" id="bkashNum" placeholder="Bkash/Nagad Number" class="input mb-3">
+    <button onclick="submitWithdraw()" class="btn-yellow">Submit Request</button>`;
+  }
+  if(type === 'invite') {
+    title.innerText = 'Invite Friends';
+    content.innerHTML = `<p class="text-gray-400 mb-2">Your Refer Code:</p>
+    <div class="bg-[#2c2c2c] p-3 rounded-lg text-center font-bold">${userData.refCode}</div>
+    <p class="text-sm text-gray-400 mt-3">Share this code and earn 10% commission</p>`;
+  }
+  if(type === 'spin') {
+    title.innerText = 'Lucky Spin';
+    content.innerHTML = `<div class="text-center">
+      <div class="text-6xl mb-4">🎡</div>
+      <button onclick="spinNow()" class="btn-yellow">Spin Now - Win $0.1 to $5</button>
+    </div>`;
+  }
+}
+
+window.closeModal = () => document.getElementById('modal').classList.add('hidden');
+
+// Submit Recharge
+window.submitRecharge = async function() {
+  const amt = parseFloat(document.getElementById('rechargeAmt').value);
+  await addDoc(collection(db, "recharges"), {
+    uid: currentUser.uid,
+    amount: amt,
+    status: 'pending',
+    createdAt: new Date()
+  });
+  alert('Request submitted! Wait for admin approval.');
+  closeModal();
+}
+
+// Submit Withdraw
+window.submitWithdraw = async function() {
+  const amt = parseFloat(document.getElementById('withdrawAmt').value);
+  const num = document.getElementById('bkashNum').value;
+  if(userData.balance < amt) {
+    alert('Insufficient balance!');
+    return;
+  }
+  await addDoc(collection(db, "withdrawals"), {
+    uid: currentUser.uid,
+    amount: amt,
+    number: num,
+    status: 'pending',
+    createdAt: new Date()
+  });
+  await updateDoc(doc(db, "users", currentUser.uid), {
+    balance: userData.balance - amt
+  });
+  alert('Withdrawal request submitted!');
+  closeModal();
+  loadUserData();
+}
+
+// Lucky Spin
+window.spinNow = async function() {
+  const reward = (Math.random() * 4.9 + 0.1).toFixed(2);
+  await updateDoc(doc(db, "users", currentUser.uid), {
+    balance: userData.balance + parseFloat(reward)
+  });
+  alert('You won $' + reward + '!');
+  closeModal();
+  loadUserData();
+}
+
+// Load Admin Data
+async function loadAdminData() {
+  const usersSnap = await getDocs(collection(db, "users"));
+  document.getElementById('totalUsers').innerText = usersSnap.size;
+  
+  // Load pending recharges
+  const rechargeQuery = query(collection(db, "recharges"), where("status", "==", "pending"));
+  const rechargeSnap = await getDocs(rechargeQuery);
+  const rechargeDiv = document.getElementById('pendingRecharges');
+  rechargeDiv.innerHTML = '';
+  rechargeSnap.forEach(doc => {
+    const data = doc.data();
+    rechargeDiv.innerHTML += `
+      <div class="card mb-2">
+        <p>UID: ${data.uid}</p>
+        <p>Amount: $${data.amount}</p>
+        <button onclick="approveRecharge('${doc.id}', ${data.amount}, '${data.uid}')" class="btn-yellow mt-2">Approve</button>
+      </div>
+    `;
+  });
+}
+
+window.approveRecharge = async function(id, amount, uid) {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+  const userBal = userSnap.data().balance;
+  
+  await updateDoc(userRef, { balance: userBal + amount });
+  await updateDoc(doc(db, "recharges", id), { status: 'approved' });
+  alert('Approved!');
+  loadAdminData();
+}
+
+// Logout
+window.logout = async function() {
+  await signOut(auth);
+  location.reload();
+}
+</script>
+
+</body>
+</html>
