@@ -134,9 +134,9 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } 
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, onSnapshot, orderBy } 
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -206,14 +206,12 @@ window.switchTab = function(tab) {
 
 // Load Admin Data
 async function loadAdminData() {
-  // Load all users
   const usersSnap = await getDocs(collection(db, "users"));
   allUsersData = [];
-  usersSnap.forEach(doc => allUsersData.push({id: doc.id, ...doc.data()}));
+  usersSnap.forEach(doc => allUsersData.push({id: doc.id,...doc.data()}));
   document.getElementById('totalUsers').innerText = usersSnap.size;
   loadAllUsers();
 
-  // Load recharges
   const rechargeSnap = await getDocs(collection(db, "recharges"));
   let totalRecharge = 0;
   let pendingRecharge = 0;
@@ -238,7 +236,6 @@ async function loadAdminData() {
   });
   document.getElementById('totalRecharge').innerText = '$' + totalRecharge;
 
-  // Load withdrawals
   const withdrawSnap = await getDocs(collection(db, "withdrawals"));
   let totalWithdraw = 0;
   let pendingWithdraw = 0;
@@ -269,17 +266,14 @@ async function loadAdminData() {
   document.getElementById('pendingCount').innerText = pendingRecharge + pendingWithdraw;
 }
 
-// Load All Users with details
+// Load All Users with Password Reset
 function loadAllUsers() {
   const usersDiv = document.getElementById('allUsers');
   usersDiv.innerHTML = '';
   
   allUsersData.forEach(user => {
-    // Count referrals
     const referralCount = allUsersData.filter(u => u.refBy === user.refCode).length;
-    
-    // Get user's package name
-    const pkg = user.vip ? vipPackages.find(p => p.id === user.vip) : null;
+    const pkg = user.vip? vipPackages.find(p => p.id === user.vip) : null;
     
     usersDiv.innerHTML += `
       <div class="card mb-3">
@@ -293,7 +287,7 @@ function loadAllUsers() {
         <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
           <div class="bg-[#2c2c2c] p-2 rounded">
             <p class="text-gray-400">VIP Package</p>
-            <p class="font-bold">${pkg ? pkg.name : 'None'}</p>
+            <p class="font-bold">${pkg? pkg.name : 'None'}</p>
           </div>
           <div class="bg-[#2c2c2c] p-2 rounded">
             <p class="text-gray-400">Referrals</p>
@@ -309,9 +303,22 @@ function loadAllUsers() {
           </div>
         </div>
         <p class="text-xs text-gray-500 mt-2">Ref Code: ${user.refCode}</p>
+        <button onclick="resetPassword('${user.email}')" class="btn-outline mt-3 text-yellow-400 border-yellow-400">
+          🔑 Password Reset Link Send
+        </button>
       </div>
     `;
   });
+}
+
+// Password Reset
+window.resetPassword = async function(email) {
+  try {
+    await sendPasswordResetEmail(auth, email);
+    alert(email + ' এ পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!');
+  } catch(error) {
+    alert('Error: ' + error.message);
+  }
 }
 
 // Approve Recharge
@@ -344,7 +351,7 @@ window.approveWithdraw = async function(id, uid, amount) {
   loadAdminData();
 }
 
-// Reject Withdraw - refund balance
+// Reject Withdraw
 window.rejectWithdraw = async function(id, uid, amount) {
   const userRef = doc(db, "users", uid);
   const userSnap = await getDoc(userRef);
@@ -356,14 +363,14 @@ window.rejectWithdraw = async function(id, uid, amount) {
   loadAdminData();
 }
 
-// User Functions - আগের মতোই থাকবে
+// User Functions
 window.toggleAuth = function() {
-  isLoginMode = !isLoginMode;
-  document.getElementById('formTitle').innerText = isLoginMode ? 'Login' : 'Create Account';
-  document.getElementById('authBtn').innerText = isLoginMode ? 'Login' : 'Register';
-  document.getElementById('switchBtn').innerText = isLoginMode ? 'Create account' : 'Already have account? Login';
-  document.getElementById('name').style.display = isLoginMode ? 'none' : 'block';
-  document.getElementById('refCode').style.display = isLoginMode ? 'none' : 'block';
+  isLoginMode =!isLoginMode;
+  document.getElementById('formTitle').innerText = isLoginMode? 'Login' : 'Create Account';
+  document.getElementById('authBtn').innerText = isLoginMode? 'Login' : 'Register';
+  document.getElementById('switchBtn').innerText = isLoginMode? 'Create account' : 'Already have account? Login';
+  document.getElementById('name').style.display = isLoginMode? 'none' : 'block';
+  document.getElementById('refCode').style.display = isLoginMode? 'none' : 'block';
 }
 
 window.handleAuth = async function() {
@@ -393,7 +400,6 @@ window.handleAuth = async function() {
         createdAt: new Date()
       });
 
-      // Add commission to referrer
       if(refCode) {
         const refQuery = query(collection(db, "users"), where("refCode", "==", refCode));
         const refSnap = await getDocs(refQuery);
@@ -428,7 +434,7 @@ function loadVIPPackages() {
   vipPackages.forEach(pkg => {
     const isActive = userData.vip === pkg.id;
     vipList.innerHTML += `
-      <div class="card mb-3 ${isActive ? 'border-2 border-yellow-400' : ''}">
+      <div class="card mb-3 ${isActive? 'border-2 border-yellow-400' : ''}">
         <div class="flex justify-between items-center">
           <div>
             <p class="font-bold">${pkg.name}</p>
@@ -436,8 +442,8 @@ function loadVIPPackages() {
           </div>
           <div class="text-right">
             <p class="font-bold text-yellow-400">$${pkg.price}</p>
-            <button onclick="buyVIP(${pkg.id})" class="btn-yellow mt-2" ${isActive ? 'disabled' : ''}>
-              ${isActive ? 'Active' : 'Buy'}
+            <button onclick="buyVIP(${pkg.id})" class="btn-yellow mt-2" ${isActive? 'disabled' : ''}>
+              ${isActive? 'Active' : 'Buy'}
             </button>
           </div>
         </div>
@@ -532,4 +538,4 @@ window.logout = async function() {
 }
 </script>
 </body>
-  </html>
+                                     </html>
