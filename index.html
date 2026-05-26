@@ -10,9 +10,12 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 .card { background: #1c1c1c; border-radius: 16px; padding: 16px; }
 .btn-yellow { background: #facc15; color: black; font-weight: 700; padding: 12px; border-radius: 12px; width: 100%; }
 .btn-outline { border: 1px solid #444; padding: 12px; border-radius: 12px; text-align: center; width: 100%; }
+.btn-green { background: #22c55e; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
+.btn-red { background: #ef4444; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
 .input { background: #2c2c2c; border-radius: 10px; padding: 12px; width: 100%; border: none; outline: none; }
 .hidden { display: none; }
-.nav-item { text-align: center; font-size: 12px; }
+.tab-btn { padding: 10px; border-radius: 8px; background: #2c2c2c; }
+.tab-btn.active { background: #facc15; color: black; font-weight: 700; }
 </style>
 </head>
 <body>
@@ -37,7 +40,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 
 <!-- HOME SECTION -->
 <div id="homeSection" class="hidden pb-24">
-  <!-- Header -->
   <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
     <div>
       <p class="text-gray-400 text-sm">Welcome</p>
@@ -46,7 +48,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm">Logout</button>
   </div>
 
-  <!-- Balance Card -->
   <div class="card m-4 bg-gradient-to-r from-green-500 to-blue-600">
     <p class="text-sm opacity-80">Total Balance</p>
     <p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
@@ -56,61 +57,67 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     </div>
   </div>
 
-  <!-- Quick Actions -->
   <div class="grid grid-cols-4 gap-3 px-4 mb-4">
     <div onclick="showModal('vip')" class="card text-center cursor-pointer">
-      <div class="text-2xl">👑</div>
-      <p class="text-xs mt-1">VIP</p>
+      <div class="text-2xl">👑</div><p class="text-xs mt-1">VIP</p>
     </div>
     <div onclick="showModal('spin')" class="card text-center cursor-pointer">
-      <div class="text-2xl">🎡</div>
-      <p class="text-xs mt-1">Spin</p>
+      <div class="text-2xl">🎡</div><p class="text-xs mt-1">Spin</p>
     </div>
     <div onclick="showModal('invite')" class="card text-center cursor-pointer">
-      <div class="text-2xl">👥</div>
-      <p class="text-xs mt-1">Invite</p>
+      <div class="text-2xl">👥</div><p class="text-xs mt-1">Invite</p>
     </div>
     <div onclick="showModal('team')" class="card text-center cursor-pointer">
-      <div class="text-2xl">📊</div>
-      <p class="text-xs mt-1">Team</p>
+      <div class="text-2xl">📊</div><p class="text-xs mt-1">Team</p>
     </div>
   </div>
 
-  <!-- VIP Packages -->
   <div class="px-4 mb-4">
     <h3 class="font-bold mb-3">VIP Packages</h3>
     <div id="vipList"></div>
-  </div>
-
-  <!-- Support -->
-  <div class="px-4">
-    <h3 class="font-bold mb-3">Support</h3>
-    <div class="grid grid-cols-2 gap-3">
-      <a href="https://wa.me/8801XXXXXXXX" class="card text-center">WhatsApp</a>
-      <a href="https://t.me/username" class="card text-center">Telegram</a>
-    </div>
   </div>
 </div>
 
 <!-- ADMIN PANEL -->
 <div id="adminSection" class="hidden pb-24">
-  <div class="p-4 bg-[#1c1c1c]">
+  <div class="p-4 bg-[#1c1c1c] sticky top-0 z-10">
     <h2 class="text-2xl font-bold text-yellow-400">Admin Panel</h2>
     <p class="text-gray-400 text-sm mt-1" id="adminEmail"></p>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
   </div>
   
-  <div class="p-4 grid-cols-2 gap-3">
-    <div class="card"><p class="text-gray-400">Total Users</p><p class="text-2xl font-bold" id="totalUsers">0</p></div>
-    <div class="card"><p class="text-gray-400">Total Recharge</p><p class="text-2xl font-bold" id="totalRecharge">$0</p></div>
+  <!-- Tabs -->
+  <div class="flex gap-2 p-4 overflow-x-auto">
+    <button onclick="switchTab('dashboard')" class="tab-btn active" id="tab-dashboard">Dashboard</button>
+    <button onclick="switchTab('users')" class="tab-btn" id="tab-users">All Users</button>
+    <button onclick="switchTab('recharge')" class="tab-btn" id="tab-recharge">Recharge</button>
+    <button onclick="switchTab('withdraw')" class="tab-btn" id="tab-withdraw">Withdraw</button>
   </div>
 
-  <div class="p-4">
+  <!-- Dashboard Tab -->
+  <div id="content-dashboard" class="p-4">
+    <div class="grid grid-cols-2 gap-3">
+      <div class="card"><p class="text-gray-400">Total Users</p><p class="text-2xl font-bold" id="totalUsers">0</p></div>
+      <div class="card"><p class="text-gray-400">Total Recharge</p><p class="text-2xl font-bold" id="totalRecharge">$0</p></div>
+      <div class="card"><p class="text-gray-400">Total Withdraw</p><p class="text-2xl font-bold" id="totalWithdraw">$0</p></div>
+      <div class="card"><p class="text-gray-400">Pending Requests</p><p class="text-2xl font-bold" id="pendingCount">0</p></div>
+    </div>
+  </div>
+
+  <!-- Users Tab -->
+  <div id="content-users" class="hidden p-4">
+    <h3 class="font-bold mb-3">All Members</h3>
+    <div id="allUsers"></div>
+  </div>
+
+  <!-- Recharge Tab -->
+  <div id="content-recharge" class="hidden p-4">
     <h3 class="font-bold mb-3">Pending Recharges</h3>
     <div id="pendingRecharges"></div>
   </div>
 
-  <div class="p-4">
+  <!-- Withdraw Tab -->
+  <div id="content-withdraw" class="hidden p-4">
     <h3 class="font-bold mb-3">Pending Withdrawals</h3>
     <div id="pendingWithdrawals"></div>
   </div>
@@ -129,10 +136,9 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, onSnapshot } 
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, onSnapshot, orderBy } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Firebase Config
 const firebaseConfig = {
   apiKey: "AIzaSyAKi3cFh6B0hIwGwl-9ZEKTtf-INwlwF4k",
   authDomain: "agrofarm-4e772.firebaseapp.com",
@@ -147,14 +153,14 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-const ADMIN_EMAIL = "eliteeiya@gmail.com"; // এডমিন ইমেইল
+const ADMIN_EMAIL = "eliteeiya@gmail.com";
 
 let currentUser = null;
 let isLoginMode = false;
 let userData = {};
 let isAdmin = false;
+let allUsersData = [];
 
-// VIP Packages Data
 const vipPackages = [
   {id: 1, name: "VIP 1", price: 10, daily: 1.5, days: 30},
   {id: 2, name: "VIP 2", price: 50, daily: 8, days: 30},
@@ -188,7 +194,169 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Toggle Auth
+// Tab Switch
+window.switchTab = function(tab) {
+  ['dashboard', 'users', 'recharge', 'withdraw'].forEach(t => {
+    document.getElementById(`content-${t}`).classList.add('hidden');
+    document.getElementById(`tab-${t}`).classList.remove('active');
+  });
+  document.getElementById(`content-${tab}`).classList.remove('hidden');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+// Load Admin Data
+async function loadAdminData() {
+  // Load all users
+  const usersSnap = await getDocs(collection(db, "users"));
+  allUsersData = [];
+  usersSnap.forEach(doc => allUsersData.push({id: doc.id, ...doc.data()}));
+  document.getElementById('totalUsers').innerText = usersSnap.size;
+  loadAllUsers();
+
+  // Load recharges
+  const rechargeSnap = await getDocs(collection(db, "recharges"));
+  let totalRecharge = 0;
+  let pendingRecharge = 0;
+  const rechargeDiv = document.getElementById('pendingRecharges');
+  rechargeDiv.innerHTML = '';
+  rechargeSnap.forEach(doc => {
+    const data = doc.data();
+    if(data.status === 'approved') totalRecharge += data.amount;
+    if(data.status === 'pending') {
+      pendingRecharge++;
+      const user = allUsersData.find(u => u.id === data.uid);
+      rechargeDiv.innerHTML += `
+        <div class="card mb-2">
+          <p class="font-bold">${user?.name || 'Unknown'}</p>
+          <p class="text-sm text-gray-400">Email: ${user?.email}</p>
+          <p>Amount: $${data.amount}</p>
+          <p class="text-xs text-gray-500">${new Date(data.createdAt?.seconds*1000).toLocaleString()}</p>
+          <button onclick="approveRecharge('${doc.id}', ${data.amount}, '${data.uid}')" class="btn-green mt-2">Approve</button>
+        </div>
+      `;
+    }
+  });
+  document.getElementById('totalRecharge').innerText = '$' + totalRecharge;
+
+  // Load withdrawals
+  const withdrawSnap = await getDocs(collection(db, "withdrawals"));
+  let totalWithdraw = 0;
+  let pendingWithdraw = 0;
+  const withdrawDiv = document.getElementById('pendingWithdrawals');
+  withdrawDiv.innerHTML = '';
+  withdrawSnap.forEach(doc => {
+    const data = doc.data();
+    if(data.status === 'approved') totalWithdraw += data.amount;
+    if(data.status === 'pending') {
+      pendingWithdraw++;
+      const user = allUsersData.find(u => u.id === data.uid);
+      withdrawDiv.innerHTML += `
+        <div class="card mb-2">
+          <p class="font-bold">${user?.name || 'Unknown'}</p>
+          <p class="text-sm text-gray-400">Email: ${user?.email}</p>
+          <p>Amount: $${data.amount}</p>
+          <p>Number: ${data.number}</p>
+          <p class="text-xs text-gray-500">${new Date(data.createdAt?.seconds*1000).toLocaleString()}</p>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <button onclick="approveWithdraw('${doc.id}', '${data.uid}', ${data.amount})" class="btn-green">Approve</button>
+            <button onclick="rejectWithdraw('${doc.id}', '${data.uid}', ${data.amount})" class="btn-red">Reject</button>
+          </div>
+        </div>
+      `;
+    }
+  });
+  document.getElementById('totalWithdraw').innerText = '$' + totalWithdraw;
+  document.getElementById('pendingCount').innerText = pendingRecharge + pendingWithdraw;
+}
+
+// Load All Users with details
+function loadAllUsers() {
+  const usersDiv = document.getElementById('allUsers');
+  usersDiv.innerHTML = '';
+  
+  allUsersData.forEach(user => {
+    // Count referrals
+    const referralCount = allUsersData.filter(u => u.refBy === user.refCode).length;
+    
+    // Get user's package name
+    const pkg = user.vip ? vipPackages.find(p => p.id === user.vip) : null;
+    
+    usersDiv.innerHTML += `
+      <div class="card mb-3">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-bold text-lg">${user.name}</p>
+            <p class="text-sm text-gray-400">${user.email}</p>
+          </div>
+          <p class="text-yellow-400 font-bold">$${user.balance?.toFixed(2) || 0}</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">VIP Package</p>
+            <p class="font-bold">${pkg ? pkg.name : 'None'}</p>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">Referrals</p>
+            <p class="font-bold">${referralCount}</p>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">Total Recharge</p>
+            <p class="font-bold">$${user.totalRecharge || 0}</p>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">Total Withdraw</p>
+            <p class="font-bold">$${user.totalWithdraw || 0}</p>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Ref Code: ${user.refCode}</p>
+      </div>
+    `;
+  });
+}
+
+// Approve Recharge
+window.approveRecharge = async function(id, amount, uid) {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+  const userBal = userSnap.data().balance || 0;
+  const totalRecharge = userSnap.data().totalRecharge || 0;
+  
+  await updateDoc(userRef, { 
+    balance: userBal + amount,
+    totalRecharge: totalRecharge + amount
+  });
+  await updateDoc(doc(db, "recharges", id), { status: 'approved' });
+  alert('Recharge Approved!');
+  loadAdminData();
+}
+
+// Approve Withdraw
+window.approveWithdraw = async function(id, uid, amount) {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+  const totalWithdraw = userSnap.data().totalWithdraw || 0;
+  
+  await updateDoc(userRef, { 
+    totalWithdraw: totalWithdraw + amount
+  });
+  await updateDoc(doc(db, "withdrawals", id), { status: 'approved' });
+  alert('Withdrawal Approved!');
+  loadAdminData();
+}
+
+// Reject Withdraw - refund balance
+window.rejectWithdraw = async function(id, uid, amount) {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+  const userBal = userSnap.data().balance || 0;
+  
+  await updateDoc(userRef, { balance: userBal + amount });
+  await updateDoc(doc(db, "withdrawals", id), { status: 'rejected' });
+  alert('Withdrawal Rejected & Refunded!');
+  loadAdminData();
+}
+
+// User Functions - আগের মতোই থাকবে
 window.toggleAuth = function() {
   isLoginMode = !isLoginMode;
   document.getElementById('formTitle').innerText = isLoginMode ? 'Login' : 'Create Account';
@@ -198,7 +366,6 @@ window.toggleAuth = function() {
   document.getElementById('refCode').style.display = isLoginMode ? 'none' : 'block';
 }
 
-// Handle Auth
 window.handleAuth = async function() {
   const email = document.getElementById('email').value;
   const pass = document.getElementById('password').value;
@@ -218,11 +385,25 @@ window.handleAuth = async function() {
         email: email,
         balance: 0,
         refCode: Math.random().toString(36).substr(2, 8),
-        refBy: refCode,
+        refBy: refCode || null,
         vip: null,
         vipExpiry: null,
+        totalRecharge: 0,
+        totalWithdraw: 0,
         createdAt: new Date()
       });
+
+      // Add commission to referrer
+      if(refCode) {
+        const refQuery = query(collection(db, "users"), where("refCode", "==", refCode));
+        const refSnap = await getDocs(refQuery);
+        if(!refSnap.empty) {
+          const referrer = refSnap.docs[0];
+          await updateDoc(doc(db, "users", referrer.id), {
+            balance: (referrer.data().balance || 0) + 1
+          });
+        }
+      }
     }
     errorMsg.classList.add('hidden');
   } catch(error) {
@@ -231,7 +412,6 @@ window.handleAuth = async function() {
   }
 }
 
-// Load User Data
 async function loadUserData() {
   const docSnap = await getDoc(doc(db, "users", currentUser.uid));
   if (docSnap.exists()) {
@@ -242,7 +422,6 @@ async function loadUserData() {
   }
 }
 
-// Load VIP Packages
 function loadVIPPackages() {
   const vipList = document.getElementById('vipList');
   vipList.innerHTML = '';
@@ -267,7 +446,6 @@ function loadVIPPackages() {
   });
 }
 
-// Buy VIP
 window.buyVIP = async function(pkgId) {
   const pkg = vipPackages.find(p => p.id === pkgId);
   if(userData.balance < pkg.price) {
@@ -288,7 +466,6 @@ window.buyVIP = async function(pkgId) {
   loadUserData();
 }
 
-// Modal System
 window.showModal = function(type) {
   document.getElementById('modal').classList.remove('hidden');
   const title = document.getElementById('modalTitle');
@@ -309,20 +486,12 @@ window.showModal = function(type) {
     title.innerText = 'Invite Friends';
     content.innerHTML = `<p class="text-gray-400 mb-2">Your Refer Code:</p>
     <div class="bg-[#2c2c2c] p-3 rounded-lg text-center font-bold">${userData.refCode}</div>
-    <p class="text-sm text-gray-400 mt-3">Share this code and earn 10% commission</p>`;
-  }
-  if(type === 'spin') {
-    title.innerText = 'Lucky Spin';
-    content.innerHTML = `<div class="text-center">
-      <div class="text-6xl mb-4">🎡</div>
-      <button onclick="spinNow()" class="btn-yellow">Spin Now - Win $0.1 to $5</button>
-    </div>`;
+    <p class="text-sm text-gray-400 mt-3">Share this code and earn $1 per referral</p>`;
   }
 }
 
 window.closeModal = () => document.getElementById('modal').classList.add('hidden');
 
-// Submit Recharge
 window.submitRecharge = async function() {
   const amt = parseFloat(document.getElementById('rechargeAmt').value);
   await addDoc(collection(db, "recharges"), {
@@ -335,7 +504,6 @@ window.submitRecharge = async function() {
   closeModal();
 }
 
-// Submit Withdraw
 window.submitWithdraw = async function() {
   const amt = parseFloat(document.getElementById('withdrawAmt').value);
   const num = document.getElementById('bkashNum').value;
@@ -358,56 +526,10 @@ window.submitWithdraw = async function() {
   loadUserData();
 }
 
-// Lucky Spin
-window.spinNow = async function() {
-  const reward = (Math.random() * 4.9 + 0.1).toFixed(2);
-  await updateDoc(doc(db, "users", currentUser.uid), {
-    balance: userData.balance + parseFloat(reward)
-  });
-  alert('You won $' + reward + '!');
-  closeModal();
-  loadUserData();
-}
-
-// Load Admin Data
-async function loadAdminData() {
-  const usersSnap = await getDocs(collection(db, "users"));
-  document.getElementById('totalUsers').innerText = usersSnap.size;
-  
-  // Load pending recharges
-  const rechargeQuery = query(collection(db, "recharges"), where("status", "==", "pending"));
-  const rechargeSnap = await getDocs(rechargeQuery);
-  const rechargeDiv = document.getElementById('pendingRecharges');
-  rechargeDiv.innerHTML = '';
-  rechargeSnap.forEach(doc => {
-    const data = doc.data();
-    rechargeDiv.innerHTML += `
-      <div class="card mb-2">
-        <p>UID: ${data.uid}</p>
-        <p>Amount: $${data.amount}</p>
-        <button onclick="approveRecharge('${doc.id}', ${data.amount}, '${data.uid}')" class="btn-yellow mt-2">Approve</button>
-      </div>
-    `;
-  });
-}
-
-window.approveRecharge = async function(id, amount, uid) {
-  const userRef = doc(db, "users", uid);
-  const userSnap = await getDoc(userRef);
-  const userBal = userSnap.data().balance;
-  
-  await updateDoc(userRef, { balance: userBal + amount });
-  await updateDoc(doc(db, "recharges", id), { status: 'approved' });
-  alert('Approved!');
-  loadAdminData();
-}
-
-// Logout
 window.logout = async function() {
   await signOut(auth);
   location.reload();
 }
 </script>
-
 </body>
-</html>
+  </html>
