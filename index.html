@@ -18,6 +18,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 .tab-btn.active { background: #facc15; color: black; font-weight: 700; }
 .channel-btn { border: 1px solid #444; padding: 10px; border-radius: 10px; text-align: left; cursor: pointer; }
 .channel-btn.active { border: 2px solid #facc15; background: #2c2c2c; }
+.info { color: #34d399; font-size: 13px; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -29,13 +30,14 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <h1 class="text-3xl font-bold mt-4" id="formTitle">Create Account</h1>
   </div>
 
+  <div id="refInfo" class="info hidden"></div>
   <input type="text" id="name" placeholder="Full Name" class="input mb-3">
   <input type="email" id="email" placeholder="Email" class="input mb-3">
   <input type="password" id="password" placeholder="Password" class="input mb-3">
   <input type="text" id="refCode" placeholder="Refer Code (Optional)" class="input mb-3">
-  
+
   <p id="errorMsg" class="text-red-500 text-sm mb-3 hidden"></p>
-  
+
   <button onclick="handleAuth()" class="btn-yellow mb-3" id="authBtn">Register</button>
   <button onclick="toggleAuth()" class="btn-outline" id="switchBtn">Already have account? Login</button>
 </div>
@@ -46,6 +48,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <div>
       <p class="text-gray-400 text-sm">Welcome</p>
       <p class="font-bold" id="userName">User</p>
+      <p class="text-xs text-gray-500">Ref Code: <span id="myRefCode"></span></p>
     </div>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm">Logout</button>
   </div>
@@ -159,7 +162,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <p class="text-gray-400 text-sm mt-1" id="adminEmail"></p>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
   </div>
-  
+
   <div class="flex gap-2 p-4 overflow-x-auto">
     <button onclick="switchTab('dashboard')" class="tab-btn active" id="tab-dashboard">Dashboard</button>
     <button onclick="switchTab('users')" class="tab-btn" id="tab-users">All Users</button>
@@ -192,7 +195,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <div id="pendingWithdrawals"></div>
   </div>
 
-  <!-- Settings Tab -->
   <div id="content-settings" class="hidden p-4">
     <h3 class="font-bold mb-3">Deposit Addresses</h3>
     <div class="space-y-4">
@@ -222,9 +224,9 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail } 
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs } 
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, increment }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -251,6 +253,7 @@ let allUsersData = [];
 let walletAddresses = {};
 let selectedChannel = 'USDT-BEP20';
 let timerInterval = null;
+const REFERRAL_BONUS = 5; // 5 USDT বোনাস
 
 const vipPackages = [
   {id: 1, name: "VIP 1", price: 10, daily: 1.5, days: 30},
@@ -258,6 +261,15 @@ const vipPackages = [
   {id: 3, name: "VIP 3", price: 100, daily: 18, days: 30},
   {id: 4, name: "VIP 4", price: 500, daily: 100, days: 30}
 ];
+
+// URL থেকে রেফারেল কোড ধরো
+const urlParams = new URLSearchParams(window.location.search);
+const refCodeFromURL = urlParams.get('ref');
+if(refCodeFromURL){
+  document.getElementById('refCode').value = refCodeFromURL;
+  document.getElementById('refInfo').innerText = `রেফারেল কোড: ${refCodeFromURL} দিয়ে জয়েন করছো`;
+  document.getElementById('refInfo').classList.remove('hidden');
+}
 
 // Load Wallet Addresses from Firebase
 async function loadWalletAddresses() {
@@ -267,7 +279,7 @@ async function loadWalletAddresses() {
   } else {
     walletAddresses = {
       'USDT-TRC20': 'Not Set',
-      'USDT-BEP20': 'Not Set', 
+      'USDT-BEP20': 'Not Set',
       'USDT-ERC20': 'Not Set',
       'USDC-POLYGON': 'Not Set'
     };
@@ -284,7 +296,7 @@ onAuthStateChanged(auth, async (user) => {
     if (docSnap.exists()) {
       userData = docSnap.data();
       isAdmin = user.email === ADMIN_EMAIL;
-      
+
       document.getElementById('authSection').classList.add('hidden');
       if(isAdmin) {
         document.getElementById('adminSection').classList.remove('hidden');
@@ -311,7 +323,7 @@ function loadSettings() {
 window.saveAddress = async function(channel) {
   let key = channel.replace('USDT-', '').replace('USDC-', '');
   let addr = document.getElementById('addr-' + key).value;
-  
+
   walletAddresses[channel] = addr;
   await setDoc(doc(db, "settings", "wallets"), walletAddresses);
   alert(channel + ' address updated!');
@@ -343,11 +355,11 @@ window.closeRechargePage = function() {
 function loadChannels() {
   const channelList = document.getElementById('channelList');
   channelList.innerHTML = '';
-  
+
   Object.keys(walletAddresses).forEach((channel, i) => {
     const isActive = i === 0? 'active' : '';
     if(i === 0) selectedChannel = channel;
-    
+
     channelList.innerHTML += `
       <div class="channel-btn ${isActive}" onclick="selectChannel('${channel}')">
         <p class="font-bold">${channel}</p>
@@ -382,7 +394,7 @@ window.createRechargeOrder = async function() {
   }
 
   const orderNum = 'ORD' + Date.now();
-  
+
   await addDoc(collection(db, "recharges"), {
     uid: currentUser.uid,
     amount: amt,
@@ -395,14 +407,14 @@ window.createRechargeOrder = async function() {
 
   document.getElementById('rechargePage').classList.add('hidden');
   document.getElementById('rechargeOrderPage').classList.remove('hidden');
-  
+
   document.getElementById('orderNumber').innerText = orderNum;
   document.getElementById('orderAmount').innerText = amt + ' USDT';
   document.getElementById('addressLabel').innerText = selectedChannel + ' address';
   document.getElementById('walletAddress').innerText = walletAddresses[selectedChannel];
-  
+
   document.getElementById('qrCode').innerHTML = '<div class="w-48 h-48 bg-gray-200 flex items-center justify-center text-black">QR CODE</div>';
-  
+
   startTimer(3600);
 }
 
@@ -413,7 +425,7 @@ function startTimer(seconds) {
     const h = Math.floor(time / 3600);
     const m = Math.floor((time % 3600) / 60);
     const s = time % 60;
-    document.getElementById('timer').innerText = 
+    document.getElementById('timer').innerText =
       String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
     time--;
     if(time < 0) clearInterval(timerInterval);
@@ -459,6 +471,7 @@ async function loadAdminData() {
     }
   });
   document.getElementById('totalRecharge').innerText = '$' + totalRecharge;
+  document.getElementById('pendingCount').innerText = pendingRecharge;
 }
 
 window.approveRecharge = async function(id, amount, uid) {
@@ -466,8 +479,8 @@ window.approveRecharge = async function(id, amount, uid) {
   const userSnap = await getDoc(userRef);
   const userBal = userSnap.data().balance || 0;
   const totalRecharge = userSnap.data().totalRecharge || 0;
-  
-  await updateDoc(userRef, { 
+
+  await updateDoc(userRef, {
     balance: userBal + amount,
     totalRecharge: totalRecharge + amount
   });
@@ -479,11 +492,11 @@ window.approveRecharge = async function(id, amount, uid) {
 function loadAllUsers() {
   const usersDiv = document.getElementById('allUsers');
   usersDiv.innerHTML = '';
-  
+
   allUsersData.forEach(user => {
     const referralCount = allUsersData.filter(u => u.refBy === user.refCode).length;
     const pkg = user.vip? vipPackages.find(p => p.id === user.vip) : null;
-    
+
     usersDiv.innerHTML += `
       <div class="card mb-3">
         <div class="flex justify-between items-start">
@@ -551,23 +564,52 @@ window.handleAuth = async function() {
       const refCode = document.getElementById('refCode').value;
       const userCred = await createUserWithEmailAndPassword(auth, email, pass);
       await updateProfile(userCred.user, { displayName: name });
-      
+
+      const myRefCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+
       await setDoc(doc(db, "users", userCred.user.uid), {
         name: name,
         email: email,
         balance: 0,
-        refCode: Math.random().toString(36).substr(2, 8),
+        refCode: myRefCode,
         refBy: refCode || null,
         vip: null,
         totalRecharge: 0,
         totalWithdraw: 0,
         createdAt: new Date()
       });
+
+      // রেফারেল বোনাস দাও
+      if(refCode){
+        await giveReferralBonus(refCode);
+      }
     }
     errorMsg.classList.add('hidden');
   } catch(error) {
     errorMsg.innerText = error.message;
     errorMsg.classList.remove('hidden');
+  }
+}
+
+// রেফারেল বোনাস দেওয়ার ফাংশন
+async function giveReferralBonus(refCode){
+  try{
+    // refCode দিয়ে ইউজার খুঁজো
+    const q = query(collection(db, "users"), where("refCode", "==", refCode));
+    const querySnapshot = await getDocs(q);
+
+    if(!querySnapshot.empty){
+      const referrerDoc = querySnapshot.docs[0];
+      const referrerRef = doc(db, "users", referrerDoc.id);
+
+      await updateDoc(referrerRef, {
+        balance: increment(REFERRAL_BONUS)
+      });
+
+      console.log(`Referral bonus ${REFERRAL_BONUS} USDT দেওয়া হলো ${refCode} কে`);
+    }
+  } catch(e){
+    console.log('Referral error:', e);
   }
 }
 
@@ -577,6 +619,7 @@ async function loadUserData() {
     userData = docSnap.data();
     document.getElementById('userName').innerText = userData.name;
     document.getElementById('balance').innerText = userData.balance.toFixed(2);
+    document.getElementById('myRefCode').innerText = userData.refCode;
     loadVIPPackages();
   }
 }
@@ -611,16 +654,16 @@ window.buyVIP = async function(pkgId) {
     alert('Insufficient balance!');
     return;
   }
-  
+
   const expiryDate = new Date();
   expiryDate.setDate(expiryDate.getDate() + pkg.days);
-  
+
   await updateDoc(doc(db, "users", currentUser.uid), {
     balance: userData.balance - pkg.price,
     vip: pkgId,
     vipExpiry: expiryDate
   });
-  
+
   alert('VIP Package Activated!');
   loadUserData();
 }
@@ -631,4 +674,4 @@ window.logout = async function() {
 }
 </script>
 </body>
-</html>
+          </html>
