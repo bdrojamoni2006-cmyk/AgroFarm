@@ -141,7 +141,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
       <p class="text-2xl font-bold">$<span id="withdrawBalance">0.00</span></p>
       <p class="text-xs text-gray-500 mt-1">Withdraw Fee: 10%</p>
     </div>
-
     <p class="text-gray-400 text-sm mb-2">Select Network</p>
     <div class="grid grid-cols-2 gap-2 mb-4">
       <div class="channel-btn" onclick="selectWithdrawNetwork('USDT-BEP20')" id="net-BEP20">
@@ -153,23 +152,20 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
         <p class="text-xs text-gray-400">Tron Network</p>
       </div>
     </div>
-
     <div id="addressSection" class="hidden">
       <p class="text-gray-400 text-sm mb-2">Wallet Address</p>
       <input type="text" id="withdrawAddress" placeholder="Enter your wallet address" class="input mb-3" readonly>
       <p class="text-xs text-gray-500 mb-3">* প্রথমবার সেভ হওয়ার পর পরিবর্তন করা যাবে না</p>
     </div>
-
     <p class="text-gray-400 text-sm mb-2">Amount</p>
     <input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mb-2" oninput="calcReceive()">
     <p class="text-sm text-gray-400 mb-3">You will receive: <span id="receiveAmount" class="text-green-400 font-bold">0.00</span> USDT</p>
-
     <button onclick="submitWithdraw()" class="btn-yellow" id="withdrawBtn">Submit Withdraw</button>
     <div class="bg-orange-900/30 border-orange-600 rounded-lg p-3 mt-4">
       <p class="font-bold text-orange-400 text-sm mb-1">⚠️ Notice</p>
       <ul class="text-xs text-gray-300 space-y-1">
         <li>1. Min withdraw: 10 USDT</li>
-        <li>2. Fee: 10% of amount</li>
+        <li>2. Fee: 10%</li>
         <li>3. Time: UK 09:00 - 17:00 only</li>
         <li>4. Processing: 1-24 hours</li>
         <li>5. Only 1 withdraw per day</li>
@@ -256,13 +252,36 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
   </div>
 </div>
 
-<!-- Bottom Navigation -->
-<div class="bottom-nav">
-  <div class="nav-item active" onclick="switchPage('home')"><span class="text-2xl">🏠</span><span>Home</span></div>
-  <div class="nav-item" onclick="switchPage('tasks')"><span class="text-2xl">📝</span><span>Tasks</span></div>
-  <div class="nav-item" onclick="switchPage('joblevel')"><span class="text-2xl">👑</span><span>Job Level</span></div>
-  <div class="nav-item" onclick="switchPage('earnings')"><span class="text-2xl">💰</span><span>Earnings</span></div>
-  <div class="nav-item" onclick="switchPage('my')"><span class="text-2xl">👤</span><span>My</span></div>
+<!-- Dummy modals -->
+<div id="modal-spin" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+  <div class="card w-full max-w-md">
+    <h3 class="font-bold text-xl mb-3">Spin Coming Soon</h3>
+    <button onclick="closeModal('spin')" class="btn-outline">Close</button>
+  </div>
+</div>
+
+<!-- Bottom Navigation - Hidden by default -->
+<div class="bottom-nav hidden" id="bottomNav">
+  <div class="nav-item active" onclick="switchPage('home')">
+    <span class="text-2xl">🏠</span>
+    <span>Home</span>
+  </div>
+  <div class="nav-item" onclick="switchPage('tasks')">
+    <span class="text-2xl">📝</span>
+    <span>Tasks</span>
+  </div>
+  <div class="nav-item" onclick="switchPage('joblevel')">
+    <span class="text-2xl">👑</span>
+    <span>Job Level</span>
+  </div>
+  <div class="nav-item" onclick="switchPage('earnings')">
+    <span class="text-2xl">💰</span>
+    <span>Earnings</span>
+  </div>
+  <div class="nav-item" onclick="switchPage('my')">
+    <span class="text-2xl">👤</span>
+    <span>My</span>
+  </div>
 </div>
 
 <script type="module">
@@ -294,7 +313,7 @@ let currentUser = null;
 let isLoginMode = false;
 let userData = {};
 let isAdmin = false;
-let walletAddresses = {};
+let allUsersData = [];
 let selectedWithdrawNetwork = '';
 let timerInterval = null;
 
@@ -456,15 +475,19 @@ onAuthStateChanged(auth, async (user) => {
       userData = docSnap.data();
       isAdmin = user.email === ADMIN_EMAIL;
       document.getElementById('authSection').classList.add('hidden');
+
       if(isAdmin) {
         document.getElementById('adminSection').classList.remove('hidden');
         document.getElementById('adminEmail').innerText = user.email;
         loadAdminData();
       } else {
         document.getElementById('page-home').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
         loadUserData();
       }
     }
+  } else {
+    document.getElementById('bottomNav').classList.add('hidden');
   }
 });
 
@@ -519,8 +542,8 @@ window.handleAuth = async function() {
       const myRefCode = Math.random().toString(36).substr(2, 8).toUpperCase();
       await setDoc(doc(db, "users", userCred.user.uid), {
         name: name, email: email, balance: 0, refCode: myRefCode, refBy: refCode || null,
-        vip: null, totalRecharge: 0, totalWithdraw: 0, totalEarn: 0, todayEarn: 0, 
-        yesterdayEarn: 0, doneTasks: [], lastTaskDate: "", withdrawAddress: null, 
+        vip: null, totalRecharge: 0, totalWithdraw: 0, totalEarn: 0, todayEarn: 0,
+        yesterdayEarn: 0, doneTasks: [], lastTaskDate: "", withdrawAddress: null,
         withdrawNetwork: null, lastWithdrawDate: null, createdAt: new Date()
       });
       if(refCode){ await giveReferralBonus(refCode); }
@@ -553,7 +576,54 @@ window.toggleAuth = function() {
 
 window.logout = async function() {
   await signOut(auth);
+  document.getElementById('bottomNav').classList.add('hidden');
   location.reload();
+}
+
+window.openRechargePage = function() {
+  document.getElementById('rechargePage').classList.remove('hidden');
+  document.getElementById('rechargeBalance').innerText = userData.balance.toFixed(2) + ' (USDT)';
+}
+
+window.closeRechargePage = function() {
+  document.getElementById('rechargePage').classList.add('hidden');
+}
+
+window.changeAmount = function(val) {
+  let amt = parseFloat(document.getElementById('rechargeAmt').value) + val;
+  if(amt < 0) amt = 0;
+  document.getElementById('rechargeAmt').value = amt.toFixed(2);
+}
+
+window.createRechargeOrder = async function() {
+  const amt = parseFloat(document.getElementById('rechargeAmt').value);
+  if(amt < 10) { alert('Minimum recharge is 10 USDT'); return; }
+  const orderNum = 'ORD' + Date.now();
+  await addDoc(collection(db, "recharges"), {
+    uid: currentUser.uid,
+    amount: amt,
+    status: 'pending',
+    createdAt: new Date()
+  });
+  document.getElementById('rechargePage').classList.add('hidden');
+  document.getElementById('rechargeOrderPage').classList.remove('hidden');
+    document.getElementById('orderNumber').innerText = orderNum;
+  document.getElementById('orderAmount').innerText = amt + ' USDT';
+  startTimer(3600);
+}
+
+function startTimer(seconds) {
+  clearInterval(timerInterval);
+  let time = seconds;
+  timerInterval = setInterval(() => {
+    const h = Math.floor(time / 3600);
+    const m = Math.floor((time % 3600) / 60);
+    const s = time % 60;
+    document.getElementById('timer').innerText = 
+      String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    time--;
+    if(time < 0) clearInterval(timerInterval);
+  }, 1000);
 }
 
 // Withdraw Functions
@@ -594,8 +664,9 @@ window.selectWithdrawNetwork = function(network) {
   document.getElementById(`net-${network.split('-')[1]}`).classList.add('active');
   
   if(!userData.withdrawAddress) {
-   document.getElementById('addressSection').classList.remove('hidden');
-  document.getElementById('withdrawAddress').readOnly = false;
+    document.getElementById('addressSection').classList.remove('hidden');
+    document.getElementById('withdrawAddress').readOnly = false;
+  }
 }
 
 window.calcReceive = function() {
@@ -632,7 +703,6 @@ window.submitWithdraw = async function() {
   const receiveAmount = amount - fee;
 
   try {
-    // প্রথমবার হলে অ্যাড্রেস সেভ করো
     if(!userData.withdrawAddress) {
       await updateDoc(doc(db, "users", currentUser.uid), {
         withdrawAddress: address,
@@ -640,7 +710,6 @@ window.submitWithdraw = async function() {
       });
     }
 
-    // Withdraw রিকুয়েস্ট তৈরি করো
     await addDoc(collection(db, "withdrawals"), {
       uid: currentUser.uid,
       email: userData.email,
@@ -654,7 +723,6 @@ window.submitWithdraw = async function() {
       createdAt: new Date()
     });
 
-    // ব্যালেন্স থেকে কেটে নাও
     await updateDoc(doc(db, "users", currentUser.uid), {
       balance: increment(-amount),
       totalWithdraw: increment(amount),
@@ -707,7 +775,7 @@ async function loadWithdrawHistory() {
   container.innerHTML = html;
 }
 
-// Admin Withdraw Approve Function
+// Admin Functions
 window.approveWithdraw = async function(id, amount, uid) {
   try {
     await updateDoc(doc(db, "withdrawals", id), {
@@ -721,7 +789,6 @@ window.approveWithdraw = async function(id, amount, uid) {
   }
 }
 
-// Admin Panel এর loadAdminData ফাংশনের ভিতরে withdraw অংশটা আপডেট করো
 async function loadAdminData() {
   const usersSnap = await getDocs(collection(db, "users"));
   allUsersData = [];
@@ -752,7 +819,6 @@ async function loadAdminData() {
   });
   document.getElementById('totalRecharge').innerText = '$' + totalRecharge;
 
-  // Withdraw অংশ
   const withdrawSnap = await getDocs(collection(db, "withdrawals"));
   let totalWithdraw = 0;
   let pendingWithdraw = 0;
@@ -780,13 +846,70 @@ async function loadAdminData() {
   document.getElementById('pendingCount').innerText = pendingRecharge + pendingWithdraw;
 }
 
-window.saveAddress = async function(channel) {
-  let key = channel.replace('USDT-', '').replace('USDC-', '');
-  let addr = document.getElementById('addr-' + key).value;
-  walletAddresses[channel] = addr;
-  await setDoc(doc(db, "settings", "wallets"), walletAddresses);
-  alert(channel + ' address updated!');
+window.approveRecharge = async function(id, amount, uid) {
+  const userRef = doc(db, "users", uid);
+  const userSnap = await getDoc(userRef);
+  const userBal = userSnap.data().balance || 0;
+  const totalRecharge = userSnap.data().totalRecharge || 0;
+
+  await updateDoc(userRef, {
+    balance: userBal + amount,
+    totalRecharge: totalRecharge + amount
+  });
+  await updateDoc(doc(db, "recharges", id), { status: 'approved' });
+  alert('Recharge Approved!');
+  loadAdminData();
+}
+
+function loadAllUsers() {
+  const usersDiv = document.getElementById('allUsers');
+  usersDiv.innerHTML = '';
+
+  allUsersData.forEach(user => {
+    const referralCount = allUsersData.filter(u => u.refBy === user.refCode).length;
+    const pkg = user.vip? vipPackages.find(p => p.id === user.vip) : null;
+
+    usersDiv.innerHTML += `
+      <div class="card mb-3">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-bold text-lg">${user.name}</p>
+            <p class="text-sm text-gray-400">${user.email}</p>
+          </div>
+          <p class="text-yellow-400 font-bold">$${user.balance?.toFixed(2) || 0}</p>
+        </div>
+        <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">VIP Package</p>
+            <p class="font-bold">${pkg? pkg.name : 'None'}</p>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">Referrals</p>
+            <p class="font-bold">${referralCount}</p>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">Total Recharge</p>
+            <p class="font-bold">$${user.totalRecharge || 0}</p>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">Total Withdraw</p>
+            <p class="font-bold">$${user.totalWithdraw || 0}</p>
+          </div>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Ref Code: ${user.refCode}</p>
+      </div>
+    `;
+  });
+}
+
+window.switchTab = function(tab) {
+  ['dashboard', 'users', 'recharge', 'withdraw'].forEach(t => {
+    document.getElementById(`content-${t}`).classList.add('hidden');
+    document.getElementById(`tab-${t}`).classList.remove('active');
+  });
+  document.getElementById(`content-${tab}`).classList.remove('hidden');
+  document.getElementById(`tab-${tab}`).classList.add('active');
 }
 </script>
 </body>
-</html> 
+</html>
