@@ -11,7 +11,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 .btn-yellow { background: #facc15; color: black; font-weight: 700; padding: 12px; border-radius: 12px; width: 100%; }
 .btn-outline { border: 1px solid #444; padding: 12px; border-radius: 12px; text-align: center; width: 100%; }
 .btn-green { background: #22c55e; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
-.btn-red { background: #ef4444; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
+.btn-gray { background: #444; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
 .input { background: #2c2c2c; border-radius: 10px; padding: 12px; width: 100%; border: none; outline: none; }
 .hidden { display: none; }
 .tab-btn { padding: 10px; border-radius: 8px; background: #2c2c2c; }
@@ -19,31 +19,33 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 .channel-btn { border: 1px solid #444; padding: 10px; border-radius: 10px; text-align: left; cursor: pointer; }
 .channel-btn.active { border: 2px solid #facc15; background: #2c2c2c; }
 .info { color: #34d399; font-size: 13px; margin-bottom: 8px; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; cursor: pointer; }
+.nav-item.active { color: #facc15; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1c; border-top: 1px solid #2c2c2c; display: flex; justify-content: space-around; padding: 8px 0; z-index: 40; }
+.task-card { background: #1c1c1c; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #2c2c2c; }
+.task-done { opacity: 0.5; }
 </style>
 </head>
 <body>
 
 <!-- AUTH SECTION -->
-<div id="authSection" class="min-h-screen p-6">
+<div id="authSection" class="min-h-screen p-6 pb-24">
   <div class="text-center mb-8">
     <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-black">AC</div>
     <h1 class="text-3xl font-bold mt-4" id="formTitle">Create Account</h1>
   </div>
-
   <div id="refInfo" class="info hidden"></div>
   <input type="text" id="name" placeholder="Full Name" class="input mb-3">
   <input type="email" id="email" placeholder="Email" class="input mb-3">
   <input type="password" id="password" placeholder="Password" class="input mb-3">
   <input type="text" id="refCode" placeholder="Refer Code (Optional)" class="input mb-3">
-
   <p id="errorMsg" class="text-red-500 text-sm mb-3 hidden"></p>
-
   <button onclick="handleAuth()" class="btn-yellow mb-3" id="authBtn">Register</button>
   <button onclick="toggleAuth()" class="btn-outline" id="switchBtn">Already have account? Login</button>
 </div>
 
 <!-- HOME SECTION -->
-<div id="homeSection" class="hidden pb-24">
+<div id="page-home" class="hidden pb-24">
   <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
     <div>
       <p class="text-gray-400 text-sm">Welcome</p>
@@ -52,18 +54,16 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     </div>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm">Logout</button>
   </div>
-
   <div class="card m-4 bg-gradient-to-r from-green-500 to-blue-600">
     <p class="text-sm opacity-80">Total Balance</p>
     <p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
     <div class="grid grid-cols-2 gap-3 mt-4">
       <button onclick="openRechargePage()" class="bg-white text-black font-bold py-2 rounded-lg">Recharge</button>
-      <button onclick="showModal('withdraw')" class="bg-white text-black font-bold py-2 rounded-lg">Withdraw</button>
+      <button onclick="openWithdrawPage()" class="bg-white text-black font-bold py-2 rounded-lg">Withdraw</button>
     </div>
   </div>
-
   <div class="grid grid-cols-4 gap-3 px-4 mb-4">
-    <div onclick="showModal('vip')" class="card text-center cursor-pointer">
+    <div onclick="switchPage('joblevel')" class="card text-center cursor-pointer">
       <div class="text-2xl">👑</div><p class="text-xs mt-1">VIP</p>
     </div>
     <div onclick="showModal('spin')" class="card text-center cursor-pointer">
@@ -72,86 +72,147 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <div onclick="showModal('invite')" class="card text-center cursor-pointer">
       <div class="text-2xl">👥</div><p class="text-xs mt-1">Invite</p>
     </div>
-    <div onclick="showModal('team')" class="card text-center cursor-pointer">
-      <div class="text-2xl">📊</div><p class="text-xs mt-1">Team</p>
+    <div onclick="switchPage('tasks')" class="card text-center cursor-pointer">
+      <div class="text-2xl">📝</div><p class="text-xs mt-1">Tasks</p>
     </div>
   </div>
-
   <div class="px-4 mb-4">
     <h3 class="font-bold mb-3">VIP Packages</h3>
     <div id="vipList"></div>
   </div>
 </div>
 
+<!-- TASKS SECTION -->
+<div id="page-tasks" class="hidden pb-24 p-4">
+  <h2 class="text-2xl font-bold mb-4">Tasks</h2>
+  <div id="taskContainer"></div>
+</div>
+
+<!-- JOB LEVEL SECTION -->
+<div id="page-joblevel" class="hidden pb-24 p-4">
+  <h2 class="text-2xl font-bold mb-4">Job Level</h2>
+  <div id="jobLevelList"></div>
+</div>
+
+<!-- EARNINGS SECTION -->
+<div id="page-earnings" class="hidden pb-24 p-4">
+  <h2 class="text-2xl font-bold mb-4">Earnings</h2>
+  <div class="grid grid-cols-2 gap-3 mb-4">
+    <div class="card"><p class="text-gray-400 text-sm">আজকের আয়</p><p class="text-2xl font-bold text-green-400">$<span id="todayEarn">0.00</span></p></div>
+    <div class="card"><p class="text-gray-400 text-sm">গতকালের আয়</p><p class="text-2xl font-bold">$<span id="yesterdayEarn">0.00</span></p></div>
+  </div>
+  <div class="card mb-3"><p class="text-gray-400 text-sm">মোট রিচার্জ</p><p class="text-2xl font-bold">$<span id="totalRechargeUser">0.00</span></p></div>
+  <div class="card mb-3"><p class="text-gray-400 text-sm">মোট উত্তোলন</p><p class="text-2xl font-bold">$<span id="totalWithdrawUser">0.00</span></p></div>
+</div>
+
+<!-- MY SECTION -->
+<div id="page-my" class="hidden pb-24 p-4">
+  <div class="card mb-4">
+    <div class="flex items-center gap-3">
+      <div class="w-16 h-16 rounded-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center text-xl font-bold text-black">AC</div>
+      <div>
+        <p class="font-bold text-xl" id="myName">User</p>
+        <p class="text-sm text-gray-400" id="myEmail">email</p>
+        <p class="text-xs text-gray-500">Ref Code: <span id="myRefCode2"></span></p>
+      </div>
+    </div>
+  </div>
+  <div class="card mb-4">
+    <p class="text-gray-400 text-sm">ব্যালেন্স</p>
+    <p class="text-3xl font-bold">$<span id="myBalance">0.00</span></p>
+  </div>
+  <div class="grid grid-cols-2 gap-3">
+    <button onclick="openRechargePage()" class="btn-yellow">Recharge</button>
+    <button onclick="openWithdrawPage()" class="btn-outline">Withdraw</button>
+  </div>
+  <h3 class="font-bold mt-6 mb-3">Withdraw History</h3>
+  <div id="withdrawHistory"></div>
+</div>
+
+<!-- WITHDRAW PAGE -->
+<div id="withdrawPage" class="hidden min-h-screen pb-24">
+  <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
+    <button onclick="closeWithdrawPage()">← Back</button>
+    <h2 class="font-bold">Withdraw</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4">
+      <p class="text-gray-400 text-sm">Available Balance</p>
+      <p class="text-2xl font-bold">$<span id="withdrawBalance">0.00</span></p>
+      <p class="text-xs text-gray-500 mt-1">Withdraw Fee: 10%</p>
+    </div>
+
+    <p class="text-gray-400 text-sm mb-2">Select Network</p>
+    <div class="grid grid-cols-2 gap-2 mb-4">
+      <div class="channel-btn" onclick="selectWithdrawNetwork('USDT-BEP20')" id="net-BEP20">
+        <p class="font-bold">USDT-BEP20</p>
+        <p class="text-xs text-gray-400">BSC Network</p>
+      </div>
+      <div class="channel-btn" onclick="selectWithdrawNetwork('USDT-TRC20')" id="net-TRC20">
+        <p class="font-bold">USDT-TRC20</p>
+        <p class="text-xs text-gray-400">Tron Network</p>
+      </div>
+    </div>
+
+    <div id="addressSection" class="hidden">
+      <p class="text-gray-400 text-sm mb-2">Wallet Address</p>
+      <input type="text" id="withdrawAddress" placeholder="Enter your wallet address" class="input mb-3" readonly>
+      <p class="text-xs text-gray-500 mb-3">* প্রথমবার সেভ হওয়ার পর পরিবর্তন করা যাবে না</p>
+    </div>
+
+    <p class="text-gray-400 text-sm mb-2">Amount</p>
+    <input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mb-2" oninput="calcReceive()">
+    <p class="text-sm text-gray-400 mb-3">You will receive: <span id="receiveAmount" class="text-green-400 font-bold">0.00</span> USDT</p>
+
+    <button onclick="submitWithdraw()" class="btn-yellow" id="withdrawBtn">Submit Withdraw</button>
+    <div class="bg-orange-900/30 border-orange-600 rounded-lg p-3 mt-4">
+      <p class="font-bold text-orange-400 text-sm mb-1">⚠️ Notice</p>
+      <ul class="text-xs text-gray-300 space-y-1">
+        <li>1. Min withdraw: 10 USDT</li>
+        <li>2. Fee: 10% of amount</li>
+        <li>3. Time: UK 09:00 - 17:00 only</li>
+        <li>4. Processing: 1-24 hours</li>
+        <li>5. Only 1 withdraw per day</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
 <!-- RECHARGE PAGE -->
-<div id="rechargePage" class="hidden min-h-screen">
+<div id="rechargePage" class="hidden min-h-screen pb-24">
   <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
     <button onclick="closeRechargePage()">← Back</button>
     <h2 class="font-bold">Recharge</h2>
-    <button onclick="showRechargeHistory()" class="text-yellow-400 text-sm">Recharge History</button>
   </div>
-
   <div class="p-4">
     <div class="bg-gradient-to-r from-green-400 to-blue-500 rounded-xl p-6 text-center mb-4">
       <p class="text-sm opacity-80">Balance</p>
       <p class="text-3xl font-bold" id="rechargeBalance">0.00 (USDT)</p>
     </div>
-
     <p class="text-gray-400 text-sm mb-2">Recharge Amount</p>
     <div class="flex items-center gap-2 mb-4">
       <button onclick="changeAmount(-10)" class="bg-[#2c2c2c] px-4 py-3 rounded-lg">-</button>
       <input type="number" id="rechargeAmt" value="0" class="input text-center" readonly>
       <button onclick="changeAmount(10)" class="bg-[#2c2c2c] px-4 py-3 rounded-lg">+</button>
     </div>
-
-    <p class="text-gray-400 text-sm mb-2">Recharge Channel</p>
-    <div class="space-y-2 mb-4" id="channelList"></div>
-
     <button onclick="createRechargeOrder()" class="btn-yellow mb-4">Recharge Now</button>
-
-    <div class="bg-orange-900/30 border-orange-600 rounded-lg p-4">
-      <p class="font-bold text-orange-400 mb-2">⚠️ Recharge Notes</p>
-      <ul class="text-sm text-gray-300 space-y-1">
-        <li>1. Please make payment to the latest obtained wallet address</li>
-        <li>2. The payment validity period is 60 minutes</li>
-        <li>3. The recharge amount you fill in must be consistent with the amount you transfer</li>
-      </ul>
-    </div>
   </div>
 </div>
 
 <!-- RECHARGE ORDER PAGE -->
-<div id="rechargeOrderPage" class="hidden min-h-screen bg-[#0f0f0f]">
+<div id="rechargeOrderPage" class="hidden min-h-screen bg-[#0f0f0f] pb-24">
   <div class="p-6 text-center">
-    <div class="w-16 h-16 mx-auto mb-4 bg-green-500 rounded-full flex items-center justify-center">
-      <span class="text-3xl">T</span>
-    </div>
     <p class="text-gray-400 text-sm">Order Number</p>
     <p class="font-mono text-sm mb-4" id="orderNumber"></p>
-
     <div class="card mb-3">
       <p class="text-gray-400 text-sm">Recharge Amount</p>
-      <div class="flex justify-between items-center">
-        <p class="text-2xl font-bold text-green-400" id="orderAmount">0 USDT</p>
-        <button onclick="copyText('orderAmount')" class="text-yellow-400 text-sm">Copy</button>
-      </div>
+      <p class="text-2xl font-bold text-green-400" id="orderAmount">0 USDT</p>
     </div>
-
     <div class="card mb-3">
       <p class="text-gray-400 text-sm" id="addressLabel">USDT-BEP20 address</p>
-      <div class="flex justify-between items-center">
-        <p class="font-mono text-xs break-all" id="walletAddress"></p>
-        <button onclick="copyText('walletAddress')" class="text-yellow-400 text-sm ml-2">Copy</button>
-      </div>
+      <p class="font-mono text-xs break-all" id="walletAddress"></p>
     </div>
-
-    <div class="card mb-4">
-      <p class="text-gray-400 text-sm mb-2">Scan the QR code or copy the address to recharge</p>
-      <div id="qrCode" class="bg-white p-4 rounded-lg inline-block"></div>
-    </div>
-
     <p class="text-orange-400 text-sm">Valid Time: <span id="timer">01:00:00</span></p>
-    <p class="text-red-500 text-xs mt-2">⚠️ Do not pay after expiration</p>
   </div>
 </div>
 
@@ -162,15 +223,12 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <p class="text-gray-400 text-sm mt-1" id="adminEmail"></p>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
   </div>
-
   <div class="flex gap-2 p-4 overflow-x-auto">
     <button onclick="switchTab('dashboard')" class="tab-btn active" id="tab-dashboard">Dashboard</button>
     <button onclick="switchTab('users')" class="tab-btn" id="tab-users">All Users</button>
     <button onclick="switchTab('recharge')" class="tab-btn" id="tab-recharge">Recharge</button>
     <button onclick="switchTab('withdraw')" class="tab-btn" id="tab-withdraw">Withdraw</button>
-    <button onclick="switchTab('settings')" class="tab-btn" id="tab-settings">Settings</button>
   </div>
-
   <div id="content-dashboard" class="p-4">
     <div class="grid grid-cols-2 gap-3">
       <div class="card"><p class="text-gray-400">Total Users</p><p class="text-2xl font-bold" id="totalUsers">0</p></div>
@@ -179,54 +237,39 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
       <div class="card"><p class="text-gray-400">Pending Requests</p><p class="text-2xl font-bold" id="pendingCount">0</p></div>
     </div>
   </div>
+  <div id="content-users" class="hidden p-4"><div id="allUsers"></div></div>
+  <div id="content-recharge" class="hidden p-4"><div id="pendingRecharges"></div></div>
+  <div id="content-withdraw" class="hidden p-4"><div id="pendingWithdrawals"></div></div>
+</div>
 
-  <div id="content-users" class="hidden p-4">
-    <h3 class="font-bold mb-3">All Members</h3>
-    <div id="allUsers"></div>
-  </div>
-
-  <div id="content-recharge" class="hidden p-4">
-    <h3 class="font-bold mb-3">Pending Recharges</h3>
-    <div id="pendingRecharges"></div>
-  </div>
-
-  <div id="content-withdraw" class="hidden p-4">
-    <h3 class="font-bold mb-3">Pending Withdrawals</h3>
-    <div id="pendingWithdrawals"></div>
-  </div>
-
-  <div id="content-settings" class="hidden p-4">
-    <h3 class="font-bold mb-3">Deposit Addresses</h3>
-    <div class="space-y-4">
-      <div class="card">
-        <p class="font-bold mb-2">USDT-TRC20</p>
-        <input type="text" id="addr-TRC20" class="input mb-2" placeholder="Enter TRC20 Address">
-        <button onclick="saveAddress('USDT-TRC20')" class="btn-green">Save</button>
-      </div>
-      <div class="card">
-        <p class="font-bold mb-2">USDT-BEP20</p>
-        <input type="text" id="addr-BEP20" class="input mb-2" placeholder="Enter BEP20 Address">
-        <button onclick="saveAddress('USDT-BEP20')" class="btn-green">Save</button>
-      </div>
-      <div class="card">
-        <p class="font-bold mb-2">USDT-ERC20</p>
-        <input type="text" id="addr-ERC20" class="input mb-2" placeholder="Enter ERC20 Address">
-        <button onclick="saveAddress('USDT-ERC20')" class="btn-green">Save</button>
-      </div>
-      <div class="card">
-        <p class="font-bold mb-2">USDC-POLYGON</p>
-        <input type="text" id="addr-POLYGON" class="input mb-2" placeholder="Enter Polygon Address">
-        <button onclick="saveAddress('USDC-POLYGON')" class="btn-green">Save</button>
-      </div>
+<!-- Invite Modal -->
+<div id="modal-invite" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+  <div class="card w-full max-w-md">
+    <h3 class="font-bold text-xl mb-3">Invite Friends</h3>
+    <p class="text-gray-400 text-sm mb-3">প্রতি রেফারে পাবে 5 USDT বোনাস</p>
+    <div class="bg-[#2c2c2c] p-3 rounded-lg mb-3">
+      <p class="text-xs text-gray-400 mb-1">তোমার রেফারেল লিংক:</p>
+      <p class="font-mono text-sm break-all" id="inviteLink"></p>
     </div>
+    <button onclick="copyInviteLink()" class="btn-yellow mb-2">Link Copy করো</button>
+    <button onclick="closeModal('invite')" class="btn-outline">Close</button>
   </div>
+</div>
+
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="switchPage('home')"><span class="text-2xl">🏠</span><span>Home</span></div>
+  <div class="nav-item" onclick="switchPage('tasks')"><span class="text-2xl">📝</span><span>Tasks</span></div>
+  <div class="nav-item" onclick="switchPage('joblevel')"><span class="text-2xl">👑</span><span>Job Level</span></div>
+  <div class="nav-item" onclick="switchPage('earnings')"><span class="text-2xl">💰</span><span>Earnings</span></div>
+  <div class="nav-item" onclick="switchPage('my')"><span class="text-2xl">👤</span><span>My</span></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile, sendPasswordResetEmail }
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, increment }
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, increment, arrayUnion, orderBy }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -244,25 +287,24 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const ADMIN_EMAIL = "eliteeiya@gmail.com";
+const REFERRAL_BONUS = 5;
+const WITHDRAW_FEE = 0.10;
 
 let currentUser = null;
 let isLoginMode = false;
 let userData = {};
 let isAdmin = false;
-let allUsersData = [];
 let walletAddresses = {};
-let selectedChannel = 'USDT-BEP20';
+let selectedWithdrawNetwork = '';
 let timerInterval = null;
-const REFERRAL_BONUS = 5; // 5 USDT বোনাস
 
 const vipPackages = [
-  {id: 1, name: "VIP 1", price: 10, daily: 1.5, days: 30},
-  {id: 2, name: "VIP 2", price: 50, daily: 8, days: 30},
-  {id: 3, name: "VIP 3", price: 100, daily: 18, days: 30},
-  {id: 4, name: "VIP 4", price: 500, daily: 100, days: 30}
+  {id: 1, name: "Package 1", price: 10, daily: 0.42, days: 365},
+  {id: 2, name: "Package 2", price: 30, daily: 0.90, days: 365},
+  {id: 3, name: "Package 3", price: 60, daily: 1.80, days: 365},
+  {id: 4, name: "Package 4", price: 120, daily: 3.00, days: 365}
 ];
 
-// URL থেকে রেফারেল কোড ধরো
 const urlParams = new URLSearchParams(window.location.search);
 const refCodeFromURL = urlParams.get('ref');
 if(refCodeFromURL){
@@ -271,174 +313,415 @@ if(refCodeFromURL){
   document.getElementById('refInfo').classList.remove('hidden');
 }
 
-// Load Wallet Addresses from Firebase
-async function loadWalletAddresses() {
-  const docSnap = await getDoc(doc(db, "settings", "wallets"));
-  if(docSnap.exists()) {
-    walletAddresses = docSnap.data();
-  } else {
-    walletAddresses = {
-      'USDT-TRC20': 'Not Set',
-      'USDT-BEP20': 'Not Set',
-      'USDT-ERC20': 'Not Set',
-      'USDC-POLYGON': 'Not Set'
-    };
-    await setDoc(doc(db, "settings", "wallets"), walletAddresses);
-  }
+window.switchPage = function(page) {
+  ['home', 'tasks', 'joblevel', 'earnings', 'my'].forEach(p => {
+    document.getElementById(`page-${p}`).classList.add('hidden');
+    document.querySelectorAll('.nav-item')[['home','tasks','joblevel','earnings','my'].indexOf(p)].classList.remove('active');
+  });
+  document.getElementById(`page-${page}`).classList.remove('hidden');
+  document.querySelectorAll('.nav-item')[['home','tasks','joblevel','earnings','my'].indexOf(page)].classList.add('active');
+
+  if(page === 'tasks') loadTasks();
+  if(page === 'joblevel') loadJobLevel();
+  if(page === 'earnings') loadEarnings();
+  if(page === 'my') { loadMyPage(); loadWithdrawHistory(); }
 }
 
-// Auth State
+window.showModal = function(modalName) {
+  document.getElementById(`modal-${modalName}`).classList.remove('hidden');
+  if(modalName === 'invite') {
+    const link = window.location.origin + '/?ref=' + userData.refCode;
+    document.getElementById('inviteLink').innerText = link;
+  }
+}
+window.closeModal = function(modalName) {
+  document.getElementById(`modal-${modalName}`).classList.add('hidden');
+}
+window.copyInviteLink = function() {
+  navigator.clipboard.writeText(document.getElementById('inviteLink').innerText);
+  alert('রেফারেল লিংক কপি হয়েছে!');
+}
+
+function loadTasks() {
+  const container = document.getElementById('taskContainer');
+  if(!userData.vip) {
+    container.innerHTML = '<p class="text-gray-400 text-center mt-10">তোমার কোনো এক্টিভ প্যাকেজ নেই। Job Level থেকে প্যাকেজ কিনো।</p>';
+    return;
+  }
+  const pkg = vipPackages.find(p => p.id === userData.vip);
+  const taskEarn = (pkg.daily / 3).toFixed(2);
+  const doneTasks = userData.doneTasks || [];
+  const today = new Date().toDateString();
+
+  if(userData.lastTaskDate!== today) {
+    updateDoc(doc(db, "users", currentUser.uid), {doneTasks: [], lastTaskDate: today});
+  }
+
+  let html = `<p class="text-gray-400 mb-3">তোমার প্যাকেজ: ${pkg.name} | প্রতিটা টাস্ক: ${taskEarn} USDT</p>`;
+  for(let i=1; i<=3; i++) {
+    const isDone = doneTasks.includes(i);
+    html += `
+      <div class="task-card ${isDone? 'task-done' : ''}">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-bold">Task ${i} - 5 Star Rating</p>
+            <p class="text-sm text-gray-400">Reward: ${taskEarn} USDT</p>
+          </div>
+          <button onclick="doTask(${i}, ${taskEarn})" class="${isDone? 'btn-gray' : 'btn-green'}" ${isDone? 'disabled' : ''}>
+            ${isDone? 'Done' : 'Start'}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  container.innerHTML = html;
+}
+
+window.doTask = async function(taskNum, reward) {
+  const today = new Date().toDateString();
+  await updateDoc(doc(db, "users", currentUser.uid), {
+    balance: increment(parseFloat(reward)),
+    doneTasks: arrayUnion(taskNum),
+    lastTaskDate: today,
+    todayEarn: increment(parseFloat(reward)),
+    totalEarn: increment(parseFloat(reward))
+  });
+  alert(`Task Complete! ${reward} USDT যোগ হয়েছে`);
+  loadUserData();
+  loadTasks();
+}
+
+function loadJobLevel() {
+  const container = document.getElementById('jobLevelList');
+  container.innerHTML = '';
+  vipPackages.forEach(pkg => {
+    const isActive = userData.vip === pkg.id;
+    container.innerHTML += `
+      <div class="card mb-3">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-bold text-lg">${pkg.name}</p>
+            <p class="text-sm text-gray-400">মূল্য: ${pkg.price} USDT</p>
+            <p class="text-sm text-green-400">দৈনিক আয়: ${pkg.daily} USDT</p>
+            <p class="text-xs text-gray-500">মেয়াদ: ${pkg.days} দিন</p>
+          </div>
+          <button onclick="buyPackage(${pkg.id})" class="${isActive? 'btn-gray' : 'btn-yellow'}" ${isActive? 'disabled' : ''}>
+            ${isActive? 'Active' : 'Buy'}
+          </button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+window.buyPackage = async function(pkgId) {
+  const pkg = vipPackages.find(p => p.id === pkgId);
+  if(userData.balance < pkg.price) {
+    alert('ইনসাফিসিয়েন্ট ব্যালেন্স! আগে রিচার্জ করো');
+    return;
+  }
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + pkg.days);
+  await updateDoc(doc(db, "users", currentUser.uid), {
+    balance: increment(-pkg.price),
+    vip: pkgId,
+    vipExpiry: expiryDate,
+    doneTasks: [],
+    lastTaskDate: ""
+  });
+  alert(`${pkg.name} এক্টিভ হয়েছে!`);
+  loadUserData();
+  switchPage('home');
+}
+
+function loadEarnings() {
+  document.getElementById('todayEarn').innerText = (userData.todayEarn || 0).toFixed(2);
+  document.getElementById('yesterdayEarn').innerText = (userData.yesterdayEarn || 0).toFixed(2);
+  document.getElementById('totalRechargeUser').innerText = (userData.totalRecharge || 0).toFixed(2);
+  document.getElementById('totalWithdrawUser').innerText = (userData.totalWithdraw || 0).toFixed(2);
+}
+
+function loadMyPage() {
+  document.getElementById('myName').innerText = userData.name;
+  document.getElementById('myEmail').innerText = userData.email;
+  document.getElementById('myRefCode2').innerText = userData.refCode;
+  document.getElementById('myBalance').innerText = userData.balance.toFixed(2);
+}
+
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    await loadWalletAddresses();
     const docSnap = await getDoc(doc(db, "users", user.uid));
     if (docSnap.exists()) {
       userData = docSnap.data();
       isAdmin = user.email === ADMIN_EMAIL;
-
       document.getElementById('authSection').classList.add('hidden');
       if(isAdmin) {
         document.getElementById('adminSection').classList.remove('hidden');
         document.getElementById('adminEmail').innerText = user.email;
         loadAdminData();
-        loadSettings();
       } else {
-        document.getElementById('homeSection').classList.remove('hidden');
+        document.getElementById('page-home').classList.remove('hidden');
         loadUserData();
       }
     }
   }
 });
 
-// Load Settings in Admin Panel
-function loadSettings() {
-  document.getElementById('addr-TRC20').value = walletAddresses['USDT-TRC20'] || '';
-  document.getElementById('addr-BEP20').value = walletAddresses['USDT-BEP20'] || '';
-  document.getElementById('addr-ERC20').value = walletAddresses['USDT-ERC20'] || '';
-  document.getElementById('addr-POLYGON').value = walletAddresses['USDC-POLYGON'] || '';
+async function loadUserData() {
+  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
+  if (docSnap.exists()) {
+    userData = docSnap.data();
+    document.getElementById('userName').innerText = userData.name;
+    document.getElementById('balance').innerText = userData.balance.toFixed(2);
+    document.getElementById('myRefCode').innerText = userData.refCode;
+    document.getElementById('myBalance').innerText = userData.balance.toFixed(2);
+    loadVIPPackages();
+  }
 }
 
-// Save Address
-window.saveAddress = async function(channel) {
-  let key = channel.replace('USDT-', '').replace('USDC-', '');
-  let addr = document.getElementById('addr-' + key).value;
-
-  walletAddresses[channel] = addr;
-  await setDoc(doc(db, "settings", "wallets"), walletAddresses);
-  alert(channel + ' address updated!');
-}
-
-// Tab Switch
-window.switchTab = function(tab) {
-  ['dashboard', 'users', 'recharge', 'withdraw', 'settings'].forEach(t => {
-    document.getElementById(`content-${t}`).classList.add('hidden');
-    document.getElementById(`tab-${t}`).classList.remove('active');
-  });
-  document.getElementById(`content-${tab}`).classList.remove('hidden');
-  document.getElementById(`tab-${tab}`).classList.add('active');
-}
-
-// Recharge Page
-window.openRechargePage = function() {
-  document.getElementById('homeSection').classList.add('hidden');
-  document.getElementById('rechargePage').classList.remove('hidden');
-  document.getElementById('rechargeBalance').innerText = userData.balance.toFixed(2) + ' (USDT)';
-  loadChannels();
-}
-
-window.closeRechargePage = function() {
-  document.getElementById('rechargePage').classList.add('hidden');
-  document.getElementById('homeSection').classList.remove('hidden');
-}
-
-function loadChannels() {
-  const channelList = document.getElementById('channelList');
-  channelList.innerHTML = '';
-
-  Object.keys(walletAddresses).forEach((channel, i) => {
-    const isActive = i === 0? 'active' : '';
-    if(i === 0) selectedChannel = channel;
-
-    channelList.innerHTML += `
-      <div class="channel-btn ${isActive}" onclick="selectChannel('${channel}')">
-        <p class="font-bold">${channel}</p>
-        <p class="text-xs text-gray-400">${channel.includes('TRC20')? 'Tron' : channel.includes('BEP20')? 'BSC' : channel.includes('ERC20')? 'Ethereum' : 'Polygon'} Network</p>
+function loadVIPPackages() {
+  const vipList = document.getElementById('vipList');
+  vipList.innerHTML = '';
+  vipPackages.forEach(pkg => {
+    const isActive = userData.vip === pkg.id;
+    vipList.innerHTML += `
+      <div class="card mb-3 ${isActive? 'border-2 border-yellow-400' : ''}">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-bold">${pkg.name}</p>
+            <p class="text-sm text-gray-400">Daily: $${pkg.daily} for ${pkg.days} days</p>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-yellow-400">$${pkg.price}</p>
+            <button onclick="buyPackage(${pkg.id})" class="btn-yellow mt-2" ${isActive? 'disabled' : ''}>
+              ${isActive? 'Active' : 'Buy'}
+            </button>
+          </div>
+        </div>
       </div>
     `;
   });
 }
 
-window.changeAmount = function(val) {
-  let amt = parseFloat(document.getElementById('rechargeAmt').value) + val;
-  if(amt < 0) amt = 0;
-  document.getElementById('rechargeAmt').value = amt.toFixed(2);
+window.handleAuth = async function() {
+  const email = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  const errorMsg = document.getElementById('errorMsg');
+  try {
+    if (isLoginMode) {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      const name = document.getElementById('name').value;
+      const refCode = document.getElementById('refCode').value;
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(userCred.user, { displayName: name });
+      const myRefCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        name: name, email: email, balance: 0, refCode: myRefCode, refBy: refCode || null,
+        vip: null, totalRecharge: 0, totalWithdraw: 0, totalEarn: 0, todayEarn: 0, 
+        yesterdayEarn: 0, doneTasks: [], lastTaskDate: "", withdrawAddress: null, 
+        withdrawNetwork: null, lastWithdrawDate: null, createdAt: new Date()
+      });
+      if(refCode){ await giveReferralBonus(refCode); }
+    }
+    errorMsg.classList.add('hidden');
+  } catch(error) {
+    errorMsg.innerText = error.message;
+    errorMsg.classList.remove('hidden');
+  }
 }
 
-window.selectChannel = function(channel) {
-  selectedChannel = channel;
+async function giveReferralBonus(refCode){
+  try{
+    const q = query(collection(db, "users"), where("refCode", "==", refCode));
+    const querySnapshot = await getDocs(q);
+    if(!querySnapshot.empty){
+      await updateDoc(doc(db, "users", querySnapshot.docs[0].id), { balance: increment(REFERRAL_BONUS) });
+    }
+  } catch(e){ console.log('Referral error:', e); }
+}
+
+window.toggleAuth = function() {
+  isLoginMode =!isLoginMode;
+  document.getElementById('formTitle').innerText = isLoginMode? 'Login' : 'Create Account';
+  document.getElementById('authBtn').innerText = isLoginMode? 'Login' : 'Register';
+  document.getElementById('switchBtn').innerText = isLoginMode? 'Create account' : 'Already have account? Login';
+  document.getElementById('name').style.display = isLoginMode? 'none' : 'block';
+  document.getElementById('refCode').style.display = isLoginMode? 'none' : 'block';
+}
+
+window.logout = async function() {
+  await signOut(auth);
+  location.reload();
+}
+
+// Withdraw Functions
+window.openWithdrawPage = function() {
+  const now = new Date();
+  const ukTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/London"}));
+  const hour = ukTime.getHours();
+  
+  if(hour < 9 || hour >= 17) {
+    alert('Withdraw time: UK 09:00 - 17:00 only');
+    return;
+  }
+  
+  if(userData.lastWithdrawDate === new Date().toDateString()) {
+    alert('তুমি আজকে একবার withdraw করে ফেলেছো');
+    return;
+  }
+  
+  document.getElementById('withdrawPage').classList.remove('hidden');
+  document.getElementById('withdrawBalance').innerText = userData.balance.toFixed(2);
+  
+  if(userData.withdrawAddress) {
+    document.getElementById('addressSection').classList.remove('hidden');
+    document.getElementById('withdrawAddress').value = userData.withdrawAddress;
+    document.getElementById('withdrawAddress').readOnly = true;
+    selectedWithdrawNetwork = userData.withdrawNetwork;
+    document.getElementById(`net-${selectedWithdrawNetwork.split('-')[1]}`).classList.add('active');
+  }
+}
+
+window.closeWithdrawPage = function() {
+  document.getElementById('withdrawPage').classList.add('hidden');
+}
+
+window.selectWithdrawNetwork = function(network) {
+  selectedWithdrawNetwork = network;
   document.querySelectorAll('.channel-btn').forEach(btn => btn.classList.remove('active'));
-  event.currentTarget.classList.add('active');
+  document.getElementById(`net-${network.split('-')[1]}`).classList.add('active');
+  
+  if(!userData.withdrawAddress) {
+   document.getElementById('addressSection').classList.remove('hidden');
+  document.getElementById('withdrawAddress').readOnly = false;
 }
 
-window.createRechargeOrder = async function() {
-  const amt = parseFloat(document.getElementById('rechargeAmt').value);
-  if(amt < 10) {
-    alert('Minimum recharge is 10 USDT');
+window.calcReceive = function() {
+  const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+  const fee = amount * WITHDRAW_FEE;
+  const receive = amount - fee;
+  document.getElementById('receiveAmount').innerText = receive.toFixed(2);
+}
+
+window.submitWithdraw = async function() {
+  if(!selectedWithdrawNetwork) {
+    alert('Network সিলেক্ট করো');
     return;
   }
 
-  if(walletAddresses[selectedChannel] === 'Not Set') {
-    alert('This payment method is currently unavailable');
+  const address = document.getElementById('withdrawAddress').value.trim();
+  if(!address) {
+    alert('Wallet address দাও');
     return;
   }
 
-  const orderNum = 'ORD' + Date.now();
+  const amount = parseFloat(document.getElementById('withdrawAmount').value);
+  if(!amount || amount < 10) {
+    alert('Minimum withdraw 10 USDT');
+    return;
+  }
 
-  await addDoc(collection(db, "recharges"), {
-    uid: currentUser.uid,
-    amount: amt,
-    channel: selectedChannel,
-    address: walletAddresses[selectedChannel],
-    orderNumber: orderNum,
-    status: 'pending',
-    createdAt: new Date()
+  if(amount > userData.balance) {
+    alert('ইনসাফিসিয়েন্ট ব্যালেন্স');
+    return;
+  }
+
+  const fee = amount * WITHDRAW_FEE;
+  const receiveAmount = amount - fee;
+
+  try {
+    // প্রথমবার হলে অ্যাড্রেস সেভ করো
+    if(!userData.withdrawAddress) {
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        withdrawAddress: address,
+        withdrawNetwork: selectedWithdrawNetwork
+      });
+    }
+
+    // Withdraw রিকুয়েস্ট তৈরি করো
+    await addDoc(collection(db, "withdrawals"), {
+      uid: currentUser.uid,
+      email: userData.email,
+      name: userData.name,
+      amount: amount,
+      fee: fee,
+      receiveAmount: receiveAmount,
+      network: selectedWithdrawNetwork,
+      address: address,
+      status: 'pending',
+      createdAt: new Date()
+    });
+
+    // ব্যালেন্স থেকে কেটে নাও
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      balance: increment(-amount),
+      totalWithdraw: increment(amount),
+      lastWithdrawDate: new Date().toDateString()
+    });
+
+    alert('Withdraw রিকুয়েস্ট সাবমিট হয়েছে! 1-24 ঘন্টার মধ্যে পেয়ে যাবে');
+    closeWithdrawPage();
+    loadUserData();
+
+  } catch(error) {
+    alert('Error: ' + error.message);
+  }
+}
+
+async function loadWithdrawHistory() {
+  const q = query(collection(db, "withdrawals"), where("uid", "==", currentUser.uid), orderBy("createdAt", "desc"));
+  const querySnapshot = await getDocs(q);
+
+  const container = document.getElementById('withdrawHistory');
+  if(querySnapshot.empty) {
+    container.innerHTML = '<p class="text-gray-400 text-center">কোনো withdraw history নেই</p>';
+    return;
+  }
+
+  let html = '';
+  querySnapshot.forEach(doc => {
+    const data = doc.data();
+    const date = new Date(data.createdAt.seconds * 1000).toLocaleString();
+    const statusColor = data.status === 'success'? 'text-green-400' : data.status === 'pending'? 'text-yellow-400' : 'text-red-400';
+
+    html += `
+      <div class="card mb-2">
+        <div class="flex justify-between items-start">
+          <div>
+            <p class="font-bold">$${data.amount} USDT</p>
+            <p class="text-xs text-gray-400">${data.network}</p>
+            <p class="text-xs text-gray-500 break-all">${data.address}</p>
+            <p class="text-xs text-gray-500">${date}</p>
+          </div>
+          <div class="text-right">
+            <p class="text-sm ${statusColor} font-bold">${data.status.toUpperCase()}</p>
+            <p class="text-xs text-gray-400">Fee: $${data.fee.toFixed(2)}</p>
+            <p class="text-xs text-green-400">Receive: $${data.receiveAmount.toFixed(2)}</p>
+          </div>
+        </div>
+      </div>
+    `;
   });
-
-  document.getElementById('rechargePage').classList.add('hidden');
-  document.getElementById('rechargeOrderPage').classList.remove('hidden');
-
-  document.getElementById('orderNumber').innerText = orderNum;
-  document.getElementById('orderAmount').innerText = amt + ' USDT';
-  document.getElementById('addressLabel').innerText = selectedChannel + ' address';
-  document.getElementById('walletAddress').innerText = walletAddresses[selectedChannel];
-
-  document.getElementById('qrCode').innerHTML = '<div class="w-48 h-48 bg-gray-200 flex items-center justify-center text-black">QR CODE</div>';
-
-  startTimer(3600);
+  container.innerHTML = html;
 }
 
-function startTimer(seconds) {
-  clearInterval(timerInterval);
-  let time = seconds;
-  timerInterval = setInterval(() => {
-    const h = Math.floor(time / 3600);
-    const m = Math.floor((time % 3600) / 60);
-    const s = time % 60;
-    document.getElementById('timer').innerText =
-      String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    time--;
-    if(time < 0) clearInterval(timerInterval);
-  }, 1000);
+// Admin Withdraw Approve Function
+window.approveWithdraw = async function(id, amount, uid) {
+  try {
+    await updateDoc(doc(db, "withdrawals", id), {
+      status: 'success',
+      approvedAt: new Date()
+    });
+    alert('Withdraw Approved!');
+    loadAdminData();
+  } catch(error) {
+    alert('Error: ' + error.message);
+  }
 }
 
-window.copyText = function(id) {
-  const text = document.getElementById(id).innerText;
-  navigator.clipboard.writeText(text);
-  alert('Copied!');
-}
-
-// Admin Functions
+// Admin Panel এর loadAdminData ফাংশনের ভিতরে withdraw অংশটা আপডেট করো
 async function loadAdminData() {
   const usersSnap = await getDocs(collection(db, "users"));
   allUsersData = [];
@@ -462,216 +745,48 @@ async function loadAdminData() {
           <p class="font-bold">${user?.name || 'Unknown'}</p>
           <p class="text-sm text-gray-400">${user?.email}</p>
           <p>Amount: ${data.amount} USDT</p>
-          <p>Channel: ${data.channel}</p>
-          <p class="text-xs font-mono break-all">Address: ${data.address}</p>
-          <p class="text-xs text-gray-500">${new Date(data.createdAt?.seconds*1000).toLocaleString()}</p>
           <button onclick="approveRecharge('${doc.id}', ${data.amount}, '${data.uid}')" class="btn-green mt-2">Approve</button>
         </div>
       `;
     }
   });
   document.getElementById('totalRecharge').innerText = '$' + totalRecharge;
-  document.getElementById('pendingCount').innerText = pendingRecharge;
-}
 
-window.approveRecharge = async function(id, amount, uid) {
-  const userRef = doc(db, "users", uid);
-  const userSnap = await getDoc(userRef);
-  const userBal = userSnap.data().balance || 0;
-  const totalRecharge = userSnap.data().totalRecharge || 0;
-
-  await updateDoc(userRef, {
-    balance: userBal + amount,
-    totalRecharge: totalRecharge + amount
-  });
-  await updateDoc(doc(db, "recharges", id), { status: 'approved' });
-  alert('Recharge Approved!');
-  loadAdminData();
-}
-
-function loadAllUsers() {
-  const usersDiv = document.getElementById('allUsers');
-  usersDiv.innerHTML = '';
-
-  allUsersData.forEach(user => {
-    const referralCount = allUsersData.filter(u => u.refBy === user.refCode).length;
-    const pkg = user.vip? vipPackages.find(p => p.id === user.vip) : null;
-
-    usersDiv.innerHTML += `
-      <div class="card mb-3">
-        <div class="flex justify-between items-start">
-          <div>
-            <p class="font-bold text-lg">${user.name}</p>
-            <p class="text-sm text-gray-400">${user.email}</p>
-          </div>
-          <p class="text-yellow-400 font-bold">$${user.balance?.toFixed(2) || 0}</p>
+  // Withdraw অংশ
+  const withdrawSnap = await getDocs(collection(db, "withdrawals"));
+  let totalWithdraw = 0;
+  let pendingWithdraw = 0;
+  const withdrawDiv = document.getElementById('pendingWithdrawals');
+  withdrawDiv.innerHTML = '';
+  withdrawSnap.forEach(doc => {
+    const data = doc.data();
+    if(data.status === 'success') totalWithdraw += data.amount;
+    if(data.status === 'pending') {
+      pendingWithdraw++;
+      withdrawDiv.innerHTML += `
+        <div class="card mb-2">
+          <p class="font-bold">${data.name}</p>
+          <p class="text-sm text-gray-400">${data.email}</p>
+          <p>Amount: ${data.amount} USDT</p>
+          <p>Network: ${data.network}</p>
+          <p class="text-xs break-all">Address: ${data.address}</p>
+          <p class="text-xs text-gray-500">${new Date(data.createdAt?.seconds*1000).toLocaleString()}</p>
+          <button onclick="approveWithdraw('${doc.id}', ${data.amount}, '${data.uid}')" class="btn-green mt-2">Approve</button>
         </div>
-        <div class="grid grid-cols-2 gap-2 mt-3 text-sm">
-          <div class="bg-[#2c2c2c] p-2 rounded">
-            <p class="text-gray-400">VIP Package</p>
-            <p class="font-bold">${pkg? pkg.name : 'None'}</p>
-          </div>
-          <div class="bg-[#2c2c2c] p-2 rounded">
-            <p class="text-gray-400">Referrals</p>
-            <p class="font-bold">${referralCount}</p>
-          </div>
-          <div class="bg-[#2c2c2c] p-2 rounded">
-            <p class="text-gray-400">Total Recharge</p>
-            <p class="font-bold">$${user.totalRecharge || 0}</p>
-          </div>
-          <div class="bg-[#2c2c2c] p-2 rounded">
-            <p class="text-gray-400">Total Withdraw</p>
-            <p class="font-bold">$${user.totalWithdraw || 0}</p>
-          </div>
-        </div>
-        <p class="text-xs text-gray-500 mt-2">Ref Code: ${user.refCode}</p>
-        <button onclick="resetPassword('${user.email}')" class="btn-outline mt-3 text-yellow-400 border-yellow-400">
-          🔑 Password Reset Link Send
-        </button>
-      </div>
-    `;
-  });
-}
-
-window.resetPassword = async function(email) {
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert(email + ' এ পাসওয়ার্ড রিসেট লিংক পাঠানো হয়েছে!');
-  } catch(error) {
-    alert('Error: ' + error.message);
-  }
-}
-
-window.toggleAuth = function() {
-  isLoginMode =!isLoginMode;
-  document.getElementById('formTitle').innerText = isLoginMode? 'Login' : 'Create Account';
-  document.getElementById('authBtn').innerText = isLoginMode? 'Login' : 'Register';
-  document.getElementById('switchBtn').innerText = isLoginMode? 'Create account' : 'Already have account? Login';
-  document.getElementById('name').style.display = isLoginMode? 'none' : 'block';
-  document.getElementById('refCode').style.display = isLoginMode? 'none' : 'block';
-}
-
-window.handleAuth = async function() {
-  const email = document.getElementById('email').value;
-  const pass = document.getElementById('password').value;
-  const errorMsg = document.getElementById('errorMsg');
-
-  try {
-    if (isLoginMode) {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } else {
-      const name = document.getElementById('name').value;
-      const refCode = document.getElementById('refCode').value;
-      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-      await updateProfile(userCred.user, { displayName: name });
-
-      const myRefCode = Math.random().toString(36).substr(2, 8).toUpperCase();
-
-      await setDoc(doc(db, "users", userCred.user.uid), {
-        name: name,
-        email: email,
-        balance: 0,
-        refCode: myRefCode,
-        refBy: refCode || null,
-        vip: null,
-        totalRecharge: 0,
-        totalWithdraw: 0,
-        createdAt: new Date()
-      });
-
-      // রেফারেল বোনাস দাও
-      if(refCode){
-        await giveReferralBonus(refCode);
-      }
+      `;
     }
-    errorMsg.classList.add('hidden');
-  } catch(error) {
-    errorMsg.innerText = error.message;
-    errorMsg.classList.remove('hidden');
-  }
-}
-
-// রেফারেল বোনাস দেওয়ার ফাংশন
-async function giveReferralBonus(refCode){
-  try{
-    // refCode দিয়ে ইউজার খুঁজো
-    const q = query(collection(db, "users"), where("refCode", "==", refCode));
-    const querySnapshot = await getDocs(q);
-
-    if(!querySnapshot.empty){
-      const referrerDoc = querySnapshot.docs[0];
-      const referrerRef = doc(db, "users", referrerDoc.id);
-
-      await updateDoc(referrerRef, {
-        balance: increment(REFERRAL_BONUS)
-      });
-
-      console.log(`Referral bonus ${REFERRAL_BONUS} USDT দেওয়া হলো ${refCode} কে`);
-    }
-  } catch(e){
-    console.log('Referral error:', e);
-  }
-}
-
-async function loadUserData() {
-  const docSnap = await getDoc(doc(db, "users", currentUser.uid));
-  if (docSnap.exists()) {
-    userData = docSnap.data();
-    document.getElementById('userName').innerText = userData.name;
-    document.getElementById('balance').innerText = userData.balance.toFixed(2);
-    document.getElementById('myRefCode').innerText = userData.refCode;
-    loadVIPPackages();
-  }
-}
-
-function loadVIPPackages() {
-  const vipList = document.getElementById('vipList');
-  vipList.innerHTML = '';
-  vipPackages.forEach(pkg => {
-    const isActive = userData.vip === pkg.id;
-    vipList.innerHTML += `
-      <div class="card mb-3 ${isActive? 'border-2 border-yellow-400' : ''}">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-bold">${pkg.name}</p>
-            <p class="text-sm text-gray-400">Daily: $${pkg.daily} for ${pkg.days} days</p>
-          </div>
-          <div class="text-right">
-            <p class="font-bold text-yellow-400">$${pkg.price}</p>
-            <button onclick="buyVIP(${pkg.id})" class="btn-yellow mt-2" ${isActive? 'disabled' : ''}>
-              ${isActive? 'Active' : 'Buy'}
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
   });
+  document.getElementById('totalWithdraw').innerText = '$' + totalWithdraw;
+  document.getElementById('pendingCount').innerText = pendingRecharge + pendingWithdraw;
 }
 
-window.buyVIP = async function(pkgId) {
-  const pkg = vipPackages.find(p => p.id === pkgId);
-  if(userData.balance < pkg.price) {
-    alert('Insufficient balance!');
-    return;
-  }
-
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + pkg.days);
-
-  await updateDoc(doc(db, "users", currentUser.uid), {
-    balance: userData.balance - pkg.price,
-    vip: pkgId,
-    vipExpiry: expiryDate
-  });
-
-  alert('VIP Package Activated!');
-  loadUserData();
-}
-
-window.logout = async function() {
-  await signOut(auth);
-  location.reload();
+window.saveAddress = async function(channel) {
+  let key = channel.replace('USDT-', '').replace('USDC-', '');
+  let addr = document.getElementById('addr-' + key).value;
+  walletAddresses[channel] = addr;
+  await setDoc(doc(db, "settings", "wallets"), walletAddresses);
+  alert(channel + ' address updated!');
 }
 </script>
 </body>
-          </html>
+</html> 
