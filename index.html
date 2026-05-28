@@ -62,6 +62,28 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
       <button onclick="openWithdrawPage()" class="bg-white text-black font-bold py-2 rounded-lg">Withdraw</button>
     </div>
   </div>
+
+  <!-- AgroFarm Live Video Section -->
+  <div class="px-4 mb-4">
+    <h3 class="font-bold mb-3">AgroFarm Live Operations</h3>
+    <div class="relative rounded-xl overflow-hidden pointer-events-none select-none">
+      <video
+        src="https://cdn.pixabay.com/video/2023/02/15/151476-799027048_large.mp4"
+        autoplay
+        loop
+        muted
+        playsinline
+        class="w-full h-48 object-cover"
+      ></video>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+        <div>
+          <p class="text-white font-bold text-lg">Premium Smart Farming</p>
+          <p class="text-gray-300 text-sm">24/7 Live • Automated Systems</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="grid grid-cols-4 gap-3 px-4 mb-4">
     <div onclick="switchPage('joblevel')" class="card text-center cursor-pointer">
       <div class="text-2xl">👑</div><p class="text-xs mt-1">VIP</p>
@@ -97,6 +119,56 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 <!-- EARNINGS SECTION -->
 <div id="page-earnings" class="hidden pb-24 p-4">
   <h2 class="text-2xl font-bold mb-4">Earnings</h2>
+
+  <!-- Package Income Table -->
+  <h3 class="font-semibold mb-2 text-green-400">📊 Package Income Plan</h3>
+  <div class="card mb-4 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-800">
+        <tr>
+          <th class="p-2 text-left">Package</th>
+          <th class="p-2 text-center">Price</th>
+          <th class="p-2 text-center">Daily</th>
+          <th class="p-2 text-center">Total</th>
+          <th class="p-2 text-center">Days</th>
+        </tr>
+      </thead>
+      <tbody id="packageTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Referral & Task Commission Table -->
+  <h3 class="font-semibold mb-2 text-blue-400">👥 Referral & Task Commission</h3>
+  <div class="card mb-4">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-800">
+        <tr>
+          <th class="p-2 text-left">Level</th>
+          <th class="p-2 text-center">Referral Bonus</th>
+          <th class="p-2 text-center">Task Bonus</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="border-t border-gray-800">
+          <td class="p-2 font-bold">Level A</td>
+          <td class="p-2 text-center text-green-400 font-bold">10%</td>
+          <td class="p-2 text-center text-green-400 font-bold">3%</td>
+        </tr>
+        <tr class="border-t border-gray-800">
+          <td class="p-2 font-bold">Level B</td>
+          <td class="p-2 text-center text-green-400 font-bold">4%</td>
+          <td class="p-2 text-center text-green-400 font-bold">2%</td>
+        </tr>
+        <tr class="border-t border-gray-800">
+          <td class="p-2 font-bold">Level C</td>
+          <td class="p-2 text-center text-green-400 font-bold">1%</td>
+          <td class="p-2 text-center text-green-400 font-bold">1%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="p-3 text-xs text-gray-400">Note: You only receive bonus from your current level</p>
+  </div>
+
   <div class="grid grid-cols-2 gap-3 mb-4">
     <div class="card"><p class="text-gray-400 text-sm">আজকের আয়</p><p class="text-2xl font-bold text-green-400">$<span id="todayEarn">0.00</span></p></div>
     <div class="card"><p class="text-gray-400 text-sm">গতকালের আয়</p><p class="text-2xl font-bold">$<span id="yesterdayEarn">0.00</span></p></div>
@@ -117,6 +189,29 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
       </div>
     </div>
   </div>
+
+  <!-- Company Profile Section -->
+  <div class="bg-gradient-to-br from-[#1c1c1c] to-[#2a2a2a] p-5 rounded-xl mb-4 border-gray-800">
+    <h3 class="text-2xl font-bold text-green-400">AgroFarm International Ltd.</h3>
+    <p class="text-sm text-gray-400 mt-1">Established: 2018 | Dubai, UAE</p>
+    <div class="mt-4 space-y-2 text-sm">
+      <p>🌍 Multinational agricultural technology company</p>
+      <p>🚜 Specialized in automated farming & hydroponics</p>
+      <p>📈 Operating in 15+ countries worldwide</p>
+      <p>💼 50,000+ active investors globally</p>
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <h3 class="font-bold mb-3 text-yellow-400">📜 Certificates & Licenses</h3>
+    <img src="https://img.freepik.com/free-vector/certificate-template_23-2148809170.jpg" alt="Certificate" class="rounded-lg mb-3 w-full" />
+    <div class="space-y-1 text-xs text-gray-400">
+      <p>• ISO 9001:2015 Quality Management Certified</p>
+      <p>• UAE Agricultural License #AG-77821</p>
+      <p>• International Organic Farming Certificate</p>
+    </div>
+  </div>
+
   <div class="card mb-4">
     <p class="text-gray-400 text-sm">ব্যালেন্স</p>
     <p class="text-3xl font-bold">$<span id="myBalance">0.00</span></p>
@@ -161,16 +256,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mb-2" oninput="calcReceive()">
     <p class="text-sm text-gray-400 mb-3">You will receive: <span id="receiveAmount" class="text-green-400 font-bold">0.00</span> USDT</p>
     <button onclick="submitWithdraw()" class="btn-yellow" id="withdrawBtn">Submit Withdraw</button>
-    <div class="bg-orange-900/30 border-orange-600 rounded-lg p-3 mt-4">
-      <p class="font-bold text-orange-400 text-sm mb-1">⚠️ Notice</p>
-      <ul class="text-xs text-gray-300 space-y-1">
-        <li>1. Min withdraw: 10 USDT</li>
-        <li>2. Fee: 10%</li>
-        <li>3. Time: UK 09:00 - 17:00 only</li>
-        <li>4. Processing: 1-24 hours</li>
-        <li>5. Only 1 withdraw per day</li>
-      </ul>
-    </div>
   </div>
 </div>
 
@@ -242,7 +327,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 <div id="modal-invite" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
   <div class="card w-full max-w-md">
     <h3 class="font-bold text-xl mb-3">Invite Friends</h3>
-    <p class="text-gray-400 text-sm mb-3">প্রতি রেফারে পাবে 5 USDT বোনাস</p>
+    <p class="text-gray-400 text-sm mb-3">Referral Bonus: 10% Level A, 4% Level B, 1% Level C</p>
     <div class="bg-[#2c2c2c] p-3 rounded-lg mb-3">
       <p class="text-xs text-gray-400 mb-1">তোমার রেফারেল লিংক:</p>
       <p class="font-mono text-sm break-all" id="inviteLink"></p>
@@ -252,7 +337,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
   </div>
 </div>
 
-<!-- Dummy modals -->
 <div id="modal-spin" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
   <div class="card w-full max-w-md">
     <h3 class="font-bold text-xl mb-3">Spin Coming Soon</h3>
@@ -260,7 +344,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
   </div>
 </div>
 
-<!-- Bottom Navigation - Hidden by default -->
+<!-- Bottom Navigation -->
 <div class="bottom-nav hidden" id="bottomNav">
   <div class="nav-item active" onclick="switchPage('home')">
     <span class="text-2xl">🏠</span>
@@ -306,7 +390,6 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 
 const ADMIN_EMAIL = "eliteeiya@gmail.com";
-const REFERRAL_BONUS = 5;
 const WITHDRAW_FEE = 0.10;
 
 let currentUser = null;
@@ -318,11 +401,17 @@ let selectedWithdrawNetwork = '';
 let timerInterval = null;
 
 const vipPackages = [
-  {id: 1, name: "Package 1", price: 10, daily: 0.42, days: 365},
-  {id: 2, name: "Package 2", price: 30, daily: 0.90, days: 365},
-  {id: 3, name: "Package 3", price: 60, daily: 1.80, days: 365},
-  {id: 4, name: "Package 4", price: 120, daily: 3.00, days: 365}
+  {id: 1, name: "Package 1", price: 10, daily: 0.42, days: 365, level: "A"},
+  {id: 2, name: "Package 2", price: 30, daily: 0.90, days: 365, level: "B"},
+  {id: 3, name: "Package 3", price: 60, daily: 1.80, days: 365, level: "C"},
+  {id: 4, name: "Package 4", price: 120, daily: 3.00, days: 365, level: "D"}
 ];
+
+const referralRates = {
+  A: { referral: 0.10, task: 0.03 },
+  B: { referral: 0.04, task: 0.02 },
+  C: { referral: 0.01, task: 0.01 }
+};
 
 const urlParams = new URLSearchParams(window.location.search);
 const refCodeFromURL = urlParams.get('ref');
@@ -335,10 +424,16 @@ if(refCodeFromURL){
 window.switchPage = function(page) {
   ['home', 'tasks', 'joblevel', 'earnings', 'my'].forEach(p => {
     document.getElementById(`page-${p}`).classList.add('hidden');
-    document.querySelectorAll('.nav-item')[['home','tasks','joblevel','earnings','my'].indexOf(p)].classList.remove('active');
+    const navIndex = ['home','tasks','joblevel','earnings','my'].indexOf(p);
+    if(document.querySelectorAll('.nav-item')[navIndex]) {
+      document.querySelectorAll('.nav-item')[navIndex].classList.remove('active');
+    }
   });
   document.getElementById(`page-${page}`).classList.remove('hidden');
-  document.querySelectorAll('.nav-item')[['home','tasks','joblevel','earnings','my'].indexOf(page)].classList.add('active');
+  const activeIndex = ['home','tasks','joblevel','earnings','my'].indexOf(page);
+  if(document.querySelectorAll('.nav-item')[activeIndex]) {
+    document.querySelectorAll('.nav-item')[activeIndex].classList.add('active');
+  }
 
   if(page === 'tasks') loadTasks();
   if(page === 'joblevel') loadJobLevel();
@@ -368,15 +463,16 @@ function loadTasks() {
     return;
   }
   const pkg = vipPackages.find(p => p.id === userData.vip);
-  const taskEarn = (pkg.daily / 3).toFixed(2);
+  const rates = referralRates[pkg.level] || referralRates.A;
+  const taskEarn = (pkg.daily * rates.task).toFixed(2);
   const doneTasks = userData.doneTasks || [];
   const today = new Date().toDateString();
 
   if(userData.lastTaskDate!== today) {
-    updateDoc(doc(db, "users", currentUser.uid), {doneTasks: [], lastTaskDate: today});
+    updateDoc(doc(db, "users", currentUser.uid), {doneTasks: [], lastTaskDate: today, todayEarn: 0});
   }
 
-  let html = `<p class="text-gray-400 mb-3">তোমার প্যাকেজ: ${pkg.name} | প্রতিটা টাস্ক: ${taskEarn} USDT</p>`;
+  let html = `<p class="text-gray-400 mb-3">তোমার প্যাকেজ: ${pkg.name} | Level: ${pkg.level} | প্রতিটা টাস্ক: ${taskEarn} USDT (${rates.task*100}%)</p>`;
   for(let i=1; i<=3; i++) {
     const isDone = doneTasks.includes(i);
     html += `
@@ -416,10 +512,10 @@ function loadJobLevel() {
   vipPackages.forEach(pkg => {
     const isActive = userData.vip === pkg.id;
     container.innerHTML += `
-      <div class="card mb-3">
+      <div class="card mb-3 border-l-4 border-yellow-400">
         <div class="flex justify-between items-center">
           <div>
-            <p class="font-bold text-lg">${pkg.name}</p>
+            <p class="font-bold text-lg">Level ${pkg.level} - ${pkg.name}</p>
             <p class="text-sm text-gray-400">মূল্য: ${pkg.price} USDT</p>
             <p class="text-sm text-green-400">দৈনিক আয়: ${pkg.daily} USDT</p>
             <p class="text-xs text-gray-500">মেয়াদ: ${pkg.days} দিন</p>
@@ -444,9 +540,11 @@ window.buyPackage = async function(pkgId) {
   await updateDoc(doc(db, "users", currentUser.uid), {
     balance: increment(-pkg.price),
     vip: pkgId,
+    level: pkg.level,
     vipExpiry: expiryDate,
     doneTasks: [],
-    lastTaskDate: ""
+    lastTaskDate: "",
+    todayEarn: 0
   });
   alert(`${pkg.name} এক্টিভ হয়েছে!`);
   loadUserData();
@@ -458,6 +556,21 @@ function loadEarnings() {
   document.getElementById('yesterdayEarn').innerText = (userData.yesterdayEarn || 0).toFixed(2);
   document.getElementById('totalRechargeUser').innerText = (userData.totalRecharge || 0).toFixed(2);
   document.getElementById('totalWithdrawUser').innerText = (userData.totalWithdraw || 0).toFixed(2);
+
+        // Load package table
+  const packageTable = document.getElementById('packageTable');
+  packageTable.innerHTML = '';
+  vipPackages.forEach(pkg => {
+    packageTable.innerHTML += `
+      <tr class="border-t border-gray-800">
+        <td class="p-2">${pkg.name}</td>
+        <td class="p-2 text-center">$${pkg.price}</td>
+        <td class="p-2 text-center text-green-400">$${pkg.daily}</td>
+        <td class="p-2 text-center text-yellow-400">$${(pkg.daily * pkg.days).toFixed(2)}</td>
+        <td class="p-2 text-center">${pkg.days}</td>
+      </tr>
+    `;
+  });
 }
 
 function loadMyPage() {
@@ -514,6 +627,7 @@ function loadVIPPackages() {
           <div>
             <p class="font-bold">${pkg.name}</p>
             <p class="text-sm text-gray-400">Daily: $${pkg.daily} for ${pkg.days} days</p>
+            <p class="text-xs text-green-400">Level ${pkg.level}</p>
           </div>
           <div class="text-right">
             <p class="font-bold text-yellow-400">$${pkg.price}</p>
@@ -542,7 +656,7 @@ window.handleAuth = async function() {
       const myRefCode = Math.random().toString(36).substr(2, 8).toUpperCase();
       await setDoc(doc(db, "users", userCred.user.uid), {
         name: name, email: email, balance: 0, refCode: myRefCode, refBy: refCode || null,
-        vip: null, totalRecharge: 0, totalWithdraw: 0, totalEarn: 0, todayEarn: 0,
+        vip: null, level: "A", totalRecharge: 0, totalWithdraw: 0, totalEarn: 0, todayEarn: 0,
         yesterdayEarn: 0, doneTasks: [], lastTaskDate: "", withdrawAddress: null,
         withdrawNetwork: null, lastWithdrawDate: null, createdAt: new Date()
       });
@@ -560,7 +674,12 @@ async function giveReferralBonus(refCode){
     const q = query(collection(db, "users"), where("refCode", "==", refCode));
     const querySnapshot = await getDocs(q);
     if(!querySnapshot.empty){
-      await updateDoc(doc(db, "users", querySnapshot.docs[0].id), { balance: increment(REFERRAL_BONUS) });
+      const referrer = querySnapshot.docs[0];
+      const referrerData = referrer.data();
+      const referrerLevel = referrerData.level || "A";
+      const rate = referralRates[referrerLevel]?.referral || 0;
+      const bonus = 10 * rate; // 10 USDT ধরে হিসাব, তুমি চাইলে রিচার্জ এমাউন্ট দিয়ে গুণ করতে পারো
+      await updateDoc(doc(db, "users", referrer.id), { balance: increment(bonus) });
     }
   } catch(e){ console.log('Referral error:', e); }
 }
@@ -607,7 +726,7 @@ window.createRechargeOrder = async function() {
   });
   document.getElementById('rechargePage').classList.add('hidden');
   document.getElementById('rechargeOrderPage').classList.remove('hidden');
-    document.getElementById('orderNumber').innerText = orderNum;
+  document.getElementById('orderNumber').innerText = orderNum;
   document.getElementById('orderAmount').innerText = amt + ' USDT';
   startTimer(3600);
 }
@@ -884,16 +1003,16 @@ function loadAllUsers() {
             <p class="font-bold">${pkg? pkg.name : 'None'}</p>
           </div>
           <div class="bg-[#2c2c2c] p-2 rounded">
+            <p class="text-gray-400">Level</p>
+            <p class="font-bold">${user.level || 'A'}</p>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded">
             <p class="text-gray-400">Referrals</p>
             <p class="font-bold">${referralCount}</p>
           </div>
           <div class="bg-[#2c2c2c] p-2 rounded">
             <p class="text-gray-400">Total Recharge</p>
             <p class="font-bold">$${user.totalRecharge || 0}</p>
-          </div>
-          <div class="bg-[#2c2c2c] p-2 rounded">
-            <p class="text-gray-400">Total Withdraw</p>
-            <p class="font-bold">$${user.totalWithdraw || 0}</p>
           </div>
         </div>
         <p class="text-xs text-gray-500 mt-2">Ref Code: ${user.refCode}</p>
@@ -912,4 +1031,4 @@ window.switchTab = function(tab) {
 }
 </script>
 </body>
-</html>
+</html>  
