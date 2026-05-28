@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AgriCare Clone</title>
+<title>AgroFarm</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
@@ -18,12 +18,16 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 .tab-btn.active { background: #facc15; color: black; font-weight: 700; }
 .channel-btn { border: 1px solid #444; padding: 10px; border-radius: 10px; text-align: left; cursor: pointer; }
 .channel-btn.active { border: 2px solid #facc15; background: #2c2c2c; }
-.info { color: #34d399; font-size: 13px; margin-bottom: 8px; }
 .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; cursor: pointer; }
 .nav-item.active { color: #facc15; }
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1c; border-top: 1px solid #2c2c2c; display: flex; justify-content: space-around; padding: 8px 0; z-index: 40; }
 .task-card { background: #1c1c1c; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #2c2c2c; }
 .task-done { opacity: 0.5; }
+.slideshow { animation: fade 12s infinite; }
+@keyframes fade {
+ 0%, 33% { opacity: 1; }
+ 34%, 100% { opacity: 0; }
+}
 </style>
 </head>
 <body>
@@ -34,7 +38,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     <div class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-green-400 to-blue-600 flex items-center justify-center text-2xl font-bold text-black">AC</div>
     <h1 class="text-3xl font-bold mt-4" id="formTitle">Create Account</h1>
   </div>
-  <div id="refInfo" class="info hidden"></div>
+  <div id="refInfo" class="text-green-400 text-sm mb-2 hidden"></div>
   <input type="text" id="name" placeholder="Full Name" class="input mb-3">
   <input type="email" id="email" placeholder="Email" class="input mb-3">
   <input type="password" id="password" placeholder="Password" class="input mb-3">
@@ -54,6 +58,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     </div>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm">Logout</button>
   </div>
+
   <div class="card m-4 bg-gradient-to-r from-green-500 to-blue-600">
     <p class="text-sm opacity-80">Total Balance</p>
     <p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
@@ -63,7 +68,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     </div>
   </div>
 
-  <!-- AgroFarm Live Video Section -->
+  <!-- AgroFarm Live Video - No Click -->
   <div class="px-4 mb-4">
     <h3 class="font-bold mb-3">AgroFarm Live Operations</h3>
     <div class="relative rounded-xl overflow-hidden pointer-events-none select-none">
@@ -73,12 +78,12 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
         loop
         muted
         playsinline
-        class="w-full h-48 object-cover"
+        class="w-full h-52 object-cover"
       ></video>
-      <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-4">
+      <div class="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end p-4">
         <div>
-          <p class="text-white font-bold text-lg">Premium Smart Farming</p>
-          <p class="text-gray-300 text-sm">24/7 Live • Automated Systems</p>
+          <p class="text-white font-bold text-xl">24/7 LIVE</p>
+          <p class="text-gray-300 text-sm">Automated Smart Farming Systems</p>
         </div>
       </div>
     </div>
@@ -86,7 +91,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
 
   <div class="grid grid-cols-4 gap-3 px-4 mb-4">
     <div onclick="switchPage('joblevel')" class="card text-center cursor-pointer">
-      <div class="text-2xl">👑</div><p class="text-xs mt-1">VIP</p>
+      <div class="text-2xl">👑</div><p class="text-xs mt-1">Job Level</p>
     </div>
     <div onclick="showModal('spin')" class="card text-center cursor-pointer">
       <div class="text-2xl">🎡</div><p class="text-xs mt-1">Spin</p>
@@ -98,10 +103,12 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
       <div class="text-2xl">📝</div><p class="text-xs mt-1">Tasks</p>
     </div>
   </div>
-  <div class="px-4 mb-4">
-    <h3 class="font-bold mb-3">VIP Packages</h3>
-    <div id="vipList"></div>
-  </div>
+</div>
+
+<!-- JOB LEVEL SECTION - VIP Design -->
+<div id="page-joblevel" class="hidden pb-24 p-4">
+  <h2 class="text-2xl font-bold mb-4">Job Level</h2>
+  <div id="jobLevelList"></div>
 </div>
 
 <!-- TASKS SECTION -->
@@ -110,17 +117,10 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
   <div id="taskContainer"></div>
 </div>
 
-<!-- JOB LEVEL SECTION -->
-<div id="page-joblevel" class="hidden pb-24 p-4">
-  <h2 class="text-2xl font-bold mb-4">Job Level</h2>
-  <div id="jobLevelList"></div>
-</div>
-
 <!-- EARNINGS SECTION -->
 <div id="page-earnings" class="hidden pb-24 p-4">
   <h2 class="text-2xl font-bold mb-4">Earnings</h2>
 
-  <!-- Package Income Table -->
   <h3 class="font-semibold mb-2 text-green-400">📊 Package Income Plan</h3>
   <div class="card mb-4 overflow-x-auto">
     <table class="w-full text-sm">
@@ -130,21 +130,19 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
           <th class="p-2 text-center">Price</th>
           <th class="p-2 text-center">Daily</th>
           <th class="p-2 text-center">Total</th>
-          <th class="p-2 text-center">Days</th>
         </tr>
       </thead>
       <tbody id="packageTable"></tbody>
     </table>
   </div>
 
-  <!-- Referral & Task Commission Table -->
-  <h3 class="font-semibold mb-2 text-blue-400">👥 Referral & Task Commission</h3>
+  <h3 class="font-semibold mb-2 text-blue-400">👥 Commission Rates</h3>
   <div class="card mb-4">
     <table class="w-full text-sm">
       <thead class="bg-gray-800">
         <tr>
           <th class="p-2 text-left">Level</th>
-          <th class="p-2 text-center">Referral Bonus</th>
+          <th class="p-2 text-center">Referral</th>
           <th class="p-2 text-center">Task Bonus</th>
         </tr>
       </thead>
@@ -166,15 +164,12 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
         </tr>
       </tbody>
     </table>
-    <p class="p-3 text-xs text-gray-400">Note: You only receive bonus from your current level</p>
   </div>
 
   <div class="grid grid-cols-2 gap-3 mb-4">
     <div class="card"><p class="text-gray-400 text-sm">আজকের আয়</p><p class="text-2xl font-bold text-green-400">$<span id="todayEarn">0.00</span></p></div>
     <div class="card"><p class="text-gray-400 text-sm">গতকালের আয়</p><p class="text-2xl font-bold">$<span id="yesterdayEarn">0.00</span></p></div>
   </div>
-  <div class="card mb-3"><p class="text-gray-400 text-sm">মোট রিচার্জ</p><p class="text-2xl font-bold">$<span id="totalRechargeUser">0.00</span></p></div>
-  <div class="card mb-3"><p class="text-gray-400 text-sm">মোট উত্তোলন</p><p class="text-2xl font-bold">$<span id="totalWithdrawUser">0.00</span></p></div>
 </div>
 
 <!-- MY SECTION -->
@@ -190,110 +185,167 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
     </div>
   </div>
 
-  <!-- Company Profile Section -->
-  <div class="bg-gradient-to-br from-[#1c1c1c] to-[#2a2a2a] p-5 rounded-xl mb-4 border-gray-800">
-    <h3 class="text-2xl font-bold text-green-400">AgroFarm International Ltd.</h3>
-    <p class="text-sm text-gray-400 mt-1">Established: 2018 | Dubai, UAE</p>
-    <div class="mt-4 space-y-2 text-sm">
-      <p>🌍 Multinational agricultural technology company</p>
-      <p>🚜 Specialized in automated farming & hydroponics</p>
-      <p>📈 Operating in 15+ countries worldwide</p>
-      <p>💼 50,000+ active investors globally</p>
-    </div>
-  </div>
-
   <div class="card mb-4">
-    <h3 class="font-bold mb-3 text-yellow-400">📜 Certificates & Licenses</h3>
-    <img src="https://img.freepik.com/free-vector/certificate-template_23-2148809170.jpg" alt="Certificate" class="rounded-lg mb-3 w-full" />
-    <div class="space-y-1 text-xs text-gray-400">
-      <p>• ISO 9001:2015 Quality Management Certified</p>
-      <p>• UAE Agricultural License #AG-77821</p>
-      <p>• International Organic Farming Certificate</p>
-    </div>
-  </div>
-
-  <div class="card mb-4">
-    <p class="text-gray-400 text-sm">ব্যালেন্স</p>
+    <p class="text-gray-400 text-sm">Balance</p>
     <p class="text-3xl font-bold">$<span id="myBalance">0.00</span></p>
   </div>
-  <div class="grid grid-cols-2 gap-3">
+
+  <div class="grid grid-cols-2 gap-3 mb-6">
     <button onclick="openRechargePage()" class="btn-yellow">Recharge</button>
     <button onclick="openWithdrawPage()" class="btn-outline">Withdraw</button>
   </div>
+
   <h3 class="font-bold mt-6 mb-3">Withdraw History</h3>
   <div id="withdrawHistory"></div>
-</div>
 
-<!-- WITHDRAW PAGE -->
-<div id="withdrawPage" class="hidden min-h-screen pb-24">
-  <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
-    <button onclick="closeWithdrawPage()">← Back</button>
-    <h2 class="font-bold">Withdraw</h2>
-  </div>
-  <div class="p-4">
+  <!-- Company Section at Bottom -->
+  <div class="mt-8 pt-6 border-t border-gray-800">
+    <h2 class="text-xl font-bold mb-4 text-green-400">Company Profile</h2>
+
+    <div class="bg-gradient-to-br from-[#1c1c1c] to-[#2a2a2a] p-5 rounded-xl mb-4">
+      <h3 class="text-2xl font-bold text-green-400">AgroFarm International Ltd.</h3>
+      <p class="text-sm text-gray-400 mt-1">Established: 2018 | Dubai, UAE</p>
+      <div class="mt-4 space-y-2 text-sm">
+        <p>🌍 Multinational Agricultural Technology Company</p>
+        <p>🚜 Specialized in Automated Farming & Hydroponics</p>
+        <p>📈 Operating in 15+ Countries Worldwide</p>
+      </div>
+    </div>
+
     <div class="card mb-4">
-      <p class="text-gray-400 text-sm">Available Balance</p>
-      <p class="text-2xl font-bold">$<span id="withdrawBalance">0.00</span></p>
-      <p class="text-xs text-gray-500 mt-1">Withdraw Fee: 10%</p>
-    </div>
-    <p class="text-gray-400 text-sm mb-2">Select Network</p>
-    <div class="grid grid-cols-2 gap-2 mb-4">
-      <div class="channel-btn" onclick="selectWithdrawNetwork('USDT-BEP20')" id="net-BEP20">
-        <p class="font-bold">USDT-BEP20</p>
-        <p class="text-xs text-gray-400">BSC Network</p>
+      <h3 class="font-bold mb-3 text-yellow-400">📜 Certificates & Licenses</h3>
+      <div class="relative rounded-lg overflow-hidden">
+        <img src="https://img.freepik.com/free-vector/certificate-template_23-2148809170.jpg" class="w-full" />
+        <div class="absolute top-2 right-2 bg-red-600 px-2 py-1 rounded text-xs font-bold animate-pulse">LIVE</div>
       </div>
-      <div class="channel-btn" onclick="selectWithdrawNetwork('USDT-TRC20')" id="net-TRC20">
-        <p class="font-bold">USDT-TRC20</p>
-        <p class="text-xs text-gray-400">Tron Network</p>
+      <div class="space-y-1 text-xs text-gray-400 mt-3">
+        <p>• ISO 9001:2015 Certified</p>
+        <p>• UAE Agricultural License #AG-77821</p>
       </div>
     </div>
-    <div id="addressSection" class="hidden">
-      <p class="text-gray-400 text-sm mb-2">Wallet Address</p>
-      <input type="text" id="withdrawAddress" placeholder="Enter your wallet address" class="input mb-3" readonly>
-      <p class="text-xs text-gray-500 mb-3">* প্রথমবার সেভ হওয়ার পর পরিবর্তন করা যাবে না</p>
+
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">🏢 AgroFarm Head Office</h3>
+      <div class="relative rounded-xl overflow-hidden pointer-events-none select-none">
+        <video
+          src="https://cdn.pixabay.com/video/2020/08/20/48451-452329853_large.mp4"
+          autoplay
+          loop
+          muted
+          playsinline
+          class="w-full h-48 object-cover"
+        ></video>
+        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
+          <p class="text-white font-semibold">Dubai, UAE Office • 24/7 LIVE</p>
+        </div>
+      </div>
     </div>
-    <p class="text-gray-400 text-sm mb-2">Amount</p>
-    <input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mb-2" oninput="calcReceive()">
-    <p class="text-sm text-gray-400 mb-3">You will receive: <span id="receiveAmount" class="text-green-400 font-bold">0.00</span> USDT</p>
-    <button onclick="submitWithdraw()" class="btn-yellow" id="withdrawBtn">Submit Withdraw</button>
+
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">🚜 Our Farms</h3>
+      <div class="relative h-48 rounded-lg overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1625246333195-78d9c4b6514a?w=600" class="absolute w-full h-full object-cover slideshow" style="animation-delay: 0s;" />
+        <img src="https://images.unsplash.com/photo-1574323347407-f5e7ad8757a7?w=600" class="absolute w-full h-full object-cover slideshow" style="animation-delay: 4s;" />
+        <img src="https://images.unsplash.com/photo-1500595046740-c279d694a545?w=600" class="absolute w-full h-full object-cover slideshow" style="animation-delay: 8s;" />
+      </div>
+      <p class="text-xs text-gray-400 mt-2 text-center">Agriculture Farm Operations</p>
+    </div>
   </div>
 </div>
 
 <!-- RECHARGE PAGE -->
-<div id="rechargePage" class="hidden min-h-screen pb-24">
-  <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
-    <button onclick="closeRechargePage()">← Back</button>
-    <h2 class="font-bold">Recharge</h2>
+<div id="rechargePage" class="hidden min-h-screen pb-24 bg-[#0f0f0f]">
+  <div class="flex justify-between items-center p-4 bg-gradient-to-r from-green-600 to-blue-600">
+    <button onclick="closeRechargePage()" class="text-white">← Back</button>
+    <h2 class="font-bold text-white">Recharge Balance</h2>
+    <div></div>
   </div>
-  <div class="p-4">
-    <div class="bg-gradient-to-r from-green-400 to-blue-500 rounded-xl p-6 text-center mb-4">
-      <p class="text-sm opacity-80">Balance</p>
-      <p class="text-3xl font-bold" id="rechargeBalance">0.00 (USDT)</p>
+  <div class="p-6">
+    <div class="bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl p-8 text-center mb-6 shadow-lg">
+      <p class="text-sm opacity-80">Current Balance</p>
+      <p class="text-4xl font-bold" id="rechargeBalance">0.00 USDT</p>
     </div>
-    <p class="text-gray-400 text-sm mb-2">Recharge Amount</p>
-    <div class="flex items-center gap-2 mb-4">
-      <button onclick="changeAmount(-10)" class="bg-[#2c2c2c] px-4 py-3 rounded-lg">-</button>
-      <input type="number" id="rechargeAmt" value="0" class="input text-center" readonly>
-      <button onclick="changeAmount(10)" class="bg-[#2c2c2c] px-4 py-3 rounded-lg">+</button>
+
+    <div class="card mb-6">
+      <p class="text-gray-400 text-sm mb-3">Select Amount</p>
+      <div class="grid grid-cols-3 gap-3 mb-4">
+        <button onclick="setAmount(10)" class="bg-[#2c2c2c] py-3 rounded-xl hover:bg-green-600">10 USDT</button>
+        <button onclick="setAmount(30)" class="bg-[#2c2c2c] py-3 rounded-xl hover:bg-green-600">30 USDT</button>
+        <button onclick="setAmount(50)" class="bg-[#2c2c2c] py-3 rounded-xl hover:bg-green-600">50 USDT</button>
+        <button onclick="setAmount(100)" class="bg-[#2c2c2c] py-3 rounded-xl hover:bg-green-600">100 USDT</button>
+        <button onclick="setAmount(200)" class="bg-[#2c2c2c] py-3 rounded-xl hover:bg-green-600">200 USDT</button>
+        <button onclick="setAmount(500)" class="bg-[#2c2c2c] py-3 rounded-xl hover:bg-green-600">500 USDT</button>
+      </div>
+      <input type="number" id="rechargeAmt" value="0" class="input text-center text-2xl font-bold" readonly>
     </div>
-    <button onclick="createRechargeOrder()" class="btn-yellow mb-4">Recharge Now</button>
+
+    <button onclick="createRechargeOrder()" class="btn-yellow text-lg py-4">Proceed to Recharge</button>
   </div>
 </div>
 
-<!-- RECHARGE ORDER PAGE -->
-<div id="rechargeOrderPage" class="hidden min-h-screen bg-[#0f0f0f] pb-24">
-  <div class="p-6 text-center">
-    <p class="text-gray-400 text-sm">Order Number</p>
-    <p class="font-mono text-sm mb-4" id="orderNumber"></p>
-    <div class="card mb-3">
-      <p class="text-gray-400 text-sm">Recharge Amount</p>
-      <p class="text-2xl font-bold text-green-400" id="orderAmount">0 USDT</p>
+<!-- WITHDRAW PAGE -->
+<div id="withdrawPage" class="hidden min-h-screen pb-24 bg-[#0f0f0f]">
+  <div class="flex justify-between items-center p-4 bg-gradient-to-r from-orange-600 to-red-600">
+    <button onclick="closeWithdrawPage()" class="text-white">← Back</button>
+    <h2 class="font-bold text-white">Withdraw Funds</h2>
+    <div></div>
+  </div>
+  <div class="p-6">
+    <div class="card mb-6 bg-gradient-to-r from-orange-900/30 to-red-900/30 border-orange-600">
+      <p class="text-gray-400 text-sm">Available Balance</p>
+      <p class="text-3xl font-bold text-orange-400">$<span id="withdrawBalance">0.00</span></p>
+      <p class="text-xs text-gray-500 mt-1">Withdrawal Fee: 10%</p>
     </div>
-    <div class="card mb-3">
-      <p class="text-gray-400 text-sm" id="addressLabel">USDT-BEP20 address</p>
-      <p class="font-mono text-xs break-all" id="walletAddress"></p>
+
+    <div class="card mb-4">
+      <p class="text-gray-400 text-sm mb-3">Select Network</p>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="channel-btn" onclick="selectWithdrawNetwork('USDT-BEP20')" id="net-BEP20">
+          <p class="font-bold">USDT-BEP20</p>
+          <p class="text-xs text-gray-400">BSC Network</p>
+        </div>
+        <div class="channel-btn" onclick="selectWithdrawNetwork('USDT-TRC20')" id="net-TRC20">
+          <p class="font-bold">USDT-TRC20</p>
+          <p class="text-xs text-gray-400">Tron Network</p>
+        </div>
+      </div>
+
+      <div id="addressSection" class="hidden">
+        <p class="text-gray-400 text-sm mb-2">Wallet Address</p>
+        <input type="text" id="withdrawAddress" placeholder="Enter your wallet address" class="input mb-3">
+      </div>
     </div>
-    <p class="text-orange-400 text-sm">Valid Time: <span id="timer">01:00:00</span></p>
+
+    <div class="card mb-4">
+      <p class="text-gray-400 text-sm mb-2">Withdrawal Amount</p>
+      <input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mb-2 text-xl" oninput="calcReceive()">
+      <div class="bg-[#2c2c2c] p-3 rounded-lg mt-3">
+        <div class="flex justify-between text-sm mb-1">
+          <span class="text-gray-400">Amount:</span>
+          <span id="withdrawAmtDisplay">0.00 USDT</span>
+        </div>
+        <div class="flex justify-between text-sm mb-1">
+          <span class="text-gray-400">Fee (10%):</span>
+          <span id="withdrawFee">0.00 USDT</span>
+        </div>
+        <div class="flex justify-between text-sm font-bold">
+          <span class="text-green-400">You Receive:</span>
+          <span id="receiveAmount" class="text-green-400">0.00 USDT</span>
+        </div>
+      </div>
+    </div>
+
+    <button onclick="submitWithdraw()" class="btn-yellow text-lg py-4">Submit Withdrawal</button>
+
+    <div class="bg-orange-900/30 border-orange-600 rounded-lg p-4 mt-4">
+      <p class="font-bold text-orange-400 text-sm mb-2">⚠️ Important Notice</p>
+      <ul class="text-xs text-gray-300 space-y-1">
+        <li>• Min withdrawal: 10 USDT</li>
+        <li>• Processing time: 1-24 hours</li>
+        <li>• Withdrawal time: UK 09:00 - 17:00 only</li>
+        <li>• Only 1 withdrawal per day allowed</li>
+      </ul>
+    </div>
   </div>
 </div>
 
@@ -323,16 +375,16 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; }
   <div id="content-withdraw" class="hidden p-4"><div id="pendingWithdrawals"></div></div>
 </div>
 
-<!-- Invite Modal -->
+<!-- Modals -->
 <div id="modal-invite" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
   <div class="card w-full max-w-md">
     <h3 class="font-bold text-xl mb-3">Invite Friends</h3>
     <p class="text-gray-400 text-sm mb-3">Referral Bonus: 10% Level A, 4% Level B, 1% Level C</p>
     <div class="bg-[#2c2c2c] p-3 rounded-lg mb-3">
-      <p class="text-xs text-gray-400 mb-1">তোমার রেফারেল লিংক:</p>
+      <p class="text-xs text-gray-400 mb-1">Your Referral Link:</p>
       <p class="font-mono text-sm break-all" id="inviteLink"></p>
     </div>
-    <button onclick="copyInviteLink()" class="btn-yellow mb-2">Link Copy করো</button>
+    <button onclick="copyInviteLink()" class="btn-yellow mb-2">Copy Link</button>
     <button onclick="closeModal('invite')" class="btn-outline">Close</button>
   </div>
 </div>
@@ -381,8 +433,7 @@ const firebaseConfig = {
   projectId: "agrofarm-4e772",
   storageBucket: "agrofarm-4e772.firebasestorage.app",
   messagingSenderId: "21830970925",
-  appId: "1:21830970925:web:3be2ba09a09af3141192a4",
-  measurementId: "G-149RFPS79K"
+  appId: "1:21830970925:web:3be2ba09a09af3141192a4"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -398,7 +449,6 @@ let userData = {};
 let isAdmin = false;
 let allUsersData = [];
 let selectedWithdrawNetwork = '';
-let timerInterval = null;
 
 const vipPackages = [
   {id: 1, name: "Package 1", price: 10, daily: 0.42, days: 365, level: "A"},
@@ -417,7 +467,7 @@ const urlParams = new URLSearchParams(window.location.search);
 const refCodeFromURL = urlParams.get('ref');
 if(refCodeFromURL){
   document.getElementById('refCode').value = refCodeFromURL;
-  document.getElementById('refInfo').innerText = `রেফারেল কোড: ${refCodeFromURL} দিয়ে জয়েন করছো`;
+  document.getElementById('refInfo').innerText = `Referral Code: ${refCodeFromURL}`;
   document.getElementById('refInfo').classList.remove('hidden');
 }
 
@@ -453,13 +503,60 @@ window.closeModal = function(modalName) {
 }
 window.copyInviteLink = function() {
   navigator.clipboard.writeText(document.getElementById('inviteLink').innerText);
-  alert('রেফারেল লিংক কপি হয়েছে!');
+  alert('Referral link copied!');
+}
+
+function loadJobLevel() {
+  const container = document.getElementById('jobLevelList');
+  container.innerHTML = '';
+  vipPackages.forEach(pkg => {
+    const isActive = userData.vip === pkg.id;
+    container.innerHTML += `
+      <div class="card mb-3 ${isActive? 'border-2 border-yellow-400' : ''}">
+        <div class="flex justify-between items-center">
+          <div>
+            <p class="font-bold text-lg">${pkg.name}</p>
+            <p class="text-sm text-gray-400">Daily: $${pkg.daily} for ${pkg.days} days</p>
+            <p class="text-xs text-green-400">Level ${pkg.level}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-bold text-yellow-400 text-xl">$${pkg.price}</p>
+            <button onclick="buyPackage(${pkg.id})" class="btn-yellow mt-2 px-6" ${isActive? 'disabled' : ''}>
+              ${isActive? 'Active' : 'Buy'}
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+}
+
+window.buyPackage = async function(pkgId) {
+  const pkg = vipPackages.find(p => p.id === pkgId);
+  if(userData.balance < pkg.price) {
+    alert('Insufficient balance! Please recharge first');
+    return;
+  }
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + pkg.days);
+  await updateDoc(doc(db, "users", currentUser.uid), {
+    balance: increment(-pkg.price),
+    vip: pkgId,
+    level: pkg.level,
+    vipExpiry: expiryDate,
+    doneTasks: [],
+    lastTaskDate: "",
+    todayEarn: 0
+  });
+  alert(`${pkg.name} Activated Successfully!`);
+  loadUserData();
+  switchPage('home');
 }
 
 function loadTasks() {
   const container = document.getElementById('taskContainer');
   if(!userData.vip) {
-    container.innerHTML = '<p class="text-gray-400 text-center mt-10">তোমার কোনো এক্টিভ প্যাকেজ নেই। Job Level থেকে প্যাকেজ কিনো।</p>';
+    container.innerHTML = '<p class="text-gray-400 text-center mt-10">No active package. Buy from Job Level.</p>';
     return;
   }
   const pkg = vipPackages.find(p => p.id === userData.vip);
@@ -472,7 +569,7 @@ function loadTasks() {
     updateDoc(doc(db, "users", currentUser.uid), {doneTasks: [], lastTaskDate: today, todayEarn: 0});
   }
 
-  let html = `<p class="text-gray-400 mb-3">তোমার প্যাকেজ: ${pkg.name} | Level: ${pkg.level} | প্রতিটা টাস্ক: ${taskEarn} USDT (${rates.task*100}%)</p>`;
+  let html = `<p class="text-gray-400 mb-3">Package: ${pkg.name} | Level: ${pkg.level} | Task Reward: ${taskEarn} USDT (${rates.task*100}%)</p>`;
   for(let i=1; i<=3; i++) {
     const isDone = doneTasks.includes(i);
     html += `
@@ -494,7 +591,7 @@ function loadTasks() {
 
 window.doTask = async function(taskNum, reward) {
   const today = new Date().toDateString();
-  await updateDoc(doc(db, "users", currentUser.uid), {
+    await updateDoc(doc(db, "users", currentUser.uid), {
     balance: increment(parseFloat(reward)),
     doneTasks: arrayUnion(taskNum),
     lastTaskDate: today,
@@ -506,58 +603,10 @@ window.doTask = async function(taskNum, reward) {
   loadTasks();
 }
 
-function loadJobLevel() {
-  const container = document.getElementById('jobLevelList');
-  container.innerHTML = '';
-  vipPackages.forEach(pkg => {
-    const isActive = userData.vip === pkg.id;
-    container.innerHTML += `
-      <div class="card mb-3 border-l-4 border-yellow-400">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-bold text-lg">Level ${pkg.level} - ${pkg.name}</p>
-            <p class="text-sm text-gray-400">মূল্য: ${pkg.price} USDT</p>
-            <p class="text-sm text-green-400">দৈনিক আয়: ${pkg.daily} USDT</p>
-            <p class="text-xs text-gray-500">মেয়াদ: ${pkg.days} দিন</p>
-          </div>
-          <button onclick="buyPackage(${pkg.id})" class="${isActive? 'btn-gray' : 'btn-yellow'}" ${isActive? 'disabled' : ''}>
-            ${isActive? 'Active' : 'Buy'}
-          </button>
-        </div>
-      </div>
-    `;
-  });
-}
-
-window.buyPackage = async function(pkgId) {
-  const pkg = vipPackages.find(p => p.id === pkgId);
-  if(userData.balance < pkg.price) {
-    alert('ইনসাফিসিয়েন্ট ব্যালেন্স! আগে রিচার্জ করো');
-    return;
-  }
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + pkg.days);
-  await updateDoc(doc(db, "users", currentUser.uid), {
-    balance: increment(-pkg.price),
-    vip: pkgId,
-    level: pkg.level,
-    vipExpiry: expiryDate,
-    doneTasks: [],
-    lastTaskDate: "",
-    todayEarn: 0
-  });
-  alert(`${pkg.name} এক্টিভ হয়েছে!`);
-  loadUserData();
-  switchPage('home');
-}
-
 function loadEarnings() {
   document.getElementById('todayEarn').innerText = (userData.todayEarn || 0).toFixed(2);
   document.getElementById('yesterdayEarn').innerText = (userData.yesterdayEarn || 0).toFixed(2);
-  document.getElementById('totalRechargeUser').innerText = (userData.totalRecharge || 0).toFixed(2);
-  document.getElementById('totalWithdrawUser').innerText = (userData.totalWithdraw || 0).toFixed(2);
 
-        // Load package table
   const packageTable = document.getElementById('packageTable');
   packageTable.innerHTML = '';
   vipPackages.forEach(pkg => {
@@ -567,7 +616,6 @@ function loadEarnings() {
         <td class="p-2 text-center">$${pkg.price}</td>
         <td class="p-2 text-center text-green-400">$${pkg.daily}</td>
         <td class="p-2 text-center text-yellow-400">$${(pkg.daily * pkg.days).toFixed(2)}</td>
-        <td class="p-2 text-center">${pkg.days}</td>
       </tr>
     `;
   });
@@ -612,33 +660,7 @@ async function loadUserData() {
     document.getElementById('balance').innerText = userData.balance.toFixed(2);
     document.getElementById('myRefCode').innerText = userData.refCode;
     document.getElementById('myBalance').innerText = userData.balance.toFixed(2);
-    loadVIPPackages();
   }
-}
-
-function loadVIPPackages() {
-  const vipList = document.getElementById('vipList');
-  vipList.innerHTML = '';
-  vipPackages.forEach(pkg => {
-    const isActive = userData.vip === pkg.id;
-    vipList.innerHTML += `
-      <div class="card mb-3 ${isActive? 'border-2 border-yellow-400' : ''}">
-        <div class="flex justify-between items-center">
-          <div>
-            <p class="font-bold">${pkg.name}</p>
-            <p class="text-sm text-gray-400">Daily: $${pkg.daily} for ${pkg.days} days</p>
-            <p class="text-xs text-green-400">Level ${pkg.level}</p>
-          </div>
-          <div class="text-right">
-            <p class="font-bold text-yellow-400">$${pkg.price}</p>
-            <button onclick="buyPackage(${pkg.id})" class="btn-yellow mt-2" ${isActive? 'disabled' : ''}>
-              ${isActive? 'Active' : 'Buy'}
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
-  });
 }
 
 window.handleAuth = async function() {
@@ -678,7 +700,7 @@ async function giveReferralBonus(refCode){
       const referrerData = referrer.data();
       const referrerLevel = referrerData.level || "A";
       const rate = referralRates[referrerLevel]?.referral || 0;
-      const bonus = 10 * rate; // 10 USDT ধরে হিসাব, তুমি চাইলে রিচার্জ এমাউন্ট দিয়ে গুণ করতে পারো
+      const bonus = 10 * rate;
       await updateDoc(doc(db, "users", referrer.id), { balance: increment(bonus) });
     }
   } catch(e){ console.log('Referral error:', e); }
@@ -701,51 +723,30 @@ window.logout = async function() {
 
 window.openRechargePage = function() {
   document.getElementById('rechargePage').classList.remove('hidden');
-  document.getElementById('rechargeBalance').innerText = userData.balance.toFixed(2) + ' (USDT)';
+  document.getElementById('rechargeBalance').innerText = userData.balance.toFixed(2) + ' USDT';
 }
 
 window.closeRechargePage = function() {
   document.getElementById('rechargePage').classList.add('hidden');
 }
 
-window.changeAmount = function(val) {
-  let amt = parseFloat(document.getElementById('rechargeAmt').value) + val;
-  if(amt < 0) amt = 0;
-  document.getElementById('rechargeAmt').value = amt.toFixed(2);
+window.setAmount = function(amt) {
+  document.getElementById('rechargeAmt').value = amt;
 }
 
 window.createRechargeOrder = async function() {
   const amt = parseFloat(document.getElementById('rechargeAmt').value);
   if(amt < 10) { alert('Minimum recharge is 10 USDT'); return; }
-  const orderNum = 'ORD' + Date.now();
   await addDoc(collection(db, "recharges"), {
     uid: currentUser.uid,
     amount: amt,
     status: 'pending',
     createdAt: new Date()
   });
-  document.getElementById('rechargePage').classList.add('hidden');
-  document.getElementById('rechargeOrderPage').classList.remove('hidden');
-  document.getElementById('orderNumber').innerText = orderNum;
-  document.getElementById('orderAmount').innerText = amt + ' USDT';
-  startTimer(3600);
+  alert('Recharge request submitted!');
+  closeRechargePage();
 }
 
-function startTimer(seconds) {
-  clearInterval(timerInterval);
-  let time = seconds;
-  timerInterval = setInterval(() => {
-    const h = Math.floor(time / 3600);
-    const m = Math.floor((time % 3600) / 60);
-    const s = time % 60;
-    document.getElementById('timer').innerText = 
-      String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
-    time--;
-    if(time < 0) clearInterval(timerInterval);
-  }, 1000);
-}
-
-// Withdraw Functions
 window.openWithdrawPage = function() {
   const now = new Date();
   const ukTime = new Date(now.toLocaleString("en-US", {timeZone: "Europe/London"}));
@@ -757,7 +758,7 @@ window.openWithdrawPage = function() {
   }
   
   if(userData.lastWithdrawDate === new Date().toDateString()) {
-    alert('তুমি আজকে একবার withdraw করে ফেলেছো');
+    alert('You already withdrew today');
     return;
   }
   
@@ -791,19 +792,20 @@ window.selectWithdrawNetwork = function(network) {
 window.calcReceive = function() {
   const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
   const fee = amount * WITHDRAW_FEE;
-  const receive = amount - fee;
-  document.getElementById('receiveAmount').innerText = receive.toFixed(2);
+  document.getElementById('withdrawAmtDisplay').innerText = amount.toFixed(2) + ' USDT';
+  document.getElementById('withdrawFee').innerText = fee.toFixed(2) + ' USDT';
+  document.getElementById('receiveAmount').innerText = (amount - fee).toFixed(2) + ' USDT';
 }
 
 window.submitWithdraw = async function() {
   if(!selectedWithdrawNetwork) {
-    alert('Network সিলেক্ট করো');
+    alert('Select network');
     return;
   }
 
   const address = document.getElementById('withdrawAddress').value.trim();
   if(!address) {
-    alert('Wallet address দাও');
+    alert('Enter wallet address');
     return;
   }
 
@@ -814,7 +816,7 @@ window.submitWithdraw = async function() {
   }
 
   if(amount > userData.balance) {
-    alert('ইনসাফিসিয়েন্ট ব্যালেন্স');
+    alert('Insufficient balance');
     return;
   }
 
@@ -848,7 +850,7 @@ window.submitWithdraw = async function() {
       lastWithdrawDate: new Date().toDateString()
     });
 
-    alert('Withdraw রিকুয়েস্ট সাবমিট হয়েছে! 1-24 ঘন্টার মধ্যে পেয়ে যাবে');
+    alert('Withdrawal request submitted!');
     closeWithdrawPage();
     loadUserData();
 
@@ -863,7 +865,7 @@ async function loadWithdrawHistory() {
 
   const container = document.getElementById('withdrawHistory');
   if(querySnapshot.empty) {
-    container.innerHTML = '<p class="text-gray-400 text-center">কোনো withdraw history নেই</p>';
+    container.innerHTML = '<p class="text-gray-400 text-center">No withdraw history</p>';
     return;
   }
 
@@ -892,20 +894,6 @@ async function loadWithdrawHistory() {
     `;
   });
   container.innerHTML = html;
-}
-
-// Admin Functions
-window.approveWithdraw = async function(id, amount, uid) {
-  try {
-    await updateDoc(doc(db, "withdrawals", id), {
-      status: 'success',
-      approvedAt: new Date()
-    });
-    alert('Withdraw Approved!');
-    loadAdminData();
-  } catch(error) {
-    alert('Error: ' + error.message);
-  }
 }
 
 async function loadAdminData() {
@@ -963,6 +951,19 @@ async function loadAdminData() {
   });
   document.getElementById('totalWithdraw').innerText = '$' + totalWithdraw;
   document.getElementById('pendingCount').innerText = pendingRecharge + pendingWithdraw;
+}
+
+window.approveWithdraw = async function(id) {
+  try {
+    await updateDoc(doc(db, "withdrawals", id), {
+      status: 'success',
+      approvedAt: new Date()
+    });
+    alert('Withdraw Approved!');
+    loadAdminData();
+  } catch(error) {
+    alert('Error: ' + error.message);
+  }
 }
 
 window.approveRecharge = async function(id, amount, uid) {
@@ -1031,4 +1032,4 @@ window.switchTab = function(tab) {
 }
 </script>
 </body>
-</html>  
+</html>
