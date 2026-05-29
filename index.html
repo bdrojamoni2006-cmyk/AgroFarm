@@ -23,6 +23,8 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1c; border-top: 1px solid #2c2c2c; display: flex; justify-content: space-around; padding: 8px 0; z-index: 40; }
 .task-card { background: #1c1c1c; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #2c2c2c; }
 .task-done { opacity: 0.5; }
+
+/* 9s Slideshow for 3 images - 3s each */
 .slideshow { 
   position: absolute; 
   width: 100%; 
@@ -31,9 +33,10 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
   animation: fade 9s infinite; 
 }
 @keyframes fade {
- 0%, 30% { opacity: 1; }
- 33%, 100% { opacity: 0; }
+ 0%, 30% { opacity: 1; }      /* 0-2.7s দেখাবে */
+ 33%, 100% { opacity: 0; }    /* 3s পর অফ */
 }
+
 .fullpage {
   position: fixed;
   top: 0;
@@ -247,53 +250,51 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
     </div>
 
     <!-- AgroFarm Head Office - Real Office Video -->
-    <div class="card mb-4">
-      <h3 class="font-bold mb-3">🏢 AgroFarm Head Office</h3>
-      <div class="relative rounded-xl overflow-hidden">
-        <video 
-          autoplay 
-          muted 
-          loop 
-          playsinline 
-          preload="auto"
-          class="w-full h-48 object-cover rounded-xl"
-          style="pointer-events: none;">
-          <source src="/mnt/data/unnamed" type="video/mp4">
-        </video>
-        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none flex items-end p-3">
-          <p class="text-white font-semibold">London, UK Office • 24/7 LIVE</p>
-        </div>
-        <div class="absolute top-2 right-2 bg-red-600 px-2 py-1 rounded text-xs font-bold animate-pulse">LIVE</div>
+<div class="card mb-4">
+  <h3 class="font-bold mb-3">🏢 AgroFarm Head Office</h3>
+  <div class="relative rounded-xl overflow-hidden">
+    <video 
+      autoplay 
+      muted 
+      loop 
+      playsinline 
+      preload="auto"
+      class="w-full h-48 object-cover rounded-xl"
+      style="pointer-events: none;">
+      <source src="https://streamable.com/b7c29q.mp4" type="video/mp4">
+    </video>
+    <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none flex items-end p-3">
+      <p class="text-white font-semibold">London, UK Office • 24/7 LIVE</p>
+    </div>
+    <div class="absolute top-2 right-2 bg-red-600 px-2 py-1 rounded text-xs font-bold animate-pulse">LIVE</div>
+  </div>
+</div>
+
+<!-- Our Farms - 3 Farm Room Slideshow 9s -->
+<div class="card mb-4">
+  <h3 class="font-bold mb-3">🚜 Our Farms</h3>
+  <div class="relative h-48 rounded-lg overflow-hidden bg-[#2c2c2c]">
+    <!-- হাসের ফার্ম - রুম ভর্তি হাস -->
+    <div class="slideshow absolute inset-0" style="animation-delay: 0s;">
+      <img src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=800" class="w-full h-full object-cover" />
+      <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+        <p class="text-white font-bold text-sm">🦆 হাসের ফার্ম</p>
       </div>
     </div>
-
-    <!-- Our Farms - 3 Farm Slideshow -->
-    <div class="card mb-4">
-      <h3 class="font-bold mb-3">🚜 Our Farms</h3>
-      <div class="relative h-48 rounded-lg overflow-hidden bg-[#2c2c2c]">
-        <!-- হাসের ফার্ম - এক রুমে অনেক হাস -->
-        <div class="slideshow absolute inset-0" style="animation-delay: 0s;">
-          <img src="https://images.pexels.com/photos/1640772/pexels-photo-1640772.jpeg" class="w-full h-full object-cover" />
-          <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-            <p class="text-white font-bold text-sm">🦆 হাসের ফার্ম</p>
-          </div>
-        </div>
-        
-        <!-- গরুর ফার্ম - বড় রুমে অনেক গরু -->
-        <div class="slideshow absolute inset-0" style="animation-delay: 3s;">
-          <img src="https://images.pexels.com/photos/213212/pexels-photo-213212.jpeg" class="w-full h-full object-cover" />
-          <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-            <p class="text-white font-bold text-sm">🐄 গরুর ফার্ম</p>
-          </div>
-        </div>
-        
-        <!-- পাখির ফার্ম - ঘরের মধ্যে অনেক পাখি -->
-        <div class="slideshow absolute inset-0" style="animation-delay: 6s;">
-          <img src="https://images.pexels.com/photos/326900/pexels-photo-326900.jpeg" class="w-full h-full object-cover" />
-          <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-            <p class="text-white font-bold text-sm">🦜 পাখির ফার্ম</p>
-          </div>
-        </div>
+    
+    <!-- গরুর ফার্ম - বড় রুমে অনেক গরু -->
+    <div class="slideshow absolute inset-0" style="animation-delay: 3s;">
+      <img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800" class="w-full h-full object-cover" />
+      <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+        <p class="text-white font-bold text-sm">🐄 গরুর ফার্ম</p>
+      </div>
+    </div>
+    
+    <!-- পাখির ফার্ম - ঘরের মধ্যে খাঁচায় অনেক পাখি -->
+    <div class="slideshow absolute inset-0" style="animation-delay: 6s;">
+      <img src="https://images.unsplash.com/photo-1551085254-e96b210db58a?w=800" class="w-full h-full object-cover" />
+      <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+        <p class="text-white font-bold text-sm">🦜 পাখির ফার্ম</p>
       </div>
     </div>
   </div>
