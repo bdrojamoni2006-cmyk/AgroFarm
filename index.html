@@ -83,21 +83,19 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
     </div>
   </div>
 
-  <!-- AgroFarm Live Video - MP4 + Autoplay ফিক্স -->
+  <!-- AgroFarm Live Operations - YouTube Embed 100% -->
   <div class="px-4 mb-4">
     <h3 class="font-bold mb-3">AgroFarm Live Operations</h3>
     <div class="relative rounded-xl overflow-hidden">
-      <video
-        autoplay
-        loop
-        muted
-        playsinline
-        controls
-        preload="metadata"
-        class="w-full h-52 object-cover bg-black"
-      >
-        <source src="https://videos.pexels.com/video-files/3192660/3192660-uhd_2560_1440_25fps.mp4" type="video/mp4">
-      </video>
+      <iframe 
+        width="100%" 
+        height="208" 
+        src="https://www.youtube.com/embed/kJQP7kiw5Fk?autoplay=1&mute=1&loop=1&playlist=kJQP7kiw5Fk&controls=0&playsinline=1" 
+        frameborder="0" 
+        allow="autoplay; encrypted-media; picture-in-picture" 
+        allowfullscreen
+        class="rounded-xl">
+      </iframe>
       <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none flex items-end p-4">
         <div>
           <p class="text-white font-bold text-xl">24/7 LIVE</p>
@@ -123,7 +121,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
   </div>
 </div>
 
-<!-- JOB LEVEL - Package 4 Daily 3 USDT -->
+<!-- JOB LEVEL -->
 <div id="page-joblevel" class="hidden pb-24 p-4">
   <h2 class="text-2xl font-bold mb-4">Job Level</h2>
   <div id="jobLevelList"></div>
@@ -225,12 +223,12 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
       </div>
     </div>
 
-    <!-- Certificate Slideshow - 3 Premium Documents -->
+    <!-- Certificate Slideshow -->
     <div class="card mb-4">
       <h3 class="font-bold mb-3 text-yellow-400">📜 Certificates & Licenses</h3>
       <div class="relative rounded-lg overflow-hidden h-56 bg-[#2c2c2c]">
         <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMWEyNTM5Ii8+PHRleHQgeD0iNTAlIiB5PSIzMCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiNmYWNjMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5BR1JPRkFSTSBMT05ET04gTFRELjwvdGV4dD48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZm9udC1zaXplPSIxNCIgZmlsbD0id2hpdGUiIHRleHQtYW5jaG9yPSJtaWRkbGUiPlVLIENvbXBhbnkgTGljZW5zZTwvdGV4dD48dGV4dCB4PSI1MCUiIHk9IjY1JSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2NjYyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+TGljZW5jZSBOby4gVUs4OTI3NDU2MTwvdGV4dD48dGV4dCB4PSI1MCUiIHk9IjgwJSIgZm9udC1zaXplPSIxMCIgZmlsbD0iIzk5OSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+MjUgSGFyYmVyIFN0cmVldCwgTG9uZG9uLCBVSywgRUNDIDFTPC90ZXh0Pjx0ZXh0IHg9IjgwJSIgeT0iOTAlIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5Ij5GYWtlIFNpZ25hdHVyZTwvdGV4dD48L3N2Zz4=" class="cert-slide" style="animation-delay: 0s;" />
-        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTUzYjMwIi8+PHRleHQgeD0iNTAlIiB5PSIzMCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyMmM1NWUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5JU08gOTAwMToyMDE1PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QWdyb2Zhcm0gQ2VydGlmaWVkPC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNjUlIiBmb250LXNpemU9IjEyIiBmaWxsPSIjY2NjIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5RdWFsaXR5IE1hbmFnZW1lbnQgU3lzdGVtPC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iODAlIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GcmFrZSBTaWduYXR1cmU8L3RleHQ+PC9zdmc+" class="cert-slide" style="animation-delay: 4s;" />
+        <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMTUzYjMwIi8+PHRleHQgeD0iNTAlIiB5PSIzMCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiMyMmM1NWUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5JU08gOTAwMToyMDE1PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjE0IiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QWdyb2Zhcm0gQ2VydGlmaWVkPC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iNjUlIiBmb250LXNpemU9IjEyIiBmaWxsPSIjY2NjIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5RdWFsaXR5IE1hbmFnZW1lbnQgU3lzdGVtPC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iODAlIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GYWtlIFNpZ25hdHVyZTwvdGV4dD48L3N2Zz4=" class="cert-slide" style="animation-delay: 4s;" />
         <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjMzAxNTNhIi8+PHRleHQgeD0iNTAlIiB5PSIzMCUiIGZvbnQtc2l6ZT0iMTgiIGZpbGw9IiNmYWNjMTUiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtd2VpZ2h0PSJib2xkIj5BR1JJQ1VMVFVSTCBBVVRIT1JJVFk8L3RleHQ+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5JbnRlcm5hdGlvbmFsIFBlcm1pdDwvdGV4dD48dGV4dCB4PSI1MCUiIHk9IjY1JSIgZm9udC1zaXplPSIxMiIgZmlsbD0iI2NjYyIgdGV4dC1hbmNob3I9Im1pZGRsZSI+UGVybWl0IE5vLiBBTjIyMzg0PC90ZXh0Pjx0ZXh0IHg9IjUwJSIgeT0iODAlIiBmb250LXNpemU9IjEwIiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GYWtlIFNpZ25hdHVyZTwvdGV4dD48L3N2Zz4=" class="cert-slide" style="animation-delay: 8s;" />
         <div class="absolute top-2 right-2 bg-red-600 px-2 py-1 rounded text-xs font-bold animate-pulse">LIVE</div>
       </div>
@@ -242,21 +240,19 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
       </div>
     </div>
 
-    <!-- Office Video -->
+    <!-- AgroFarm Head Office - YouTube Embed 100% -->
     <div class="card mb-4">
       <h3 class="font-bold mb-3">🏢 AgroFarm Head Office</h3>
-      <div class="relative rounded-xl overflow-hidden h-48">
-        <video
-          autoplay
-          loop
-          muted
-          playsinline
-          controls
-          preload="metadata"
-          class="w-full h-full object-cover bg-black"
-        >
-          <source src="https://videos.pexels.com/video-files/854260/854260-hd_1920_1080_25fps.mp4" type="video/mp4">
-        </video>
+      <div class="relative rounded-xl overflow-hidden">
+        <iframe 
+          width="100%" 
+          height="192" 
+          src="https://www.youtube.com/embed/9bZkp7q19f0?autoplay=1&mute=1&loop=1&playlist=9bZkp7q19f0&controls=0&playsinline=1" 
+          frameborder="0" 
+          allow="autoplay; encrypted-media; picture-in-picture" 
+          allowfullscreen
+          class="rounded-xl">
+        </iframe>
         <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none flex items-end p-3">
           <p class="text-white font-semibold">London, UK Office • 24/7 LIVE</p>
         </div>
@@ -274,7 +270,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
   </div>
 </div>
 
-<!-- RECHARGE PAGE - Address + Manual Input -->
+<!-- RECHARGE PAGE -->
 <div id="rechargePage" class="hidden fullpage">
   <div class="flex justify-between items-center p-4 bg-gradient-to-r from-green-600 to-blue-600 sticky top-0 z-10">
     <button onclick="closeRechargePage()" class="text-white text-lg">← Back</button>
@@ -287,7 +283,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
       <p class="text-4xl font-bold" id="rechargeBalance">0.00 USDT</p>
     </div>
     
-    <!-- USDT Deposit Address -->
     <div class="card mb-4 bg-orange-900/20 border-orange-600">
       <p class="text-orange-400 font-bold mb-2">⚠️ Send USDT Only</p>
       <p class="text-sm text-gray-400 mb-2">USDT-TRC20 Deposit Address:</p>
@@ -418,7 +413,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
 
 <!-- ADMIN PANEL -->
 <div id="adminSection" class="hidden pb-24">
-  <div class="p-4 bg-[#1c1c1c] sticky top-0 z-10">
+<div class="p-4 bg-[#1c1c1c] sticky top-0 z-10">
     <h2 class="text-2xl font-bold text-yellow-400">Admin Panel</h2>
     <p class="text-gray-400 text-sm mt-1" id="adminEmail"></p>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
@@ -523,7 +518,7 @@ const vipPackages = [
   {id: 1, name: "Package 1", price: 10, daily: 0.42, days: 365, level: "A"},
   {id: 2, name: "Package 2", price: 30, daily: 0.90, days: 365, level: "B"},
   {id: 3, name: "Package 3", price: 60, daily: 1.80, days: 365, level: "C"},
-  {id: 4, name: "Package 4", price: 120, daily: 3.00, days: 365, level: "D"} // Daily 3 USDT ফিক্স
+  {id: 4, name: "Package 4", price: 120, daily: 3.00, days: 365, level: "D"}
 ];
 
 const referralRates = {
@@ -833,7 +828,6 @@ window.createRechargeOrder = async function() {
     createdAt: now
   });
 
-  // Order page দেখাও
   document.getElementById('rechargePage').classList.add('hidden');
   document.getElementById('rechargeOrderPage').classList.remove('hidden');
   document.getElementById('orderId').innerText = orderId;
@@ -1131,4 +1125,4 @@ window.switchTab = function(tab) {
 }
 </script>
 </body>
-  </html>
+ </html>
