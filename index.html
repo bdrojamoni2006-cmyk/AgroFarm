@@ -23,10 +23,16 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
 .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1c; border-top: 1px solid #2c2c2c; display: flex; justify-content: space-around; padding: 8px 0; z-index: 40; }
 .task-card { background: #1c1c1c; border-radius: 12px; padding: 12px; margin-bottom: 10px; border: 1px solid #2c2c2c; }
 .task-done { opacity: 0.5; }
-.slideshow { position: absolute; width: 100%; height: 100%; object-fit: cover; opacity: 0; animation: fade 9s infinite; }
+.slideshow { 
+  position: absolute; 
+  width: 100%; 
+  height: 100%; 
+  opacity: 0; 
+  animation: fade 12s infinite; 
+}
 @keyframes fade {
- 0%, 33% { opacity: 1; }
- 34%, 100% { opacity: 0; }
+ 0%, 20% { opacity: 1; }
+ 25%, 100% { opacity: 0; }
 }
 .fullpage {
   position: fixed;
@@ -83,7 +89,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
     </div>
   </div>
 
-  <!-- AgroFarm Live Operations - YouTube Embed 100% -->
+  <!-- AgroFarm Live Operations -->
   <div class="px-4 mb-4">
     <h3 class="font-bold mb-3">AgroFarm Live Operations</h3>
     <div class="relative rounded-xl overflow-hidden">
@@ -240,7 +246,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
       </div>
     </div>
 
-    <!-- AgroFarm Head Office - YouTube Embed 100% -->
+    <!-- AgroFarm Head Office -->
     <div class="card mb-4">
       <h3 class="font-bold mb-3">🏢 AgroFarm Head Office</h3>
       <div class="relative rounded-xl overflow-hidden">
@@ -259,38 +265,41 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
       </div>
     </div>
 
+    <!-- Our Farms - 4 Farm Slideshow -->
     <div class="card mb-4">
-  <h3 class="font-bold mb-3">🚜 Our Farms</h3>
-  <div class="relative h-48 rounded-lg overflow-hidden bg-[#2c2c2c]">
-    <!-- হাসের ফার্ম -->
-    <div class="slideshow absolute inset-0" style="animation-delay: 0s;">
-      <img src="https://images.pexels.com/photos/2253275/pexels-photo-2253275.jpeg" class="w-full h-full object-cover" />
-      <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-        <p class="text-white font-bold text-sm">🦆 হাসের ফার্ম</p>
-      </div>
-    </div>
-    
-    <!-- গরুর ফার্ম -->
-    <div class="slideshow absolute inset-0" style="animation-delay: 3s;">
-      <img src="https://images.pexels.com/photos/422215/pexels-photo-422215.jpeg" class="w-full h-full object-cover" />
-      <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-        <p class="text-white font-bold text-sm">🐄 গরুর ফার্ম</p>
-      </div>
-    </div>
-    
-    <!-- মুরগের ফার্ম -->
-    <div class="slideshow absolute inset-0" style="animation-delay: 6s;">
-      <img src="https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg" class="w-full h-full object-cover" />
-      <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-        <p class="text-white font-bold text-sm">🐔 মুরগের ফার্ম</p>
-      </div>
-    </div>
-    
-    <!-- পাখির ফার্ম -->
-    <div class="slideshow absolute inset-0" style="animation-delay: 9s;">
-      <img src="https://images.pexels.com/photos/247431/pexels-photo-247431.jpeg" class="w-full h-full object-cover" />
-      <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
-        <p class="text-white font-bold text-sm">🦜 পাখির ফার্ম</p>
+      <h3 class="font-bold mb-3">🚜 Our Farms</h3>
+      <div class="relative h-48 rounded-lg overflow-hidden bg-[#2c2c2c]">
+        <!-- হাসের ফার্ম -->
+        <div class="slideshow absolute inset-0" style="animation-delay: 0s;">
+          <img src="https://images.pexels.com/photos/2253275/pexels-photo-2253275.jpeg" class="w-full h-full object-cover" />
+          <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+            <p class="text-white font-bold text-sm">🦆 হাসের ফার্ম</p>
+          </div>
+        </div>
+        
+        <!-- গরুর ফার্ম -->
+        <div class="slideshow absolute inset-0" style="animation-delay: 3s;">
+          <img src="https://images.pexels.com/photos/422215/pexels-photo-422215.jpeg" class="w-full h-full object-cover" />
+          <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+            <p class="text-white font-bold text-sm">🐄 গরুর ফার্ম</p>
+          </div>
+        </div>
+        
+        <!-- মুরগের ফার্ম -->
+        <div class="slideshow absolute inset-0" style="animation-delay: 6s;">
+          <img src="https://images.pexels.com/photos/1108099/pexels-photo-1108099.jpeg" class="w-full h-full object-cover" />
+          <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+            <p class="text-white font-bold text-sm">🐔 মুরগের ফার্ম</p>
+          </div>
+        </div>
+        
+        <!-- পাখির ফার্ম -->
+        <div class="slideshow absolute inset-0" style="animation-delay: 9s;">
+          <img src="https://images.pexels.com/photos/247431/pexels-photo-247431.jpeg" class="w-full h-full object-cover" />
+          <div class="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+            <p class="text-white font-bold text-sm">🦜 পাখির ফার্ম</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -308,7 +317,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
       <p class="text-sm opacity-80">Current Balance</p>
       <p class="text-4xl font-bold" id="rechargeBalance">0.00 USDT</p>
     </div>
-    
     <div class="card mb-4 bg-orange-900/20 border-orange-600">
       <p class="text-orange-400 font-bold mb-2">⚠️ Send USDT Only</p>
       <p class="text-sm text-gray-400 mb-2">USDT-TRC20 Deposit Address:</p>
@@ -318,7 +326,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
       </div>
       <p class="text-xs text-red-400 mt-2">Send only USDT-TRC20. Other coins will be lost!</p>
     </div>
-
     <div class="card mb-6">
       <p class="text-gray-400 text-sm mb-3">Select Amount or Enter Manual</p>
       <div class="grid grid-cols-3 gap-3 mb-4">
@@ -349,7 +356,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
         <h3 class="text-2xl font-bold text-green-400">Order Submitted!</h3>
         <p class="text-sm text-gray-400 mt-1">AgroFarm Recharge Request</p>
       </div>
-      
       <div class="space-y-3">
         <div class="flex justify-between py-3 border-b border-gray-800">
           <span class="text-gray-400">Order ID:</span>
@@ -368,7 +374,6 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
           <span class="text-yellow-400 font-bold">Pending Approval</span>
         </div>
       </div>
-
       <div class="bg-orange-900/20 border-orange-600 rounded-lg p-3 mt-6">
         <p class="text-sm text-orange-400">Note: Admin will approve within 1-24 hours after payment confirmation.</p>
       </div>
@@ -439,7 +444,7 @@ body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; ov
 
 <!-- ADMIN PANEL -->
 <div id="adminSection" class="hidden pb-24">
-<div class="p-4 bg-[#1c1c1c] sticky top-0 z-10">
+  <div class="p-4 bg-[#1c1c1c] sticky top-0 z-10">
     <h2 class="text-2xl font-bold text-yellow-400">Admin Panel</h2>
     <p class="text-gray-400 text-sm mt-1" id="adminEmail"></p>
     <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
@@ -1151,4 +1156,4 @@ window.switchTab = function(tab) {
 }
 </script>
 </body>
- </html>
+</html>
