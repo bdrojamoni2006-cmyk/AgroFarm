@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Admin Panel</title></head>
+<body>
+    <h2>AgroFarm Admin Panel - Demo</h2>
+    <div style="border:1px solid #ccc; padding:15px; margin:10px">
+        <h3>Recharge Settings</h3>
+        <input id="wallet" placeholder="USDT Wallet Address"><br><br>
+        <input id="minRec" placeholder="Min Recharge Amount"><br><br>
+        <button onclick="saveRecharge()">Save</button>
+    </div>
+
+    <div style="border:1px solid #ccc; padding:15px; margin:10px">
+        <h3>Withdraw Settings</h3>
+        <input id="minWit" placeholder="Min Withdraw Amount"><br><br>
+        <button onclick="saveWithdraw()">Save</button>
+    </div>
+
+    <div style="border:1px solid #ccc; padding:15px; margin:10px">
+        <h3>User Management</h3>
+        <input id="lockUser" placeholder="Username to lock"><br><br>
+        <button onclick="lockUser()">Lock Account</button>
+    </div>
+
+<script>
+function saveRecharge(){
+    localStorage.setItem('admin_wallet', document.getElementById('wallet').value);
+    localStorage.setItem('min_recharge', document.getElementById('minRec').value);
+    alert('Saved! Refresh main site to see changes');
+}
+function saveWithdraw(){
+    localStorage.setItem('min_withdraw', document.getElementById('minWit').value);
+    alert('Saved!');
+}
+function lockUser(){
+    let user = document.getElementById('lockUser').value;
+    localStorage.setItem('lock_' + user, 'true');
+    alert('User locked!');
+}
+</script>
+</body>
+</html>
