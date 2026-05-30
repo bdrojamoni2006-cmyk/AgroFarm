@@ -673,24 +673,87 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-async function loadTaskConfigGlobal() {
+async function loadTaskConfig() {
   try {
-    const taskConfigDoc = await getDoc(doc(db, "settings", "taskConfig"));
-    if(taskConfigDoc.exists()){
-      taskConfig = taskConfigDoc.data();
+    const docSnap = await getDoc(doc(db, "settings", "taskConfig"));
+    if(docSnap.exists()) {
+      taskConfig = docSnap.data();
     } else {
       taskConfig = defaultTaskConfig;
       await setDoc(doc(db, "settings", "taskConfig"), defaultTaskConfig);
     }
+
+    const container = document.getElementById('taskConfigList');
+    container.innerHTML = '';
+
+    vipPackages.forEach(pkg => {
+      const config = taskConfig[pkg.id] || {tasksPerDay: 1, reward: 0.02, name: pkg.name, icon: pkg.icon};
+      container.innerHTML += `
+        <div class="bg-[#2c2c2c] p-3 rounded mb-3">
+          <p class="font-bold mb-2">${config.icon || pkg.icon} ${config.name || pkg.name} - VIP ${pkg.id}</p>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs text-gray-400">Tasks Per Day</label>
+              <input id="tasksPerDay${pkg.id}" value="${config.tasksPerDay}" type="number" class="input text-sm py-2">
+            </div>
+            <div>
+              <label class="text-xs text-gray-400">Reward Per Task ($)</label>
+              <input id="taskReward${pkg.id}" value="${config.reward}" type="number" step="0.01" class="input text-sm py-2">
+            </div>
+          </div>
+        </div>
+      `;
+    });
   } catch(e) {
     console.error('Load Task Config Error:', e);
-    taskConfig = defaultTaskConfig;
   }
 }
 
-async function loadUserData() {
+async function loadAdminData() {
   try {
     await loadTaskConfigGlobal();
+
+    const usersSnap = await getDocs(collection(db, "users"));
+    allUsersData = [];
+    usersSnap.forEach(doc => allUsersData.push({id: doc.id,...doc.data()}));
+    document.getElementById('totalUsers').innerText = allUsersData.length;
+
+    const rechargeSnap = await getDocs(collection(db, "recharges"));
+    let totalRecharge = 0;
+    let pendingRecharge = 0;
+    rechargeSnap.forEach(doc => {
+      const data = doc.data();
+      if(data.status === 'approved') totalRecharge += data.amount;
+      if(data.status === 'pending') pendingRecharge++;
+    });
+    document.getElementById('totalRecharge').innerText = '$' + totalRecharge.toFixed(2);
+
+    const withdrawSnap = await getDocs(collection(db, "withdrawals"));
+    let totalWithdraw = 0;
+    let pendingWithdraw = 0;
+    withdrawSnap.forEach(doc => {
+      const data = doc.data();
+      if(data.status === 'success') totalWithdraw += data.amount;
+      if(data.status === 'pending') pendingWithdraw++;
+    });
+    document.getElementById('totalWithdraw').innerText = '$' + totalWithdraw.toFixed(2);
+    document.getElementById('pendingCount').innerText = pendingRecharge + pendingWithdraw;
+
+    const settingsDoc = await getDoc(doc(db, "settings", "config"));
+    if(settingsDoc.exists()){
+      const data = settingsDoc.data();
+      document.getElementById('adminWalletInput').value = data.walletAddress || '';
+      document.getElementById('minRechargeInput').value = data.minRecharge || 10;
+      document.getElementById('minWithdrawInput').value = data.minWithdraw || 10;
+    }
+
+    loadAdminPackages();
+    loadAllUsers();
+  } catch(e) {
+    console.error('Admin Data Error:', e);
+    showError('Admin Data Load Failed: ' + e.message);
+  }
+  }
 
     const currentVip = vipPackages.find(p => p.id === userData.vip) || vipPackages[0];
 
