@@ -1340,4 +1340,20 @@ function loadAllUsers() {
             <p class="text-gray-400">Total Recharge</p>
             <p class="font-bold">$${user.totalRecharge || 0}</p>
           </div>
-        <
+        <p class="text-xs text-gray-500 mt-2">Ref Code: ${user.refCode}</p>
+      </div>
+    `;
+  });
+}
+
+window.switchTab = function(tab) {
+  ['dashboard', 'users', 'recharge', 'withdraw', 'settings'].forEach(t => {
+    document.getElementById(`content-${t}`).classList.add('hidden');
+    document.getElementById(`tab-${t}`).classList.remove('active');
+  });
+  document.getElementById(`content-${tab}`).classList.remove('hidden');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+</script>
+</body>
+</html>
