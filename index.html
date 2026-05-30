@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroFarm</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+.card { background: #1c1c1c; border-radius: 16px; padding: 16px; }
+.btn-yellow { background: #facc15; color: black; font-weight: 700; padding: 12px; border-radius: 12px; width: 100%; }
+.btn-outline { border: 1px solid #444; padding: 12px; border-radius: 12px; text-align: center; width: 100%; }
+.btn-green { background: #22c55e; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
+.btn-gray { background: #444; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
+.btn-red { background: #dc2626; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
+.input { background: #2c2c2c; border-radius: 10px; padding: 12px; width: 100%; border: none; outline: none; }
+.select-input { background: #2c2c2c; border-radius: 10px; padding: 12px; border: none; outline: none; color: white; }
+.hidden { display: none!important; }
+.tab-btn { padding: 10px; border-radius: 8px; background: #2c2c2c; }
+.tab-btn.active { background: #facc15; color: black; font-weight: 700; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; cursor: pointer; }
+.nav-item.active { color: #facc15; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1c; border-top: 1px solid #2c2c2c; display: flex; justify-content: space-around; padding: 8px 0; z-index: 40; }
+.fullpage { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; background: #0f0f0f; }
+.logo-img { object-fit: contain; filter: drop-shadow(0 0 10px rgba(34,197,94,0.3)); }
+</style>
+</head>
+<body>
+
+<!-- AUTH SECTION -->
+<div id="authSection" class="min-h-screen p-6 pb-24">
+  <div class="text-center mb-8">
+    <img src="/logo.png" class="w-24 h-24 mx-auto rounded-2xl logo-img" alt="AgroFarm Logo">
+    <h1 class="text-3xl font-bold mt-4" id="formTitle">Create Account</h1>
+  </div>
+
+  <div id="refInfo" class="text-green-400 text-sm mb-2 hidden"></div>
+  <input type="text" id="name" placeholder="Full Name" class="input mb-3">
+
+  <div class="flex gap-2 mb-3">
+    <select id="countryCode" class="select-input w-32">
+      <option value="+880">🇧🇩 +880</option>
+      <option value="+1">🇺🇸 +1</option>
+      <option value="+44">🇬🇧 +44</option>
+      <option value="+91">🇮🇳 +91</option>
+      <option value="+92">🇵🇰 +92</option>
+      <option value="+971">🇦🇪 +971</option>
+      <option value="+966">🇸🇦 +966</option>
+      <option value="+60">🇲🇾 +60</option>
+      <option value="+65">🇸🇬 +65</option>
+      <option value="+61">🇦🇺 +61</option>
+      <option value="+49">🇩🇪 +49</option>
+      <option value="+33">🇫🇷 +33</option>
+      <option value="+39">🇮🇹 +39</option>
+      <option value="+81">🇯🇵 +81</option>
+      <option value="+86">🇨🇳 +86</option>
+    </select>
+    <input type="tel" id="phone" placeholder="1700000000" class="input flex-1">
+  </div>
+
+  <input type="password" id="password" placeholder="Password (min 6 chars)" class="input mb-3">
+  <input type="text" id="refCode" placeholder="Referral Code" class="input mb-3" required>
+  <p id="errorMsg" class="text-red-500 text-sm mb-3 hidden"></p>
+  <button onclick="handleAuth()" class="btn-yellow mb-3" id="authBtn">Register</button>
+  <button onclick="toggleAuth()" class="btn-outline" id="switchBtn">Already have account? Login</button>
+  <p class="text-xs text-gray-500 text-center mt-4">Forget password? Contact Admin</p>
+</div>
+
+<!-- HOME SECTION -->
+<div id="page-home" class="hidden pb-24">
+  <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
+    <div>
+      <p class="text-gray-400 text-sm">Welcome</p>
+      <p class="font-bold" id="userName">User</p>
+      <p class="text-xs text-gray-500">Ref Code: <span id="myRefCode"></span></p>
+    </div>
+    <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm">Logout</button>
+  </div>
+
+  <div class="card m-4 bg-gradient-to-r from-green-500 to-blue-600">
+    <p class="text-sm opacity-80">Total Balance</p>
+    <p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
+    <div class="grid grid-cols-2 gap-3 mt-4">
+      <button onclick="openRechargePage()" class="bg-white text-black font-bold py-2 rounded-lg">Recharge</button>
+      <button onclick="openWithdrawPage()" class="bg-white text-black font-bold py-2 rounded-lg">Withdraw</button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-4 gap-3 px-4 mb-4">
+    <div onclick="switchPage('joblevel')" class="card text-center cursor-pointer">
+      <div class="text-2xl">👑</div><p class="text-xs mt-1">Job Level</p>
+    </div>
+    <div onclick="showModal('spin')" class="card text-center cursor-pointer">
+      <div class="text-2xl">🎡</div><p class="text-xs mt-1">Spin</p>
+    </div>
+    <div onclick="showModal('invite')" class="card text-center cursor-pointer">
+      <div class="text-2xl">👥</div><p class="text-xs mt-1">Invite</p>
+    </div>
+    <div onclick="switchPage('tasks')" class="card text-center cursor-pointer">
+      <div class="text-2xl">📝</div><p class="text-xs mt-1">Tasks</p>
+    </div>
+  </div>
+
+  <div class="px-4">
+    <h3 class="font-bold mb-3">VIP Packages</h3>
+    <div id="packageList"></div>
+  </div>
+</div>
+
+<!-- JOB LEVEL PAGE -->
+<div id="page-joblevel" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3">
+    <button onclick="switchPage('home')" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Job Level</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-yellow-400 to-orange-500">
+      <p class="text-sm opacity-80">Current Level</p>
+      <p class="text-3xl font-bold" id="currentLevel">A</p>
+      <p class="text-sm mt-2">Total Earnings: $<span id="totalEarn">0</span></p>
+    </div>
+    <div class="grid grid-cols-2 gap-3" id="levelCards"></div>
+  </div>
+</div>
+
+<!-- TASKS PAGE -->
+<div id="page-tasks" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3">
+    <button onclick="switchPage('home')" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Daily Tasks</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-purple-500 to-pink-600">
+      <p class="text-sm opacity-80">Today's Earning</p>
+      <p class="text-2xl font-bold">$<span id="todayEarn">0.00</span></p>
+      <p class="text-xs mt-1 opacity-80">Yesterday: $<span id="yesterdayEarn">0.00</span></p>
+    </div>
+    <div id="taskList"></div>
+  </div>
+</div>
+
+<!-- EARNINGS PAGE -->
+<div id="page-earnings" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3">
+    <button onclick="switchPage('home')" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Earnings History</h2>
+  </div>
+  <div class="p-4" id="earningsList"></div>
+</div>
+
+<!-- MY PAGE -->
+<div id="page-my" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c]">
+    <h2 class="text-xl font-bold">My Profile</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-br from-[#1c1c1c] via-[#252525] to-[#1c1c1c] border border-[#2f2f2f] shadow-lg shadow-green-500/5">
+      <div class="flex items-center gap-3 mb-4 pb-4 border-b border-[#2f2f2f]">
+        <div class="w-14 h-14 rounded-full bg-gradient-to-br from-green-500 to-blue-600 flex items-center justify-center text-2xl font-bold">
+          <span id="userInitial">P</span>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Account Status</p>
+          <p class="font-bold text-green-400 flex items-center gap-1">
+            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> Active
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <p class="text-gray-400 text-xs uppercase tracking-wider">Name</p>
+          <p class="font-bold text-lg mt-1" id="myName">-</p>
+        </div>
+
+        <div>
+          <p class="text-gray-400 text-xs uppercase tracking-wider">Phone</p>
+          <p class="font-bold text-lg mt-1" id="myPhone">-</p>
+        </div>
+
+        <div>
+          <p class="text-gray-400 text-xs uppercase tracking-wider">Referral Code</p>
+          <div class="flex gap-2 items-center mt-1">
+            <p class="font-bold text-lg text-yellow-400" id="myRef">-</p>
+            <button onclick="copyRef()" class="bg-[#2c2c2c] hover:bg-[#3c3c3c] px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border border-[#3c3c3c]">Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <p class="text-gray-400">Total Recharge</p>
+      <p class="font-bold text-green-400">$<span id="myRecharge">0</span></p>
+      <p class="text-gray-400 mt-3">Total Withdraw</p>
+      <p class="font-bold text-red-400">$<span id="myWithdraw">0</span></p>
+    </div>
+    <button onclick="checkWithdrawAddress()" class="btn-outline mb-3" id="withdrawBtn">Set Withdraw Address</button>
+    <button onclick="switchPage('earnings')" class="btn-outline mb-3">Earnings History</button>
+    <button onclick="logout()" class="btn-red">Logout</button>
+  </div>
+</div>
+
+<!-- RECHARGE PAGE -->
+<div id="page-recharge" class="hidden fullpage">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3 sticky top-0">
+    <button onclick="closeRechargePage()" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Recharge USDT</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4">
+      <p class="text-gray-400 text-sm">USDT Wallet Address (BEP20)</p>
+      <div class="flex gap-2 items-center mt-2">
+        <p class="font-mono text-sm break-all" id="usdtAddress">TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x</p>
+        <button onclick="copyAddress()" class="bg-[#2c2c2c] px-3 py-1 rounded text-sm">Copy</button>
+      </div>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Amount (USDT)</label>
+      <input type="number" id="rechargeAmount" placeholder="Min 10 USDT" class="input mt-2" min="10">
+      <p class="text-xs text-gray-500 mt-2">Minimum: 10 USDT</p>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Order ID / Transaction Hash</label>
+      <input type="text" id="orderId" placeholder="Enter TXID or Order ID" class="input mt-2">
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Upload Proof (Optional)</label>
+      <input type="text" id="proofUrl" placeholder="Screenshot URL" class="input mt-2">
+    </div>
+    <button onclick="submitRecharge()" class="btn-yellow">Submit Recharge</button>
+    <p class="text-xs text-gray-500 text-center mt-4">Payment will be verified within 24 hours</p>
+  </div>
+</div>
+
+<!-- WITHDRAW PAGE -->
+<div id="page-withdraw" class="hidden fullpage">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3 sticky top-0">
+    <button onclick="closeWithdrawPage()" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Withdraw USDT</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-green-500 to-blue-600">
+      <p class="text-sm opacity-80">Available Balance</p>
+      <p class="text-3xl font-bold">$<span id="withdrawBalance">0.00</span></p>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Amount (USDT)</label>
+      <input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mt-2" min="10">
+      <p class="text-xs text-gray-500 mt-2">Minimum: 10 USDT | Fee: 3%</p>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Network</label>
+      <select id="withdrawNetwork" class="input mt-2">
+        <option value="BEP20">BEP20 (BSC)</option>
+        <option value="TRC20">TRC20 (TRON)</option>
+      </select>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Wallet Address</label>
+      <input type="text" id="withdrawAddress" placeholder="Enter USDT address" class="input mt-2">
+    </div>
+    <button onclick="submitWithdraw()" class="btn-yellow">Submit Withdraw</button>
+    <p class="text-xs text-gray-500 text-center mt-4">Processing time: 24-48 hours</p>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div id="adminSection" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] sticky top-0 z-10">
+    <h2 class="text-2xl font-bold text-yellow-400">Admin Panel</h2>
+    <p class="text-gray-400 text-sm mt-1" id="adminPhone"></p>
+    <button onclick="logout()" class="bg-red-600 px-3 py-1 rounded-lg text-sm mt-2">Logout</button>
+  </div>
+  <div class="flex gap-2 p-4 overflow-x-auto">
+    <button onclick="switchTab('dashboard')" class="tab-btn active" id="tab-dashboard">Dashboard</button>
+    <button onclick="switchTab('users')" class="tab-btn" id="tab-users">All Users</button>
+    <button onclick="switchTab('packages')" class="tab-btn" id="tab-packages">Packages</button>
+    <button onclick="switchTab('recharge')" class="tab-btn" id="tab-recharge">Recharge</button>
+    <button onclick="switchTab('withdraw')" class="tab-btn" id="tab-withdraw">Withdraw</button>
+    <button onclick="switchTab('settings')" class="tab-btn" id="tab-settings">Settings</button>
+    <button onclick="switchTab('reset')" class="tab-btn" id="tab-reset">Reset Pass</button>
+  </div>
+
+  <div id="content-dashboard" class="p-4">
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <div class="card"><p class="text-gray-400">Total Users</p><p class="text-2xl font-bold" id="totalUsers">0</p></div>
+      <div class="card"><p class="text-gray-400">Total Recharge</p><p class="text-2xl font-bold" id="totalRecharge">$0</p></div>
+      <div class="card"><p class="text-gray-400">Total Withdraw</p><p class="text-2xl font-bold" id="totalWithdraw">$0</p></div>
+      <div class="card"><p class="text-gray-400">Pending</p><p class="text-2xl font-bold" id="pendingCount">0</p></div>
+    </div>
+  </div>
+
+  <div id="content-users" class="hidden p-4"><div id="allUsers"></div></div>
+
+  <div id="content-packages" class="hidden p-4">
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">Add New Package</h3>
+      <input id="newPkgName" placeholder="Package Name" class="input mb-2">
+      <input id="newPkgIcon" placeholder="Icon (e.g. 💎)" class="input mb-2">
+      <input id="newPkgPrice" placeholder="Price" type="number" class="input mb-2">
+      <input id="newPkgDaily" placeholder="Daily Income" type="number" step="0.01" class="input mb-2">
+      <input id="newPkgDays" placeholder="Days" type="number" class="input mb-2">
+      <select id="newPkgLevel" class="input mb-3">
+        <option value="A">Level A</option>
+        <option value="B">Level B</option>
+        <option value="C">Level C</option>
+      </select>
+      <button onclick="addPackage()" class="btn-green">Add Package</button>
+    </div>
+    <h3 class="font-bold mb-3">All Packages</h3>
+    <div id="adminPackageList"></div>
+  </div>
+
+  <div id="content-recharge" class="hidden p-4">
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">Recharge Settings</h3>
+      <input id="adminWalletInput" placeholder="USDT Wallet Address" class="input mb-2">
+      <input id="minRechargeInput" placeholder="Min Recharge" type="number" class="input mb-2">
+      <button onclick="saveRechargeSettings()" class="btn-yellow">Save Settings</button>
+    </div>
+    <h3 class="font-bold mb-3">Pending Recharges</h3>
+    <div id="pendingRecharges"></div>
+  </div>
+
+  <div id="content-withdraw" class="hidden p-4">
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">Withdraw Settings</h3>
+      <input id="minWithdrawInput" placeholder="Min Withdraw" type="number" class="input mb-2">
+      <button onclick="saveWithdrawSettings()" class="btn-yellow">Save Settings</button>
+    </div>
+    <h3 class="font-bold mb-3">Pending Withdrawals</h3>
+    <div id="pendingWithdrawals"></div>
+  </div>
+
+  <div id="content-settings" class="hidden p-4">
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">Task Settings - VIP Wise</h3>
+      <div id="taskConfigList"></div>
+      <button onclick="saveTaskConfig()" class="btn-yellow mt-3">Save Task Config</button>
+    </div>
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">User Control</h3>
+      <input id="lockUserEmail" placeholder="User Phone" class="input mb-2">
+      <button onclick="lockUser()" class="btn-red mb-2">Lock User</button>
+      <button onclick="unlockUser()" class="btn-green">Unlock User</button>
+    </div>
+  </div>
+
+  <div id="content-reset" class="hidden p-4">
+    <div class="card">
+      <h3 class="font-bold mb-3 text-yellow-400">Reset User Password</h3>
+      <div class="flex gap-2 mb-3">
+        <select id="resetCountryCode" class="select-input w-32">
+          <option value="+880">🇧🇩 +880</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+91">🇮🇳 +91</option>
+          <option value="+92">🇵🇰 +92</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+966">🇸🇦 +966</option>
+          <option value="+60">🇲🇾 +60</option>
+          <option value="+65">🇸🇬 +65</option>
+          <option value="+61">🇦🇺 +61</option>
+          <option value="+49">🇩🇪 +49</option>
+          <option value="+33">🇫🇷 +33</option>
+          <option value="+39">🇮🇹 +39</option>
+          <option value="+81">🇯🇵 +81</option>
+          <option value="+86">🇨🇳 +86</option>
+        </select>
+        <input type="tel" id="resetUserPhone" placeholder="1700000000" class="input flex-1">
+      </div>
+      <input type="text" id="resetNewPass" placeholder="New Password (min 6 chars)" class="input mb-3">
+      <button onclick="adminResetPassword()" class="btn-yellow">Reset Password</button>
+      <p class="text-xs text-gray-400 mt-3">ইউজারকে নতুন পাসওয়ার্ড জানায় দিবা। ইউজার লগিন করে চেঞ্জ করে নিবে।</p>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottomNav" class="bottom-nav hidden">
+  <div class="nav-item active" onclick="switchPage('home')"><span class="text-xl">🏠</span><span>Home</span></div>
+  <div class="nav-item" onclick="switchPage('joblevel')"><span class="text-xl">👑</span><span>Job</span></div>
+  <div class="nav-item" onclick="switchPage('tasks')"><span class="text-xl">📝</span><span>Tasks</span></div>
+  <div class="nav-item" onclick="switchPage('earnings')"><span class="text-xl">💰</span><span>Earnings</span></div>
+  <div class="nav-item" onclick="switchPage('my')"><span class="text-xl">👤</span><span>My</span></div>
+</div>
+
+<!-- MODALS -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="card w-full max-w-md">
+    <h3 class="text-xl font-bold mb-4" id="modalTitle"></h3>
+    <div id="modalContent"></div>
+    <button onclick="closeModal()" class="btn-gray mt-4">Close</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updatePassword }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, addDoc, query, where, getDocs, increment }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAKi3cFh6B0hIwGwl-9ZEKTtf-INwlwF4k",
+  authDomain: "agrofarm-4e772.firebaseapp.com",
+  projectId: "agrofarm-4e772",
+  storageBucket: "agrofarm-4e772.firebasestorage.app",
+  messagingSenderId: "21830970925",
+  appId: "1:21830970925:web:3be2ba09a09af3141192a4"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const ADMIN_PHONE = "+8801748059815";
+
+let currentUser = null;
+let isLoginMode = false;
+let userData = {};
+let isAdmin = false;
+let allUsersData = [];
+let taskConfig = {};
+
+const defaultTaskConfig = {
+  0: {name: "Free Intern", tasksPerDay: 1, reward: 0.30, icon: "🆓"},
+  1: {name: "AI Robot", tasksPerDay: 3, reward: 0.53, icon: "🤖"},
+  2: {name: "Mushroom", tasksPerDay: 5, reward: 1.60, icon: "🍄"},
+  3: {name: "Crop Research", tasksPerDay: 8, reward: 4.00, icon: "🌾"}
+};
+
+const defaultPackages = [
+  {id: 0, name: "Free Intern", price: 0, daily: 0.02, days: 3, level: "A", icon: "🆓", color: "from-gray-400 to-gray-600"},
+  {id: 1, name: "AI Robot", price: 10, daily: 0.70, days: 30, level: "A", icon: "🤖", color: "from-blue-400 to-blue-600"},
+  {id: 2, name: "Mushroom", price: 30, daily: 1.60, days: 35, level: "B", icon: "🍄", color: "from-green-400 to-green-600"},
+  {id: 3, name: "Crop Research", price: 50, daily: 2.40, days: 45, level: "C", icon: "🌾", color: "from-yellow-400 to-yellow-600"},
+];
+
+let vipPackages = [...defaultPackages];
+
+const urlParams = new URLSearchParams(window.location.search);
+const refCodeFromURL = urlParams.get('ref');
+if(refCodeFromURL){
+  document.getElementById('refCode').value = refCodeFromURL;
+  document.getElementById('refInfo').innerText = `Referral Code: ${refCodeFromURL}`;
+  document.getElementById('refInfo').classList.remove('hidden');
+}
+
+window.toggleAuth = function() {
+  isLoginMode =!isLoginMode;
+  document.getElementById('formTitle').innerText = isLoginMode? 'Login' : 'Create Account';
+  document.getElementById('authBtn').innerText = isLoginMode? 'Login' : 'Register';
+  document.getElementById('switchBtn').innerText = isLoginMode? 'Create account' : 'Already have account? Login';
+  document.getElementById('name').style.display = isLoginMode? 'none' : 'block';
+  document.getElementById('refCode').style.display = isLoginMode? 'none' : 'block';
+  document.getElementById('refInfo').classList.add('hidden');
+}
+
+window.handleAuth = async function() {
+  try {
+    const countryCode = document.getElementById('countryCode').value;
+    const phoneNumber = document.getElementById('phone').value.trim();
+    const phone = countryCode + phoneNumber;
+    const pass = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+    const refCode = document.getElementById('refCode').value.trim();
+
+    if(!phoneNumber || phoneNumber.length < 6) {
+      errorMsg.innerText = 'AgroFarm: Valid phone number required!';
+      errorMsg.classList.remove('hidden');
+      return;
+    }
+
+    if(!pass || pass.length < 6) {
+      errorMsg.innerText = 'AgroFarm: Password must be at least 6 characters';
+      errorMsg.classList.remove('hidden');
+      return;
+    }
+
+    if (!isLoginMode &&!refCode) {
+      errorMsg.innerText = 'AgroFarm: Referral code is required!';
+      errorMsg.classList.remove('hidden');
+      return;
+    }
+
+    const email = phone.replace('+', '') + '@agrofarm.user';
+
+    if (isLoginMode) {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } else {
+      const name = document.getElementById('name').value.trim();
+      if(!name){
+        errorMsg.innerText = 'AgroFarm: Name is required!';
+        errorMsg.classList.remove('hidden');
+        return;
+      }
+
+      const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+      const myRefCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 3);
+
+      await setDoc(doc(db, "users", userCred.user.uid), {
+        name: name, phone: phone, email: email, balance: 0, refCode: myRefCode, refBy: refCode,
+        vip: 0, level: "A", totalRecharge: 0, totalWithdraw: 0, totalEarn: 0, todayEarn: 0,
+        yesterdayEarn: 0, doneTasks: [], lastTaskDate: "", withdrawAddress: null,
+        withdrawNetwork: null, lastWithdrawDate: null, vipExpiry: expiryDate,
+        vipStartDate: new Date(), hasUsedFree: true, isLocked: false, createdAt: new Date(),
+        addressLocked: false, addressSetAt: null, addressUpdatedByAdmin: false
+      });
+      if(refCode){ await giveReferralBonus(refCode); }
+    }
+    errorMsg.classList.add('hidden');
+  } catch(error) {
+    const errorMsg = document.getElementById('errorMsg');
+    if(error.code === 'auth/email-already-in-use'){
+      errorMsg.innerText = 'AgroFarm: এই নাম্বার দিয়ে আগেই একাউন্ট খোলা আছে। Login করুন।';
+    } else if(error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found'){
+      errorMsg.innerText = 'AgroFarm: নাম্বার বা পাসওয়ার্ড ভুল।';
+    } else {
+      errorMsg.innerText = 'AgroFarm Error: ' + error.message;
+    }
+    errorMsg.classList.remove('hidden');
+  }
+}
+
+async function giveReferralBonus(refCode) {
+  try {
+    const q = query(collection(db, "users"), where("refCode", "==", refCode));
+    const snap = await getDocs(q);
+    if(!snap.empty){
+      const refUser = snap.docs[0];
+      await updateDoc(doc(db, "users", refUser.id), {
+        balance: increment(0.5),
+        totalEarn: increment(0.5)
+      });
+    }
+  } catch(e) {
+    console.error('AgroFarm Referral Error:', e);
+  }
+}
+
+window.adminResetPassword = async function() {
+  try {
+    const countryCode = document.getElementById('resetCountryCode').value;
+    const phoneNumber = document.getElementById('resetUserPhone').value.trim();
+    const userPhone = countryCode + phoneNumber;
+    const newPass = document.getElementById('resetNewPass').value.trim();
+
+    if(!phoneNumber ||!newPass) {
+      alert('AgroFarm: Phone and new password required');
+      return;
+    }
+
+    if(newPass.length < 6) {
+      alert('AgroFarm: Password must be at least 6 characters');
+      return;
+    }
+
+    const q = query(collection(db, "users"), where("phone", "==", userPhone));
+    const snap = await getDocs(q);
+
+    if(snap.empty) {
+      alert('AgroFarm: User not found');
+      return;
+    }
+
+    const userDoc = snap.docs[0];
+    await updateDoc(doc(db, "users", userDoc.id), {
+      tempPassword: newPass,
+      passwordResetAt: new Date()
+    });
+
+    alert(`AgroFarm: Password reset done! User কে বলো এই পাসওয়ার্ড দিয়ে লগিন করতে: ${newPass}`);
+    document.getElementById('resetUserPhone').value = '';
+        document.getElementById('resetNewPass').value = '';
+
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const docSnap = await getDoc(doc(db, "users", user.uid));
+    if (docSnap.exists()) {
+      userData = docSnap.data();
+
+      if(userData.tempPassword) {
+        const currentPass = prompt('Admin তোমার পাসওয়ার্ড রিসেট করছে। Temp password দাও:');
+        if(currentPass === userData.tempPassword) {
+          const newPass = prompt('নতুন পাসওয়ার্ড সেট করো (min 6 chars):');
+          if(newPass && newPass.length >= 6) {
+            await updatePassword(user, newPass);
+            await updateDoc(doc(db, "users", user.uid), {
+              tempPassword: null,
+              passwordResetAt: null
+            });
+            alert('Password আপডেট হয়ে গেছে!');
+          }
+        }
+      }
+
+      isAdmin = userData.phone === ADMIN_PHONE;
+      document.getElementById('authSection').classList.add('hidden');
+
+      if(isAdmin) {
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('adminPhone').innerText = userData.phone;
+        await loadAdminData();
+      } else {
+        document.getElementById('page-home').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
+        await loadUserData();
+      }
+    }
+  }
+});
+
+async function loadTaskConfigGlobal() {
+  try {
+    const taskConfigDoc = await getDoc(doc(db, "settings", "taskConfig"));
+    if(taskConfigDoc.exists()){
+      taskConfig = taskConfigDoc.data();
+    } else {
+      taskConfig = defaultTaskConfig;
+      await setDoc(doc(db, "settings", "taskConfig"), defaultTaskConfig);
+    }
+  } catch(e) {
+    console.error('AgroFarm Load Task Config Error:', e);
+    taskConfig = defaultTaskConfig;
+  }
+}
+
+async function loadUserData() {
+  try {
+    await loadTaskConfigGlobal();
+
+    document.getElementById('userName').innerText = userData.name;
+    document.getElementById('userInitial').innerText = userData.name?.charAt(0).toUpperCase() || 'U';
+    document.getElementById('balance').innerText = userData.balance?.toFixed(2) || 0;
+    document.getElementById('myRefCode').innerText = userData.refCode;
+    document.getElementById('myName').innerText = userData.name;
+    document.getElementById('myPhone').innerText = userData.phone;
+    document.getElementById('myRef').innerText = userData.refCode;
+    document.getElementById('myRecharge').innerText = userData.totalRecharge || 0;
+    document.getElementById('myWithdraw').innerText = userData.totalWithdraw || 0;
+    document.getElementById('currentLevel').innerText = userData.level || 'A';
+    document.getElementById('totalEarn').innerText = userData.totalEarn?.toFixed(2) || 0;
+    document.getElementById('todayEarn').innerText = userData.todayEarn?.toFixed(2) || 0;
+    document.getElementById('yesterdayEarn').innerText = userData.yesterdayEarn?.toFixed(2) || 0;
+
+    if(userData.withdrawAddress) {
+      document.getElementById('withdrawBtn').innerText = 'Withdraw Address Locked 🔒';
+      document.getElementById('withdrawBtn').classList.add('opacity-60');
+    }
+
+    await loadPackages();
+    loadTasks();
+    loadLevelCards();
+    loadEarnings();
+  } catch(e) {
+    console.error('AgroFarm Load User Data Error:', e);
+  }
+}
+
+async function loadPackages() {
+  try {
+    const pkgDoc = await getDoc(doc(db, "settings", "packages"));
+    if(pkgDoc.exists()){
+      vipPackages = pkgDoc.data().list;
+    }
+    const container = document.getElementById('packageList');
+    container.innerHTML = '';
+    vipPackages.forEach(pkg => {
+      const isActive = userData.vip === pkg.id;
+      container.innerHTML += `
+        <div class="card mb-3 bg-gradient-to-r ${pkg.color}">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-2xl">${pkg.icon}</p>
+              <p class="font-bold text-lg mt-1">${pkg.name}</p>
+              <p class="text-sm opacity-80">Level ${pkg.level}</p>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold">$${pkg.price}</p>
+              ${isActive? '<p class="text-xs bg-white text-black px-2 py-1 rounded mt-1">ACTIVE</p>' : ''}
+            </div>
+          </div>
+          <div class="mt-3 grid grid-cols-2 gap-2 text-sm">
+            <div><p class="opacity-80">Daily Income</p><p class="font-bold">$${pkg.daily}</p></div>
+            <div><p class="opacity-80">Duration</p><p class="font-bold">${pkg.days} Days</p></div>
+          </div>
+          ${!isActive? `<button onclick="buyPackage(${pkg.id})" class="btn-yellow mt-3 py-2">Buy Now</button>` : ''}
+        </div>
+      `;
+    });
+  } catch(e) {
+    console.error('AgroFarm Load Packages Error:', e);
+  }
+}
+
+window.buyPackage = async function(pkgId) {
+  try {
+    const pkg = vipPackages.find(p => p.id === pkgId);
+    if(userData.balance < pkg.price) {
+      alert('AgroFarm: Insufficient balance! Please recharge.');
+      return;
+    }
+    if(!confirm(`AgroFarm: Buy ${pkg.name} for $${pkg.price}?`)) return;
+
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + pkg.days);
+
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      balance: increment(-pkg.price),
+      vip: pkgId,
+      vipExpiry: expiryDate,
+      vipStartDate: new Date()
+    });
+    alert('AgroFarm: Package purchased successfully!');
+    location.reload();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+function loadLevelCards() {
+  const levels = ['A', 'B', 'C'];
+  const container = document.getElementById('levelCards');
+  container.innerHTML = '';
+  levels.forEach(lvl => {
+    const isCurrent = userData.level === lvl;
+    container.innerHTML += `
+      <div class="card ${isCurrent? 'bg-gradient-to-r from-yellow-400 to-orange-500' : ''}">
+        <p class="text-2xl font-bold">Level ${lvl}</p>
+        ${isCurrent? '<p class="text-xs mt-2">Current</p>' : ''}
+      </div>
+    `;
+  });
+}
+
+function loadTasks() {
+  const container = document.getElementById('taskList');
+  container.innerHTML = '';
+  const today = new Date().toDateString();
+  const lastDate = userData.lastTaskDate || '';
+  const userVip = userData.vip?? 0;
+  const vipConfig = taskConfig[userVip] || defaultTaskConfig[userVip] || defaultTaskConfig[0];
+  const tasksPerDay = vipConfig.tasksPerDay || 1;
+  const reward = vipConfig.reward || 0.02;
+  const doneTasks = userData.doneTasks || [];
+  const doneToday = doneTasks.length;
+
+  if(lastDate!== today) {
+    updateDoc(doc(db, "users", currentUser.uid), {
+      doneTasks: [],
+      lastTaskDate: today,
+      yesterdayEarn: userData.todayEarn || 0,
+      todayEarn: 0
+    });
+    userData.doneTasks = [];
+  }
+
+  container.innerHTML = `
+    <div class="card mb-4 bg-gradient-to-r from-blue-500 to-purple-600">
+      <p class="text-sm opacity-80">${vipConfig.name}</p>
+      <p class="text-2xl font-bold">${doneToday} / ${tasksPerDay} Tasks Done</p>
+      <p class="text-sm mt-2">Per Task: $${reward.toFixed(2)}</p>
+    </div>
+  `;
+
+  for(let i = 0; i < tasksPerDay; i++) {
+    const isDone = i < doneToday;
+    container.innerHTML += `
+      <div class="card mb-3">
+        <div class="flex items-center gap-4 mb-3">
+          <div class="text-4xl">💿</div>
+          <div>
+            <p class="font-bold text-lg">Software Install #${i + 1}</p>
+            <p class="text-sm text-gray-400">Install for 10 seconds</p>
+            <p class="text-green-400 font-bold">+$${reward.toFixed(2)}</p>
+          </div>
+        </div>
+        <button onclick="doInstallTask(${i})" class="${isDone? 'btn-gray' : 'btn-yellow'} w-full py-3" ${isDone? 'disabled' : ''}>
+          ${isDone? 'Completed ✓' : 'Start Install'}
+        </button>
+      </div>
+    `;
+  }
+}
+
+window.doInstallTask = function(taskIndex) {
+  const userVip = userData.vip?? 0;
+  const vipConfig = taskConfig[userVip] || defaultTaskConfig[userVip] || defaultTaskConfig[0];
+  const reward = vipConfig.reward;
+
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
+
+  title.innerText = 'Installing Software...';
+  content.innerHTML = `
+    <div class="text-center">
+      <div class="bg-[#2c2c2c] rounded-lg p-8 mb-4">
+        <p class="text-6xl mb-4">💿</p>
+        <div class="w-full bg-gray-700 rounded-full h-4 mb-4">
+          <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-4 rounded-full transition-all" style="width: 0%"></div>
+        </div>
+        <p class="text-2xl font-bold text-yellow-400" id="installTimer">10s</p>
+        <p class="text-sm text-gray-400 mt-2">Installing...</p>
+      </div>
+      <p class="text-sm text-gray-400 mb-4">Reward: $${reward.toFixed(2)}</p>
+      <button id="submitInstallBtn" onclick="completeInstallTask(${taskIndex})" class="btn-gray w-full py-3" disabled>
+        Installing...
+      </button>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+
+  let timeLeft = 10;
+  const timer = setInterval(() => {
+    timeLeft--;
+    const progress = ((10 - timeLeft) / 10) * 100;
+    document.getElementById('progressBar').style.width = progress + '%';
+    document.getElementById('installTimer').innerText = timeLeft + 's';
+
+    if(timeLeft <= 0) {
+      clearInterval(timer);
+      const btn = document.getElementById('submitInstallBtn');
+      btn.innerText = 'Claim $' + reward.toFixed(2);
+      btn.disabled = false;
+      btn.className = 'btn-yellow w-full py-3';
+      document.getElementById('installTimer').innerText = 'Done!';
+    }
+  }, 1000);
+}
+
+window.completeInstallTask = async function(taskIndex) {
+  try {
+    const userVip = userData.vip?? 0;
+    const vipConfig = taskConfig[userVip] || defaultTaskConfig[userVip] || defaultTaskConfig[0];
+    const reward = vipConfig.reward;
+
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      balance: increment(reward),
+      todayEarn: increment(reward),
+      totalEarn: increment(reward),
+      doneTasks: [...(userData.doneTasks || []), taskIndex]
+    });
+
+    await addDoc(collection(db, "earnings"), {
+      uid: currentUser.uid,
+      type: 'install_task',
+      amount: reward,
+      desc: `Software Install #${taskIndex + 1} - ${vipConfig.name}`,
+      createdAt: new Date()
+    });
+
+    closeModal();
+    alert(`AgroFarm: +$${reward.toFixed(2)} added to your balance!`);
+    location.reload();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+async function loadEarnings() {
+  try {
+    const q = query(collection(db, "earnings"), where("uid", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    const container = document.getElementById('earningsList');
+    container.innerHTML = '';
+    if(snap.empty) {
+      container.innerHTML = '<p class="text-center text-gray-500 py-8">No earnings yet</p>';
+      return;
+    }
+    const earnings = [];
+    snap.forEach(doc => earnings.push({...doc.data(), id: doc.id}));
+    earnings.sort((a,b) => b.createdAt.toDate() - a.createdAt.toDate());
+    earnings.forEach(earn => {
+      const date = earn.createdAt.toDate().toLocaleDateString();
+      container.innerHTML += `
+        <div class="card mb-3 flex justify-between items-center">
+          <div>
+            <p class="font-bold">${earn.desc}</p>
+            <p class="text-xs text-gray-400">${date}</p>
+          </div>
+          <p class="text-green-400 font-bold">+$${earn.amount}</p>
+        </div>
+      `;
+    });
+  } catch(e) {
+    console.error('AgroFarm Load Earnings Error:', e);
+  }
+}
+
+window.switchPage = function(page) {
+  ['home', 'joblevel', 'tasks', 'earnings', 'my'].forEach(p => {
+    const el = document.getElementById(`page-${p}`);
+    if(el) el.classList.add('hidden');
+  });
+  const currentPage = document.getElementById(`page-${page}`);
+  if(currentPage) currentPage.classList.remove('hidden');
+
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  if(event?.currentTarget) event.currentTarget.classList.add('active');
+}
+
+window.openRechargePage = function() {
+  document.getElementById('page-recharge').classList.remove('hidden');
+  loadAdminSettings();
+}
+
+window.closeRechargePage = function() {
+  document.getElementById('page-recharge').classList.add('hidden');
+}
+
+window.openWithdrawPage = function() {
+  document.getElementById('page-withdraw').classList.remove('hidden');
+  document.getElementById('withdrawBalance').innerText = userData.balance?.toFixed(2) || 0;
+  if(userData.withdrawAddress) {
+    document.getElementById('withdrawAddress').value = userData.withdrawAddress;
+    document.getElementById('withdrawNetwork').value = userData.withdrawNetwork || 'BEP20';
+  }
+}
+
+window.closeWithdrawPage = function() {
+  document.getElementById('page-withdraw').classList.add('hidden');
+}
+
+async function loadAdminSettings(){
+  try {
+    const settingsDoc = await getDoc(doc(db, "settings", "config"));
+    if(settingsDoc.exists()){
+      const data = settingsDoc.data();
+      if(document.getElementById('usdtAddress')){
+        document.getElementById('usdtAddress').innerText = data.walletAddress || 'TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x';
+      }
+    }
+  } catch(e) {
+    console.error('AgroFarm Settings Error:', e);
+  }
+}
+
+window.submitRecharge = async function() {
+  try {
+    const amount = parseFloat(document.getElementById('rechargeAmount').value);
+    const orderId = document.getElementById('orderId').value.trim();
+    const proofUrl = document.getElementById('proofUrl').value.trim();
+
+    if(!amount || amount < 10) {
+      alert('AgroFarm: Minimum recharge is 10 USDT');
+      return;
+    }
+    if(!orderId) {
+      alert('AgroFarm: Order ID is required');
+      return;
+    }
+
+    await addDoc(collection(db, "recharges"), {
+      uid: currentUser.uid,
+      name: userData.name,
+      phone: userData.phone,
+      amount: amount,
+      orderId: orderId,
+      proofUrl: proofUrl || null,
+      status: 'pending',
+      createdAt: new Date()
+    });
+
+    alert('AgroFarm: Recharge submitted! Wait for admin approval.');
+    closeRechargePage();
+    document.getElementById('rechargeAmount').value = '';
+    document.getElementById('orderId').value = '';
+    document.getElementById('proofUrl').value = '';
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.submitWithdraw = async function() {
+  try {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const network = document.getElementById('withdrawNetwork').value;
+    const address = document.getElementById('withdrawAddress').value.trim();
+
+    if(!amount || amount < 10) {
+      alert('AgroFarm: Minimum withdraw is 10 USDT');
+      return;
+    }
+    if(amount > userData.balance) {
+      alert('AgroFarm: Insufficient balance');
+      return;
+    }
+    if(!address) {
+      alert('AgroFarm: Wallet address is required');
+      return;
+    }
+
+    const fee = amount * 0.03;
+    const receiveAmount = amount - fee;
+
+    await addDoc(collection(db, "withdrawals"), {
+      uid: currentUser.uid,
+      name: userData.name,
+      phone: userData.phone,
+      amount: amount,
+      fee: fee,
+      receiveAmount: receiveAmount,
+      network: network,
+      address: address,
+      status: 'pending',
+      createdAt: new Date()
+    });
+
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      balance: increment(-amount),
+      totalWithdraw: increment(amount),
+      lastWithdrawDate: new Date()
+    });
+
+    alert(`AgroFarm: Withdraw submitted! You will receive $${receiveAmount.toFixed(2)}`);
+    closeWithdrawPage();
+    location.reload();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.showModal = function(type) {
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
+
+  if(type === 'spin') {
+    title.innerText = 'Spin & Win';
+    content.innerHTML = '<p class="text-center py-8">Coming Soon!</p>';
+  } else if(type === 'invite') {
+    title.innerText = 'Invite Friends';
+    const refLink = window.location.origin + '?ref=' + userData.refCode;
+    content.innerHTML = `
+      <p class="text-sm text-gray-400 mb-2">Share your referral link:</p>
+      <div class="bg-[#2c2c2c] p-3 rounded break-all text-sm mb-3">${refLink}</div>
+      <button onclick="copyRefLink('${refLink}')" class="btn-yellow">Copy Link</button>
+      <p class="text-xs text-gray-500 mt-3">Earn $0.50 for each friend!</p>
+    `;
+  } else if(type === 'withdrawAddress') {
+    title.innerText = 'Set Withdraw Address';
+    content.innerHTML = `
+      <select id="modalNetwork" class="input mb-3">
+        <option value="BEP20">BEP20 (BSC)</option>
+        <option value="TRC20">TRC20 (TRON)</option>
+      </select>
+      <input type="text" id="modalAddress" placeholder="USDT Address" class="input mb-3">
+      <button onclick="saveWithdrawAddress()" class="btn-yellow">Save</button>
+      <p class="text-xs text-yellow-400 mt-3">⚠️ Address can be set only once. Contact Admin to change.</p>
+    `;
+  }
+
+  modal.classList.remove('hidden');
+}
+
+window.closeModal = function() {
+  document.getElementById('modal').classList.add('hidden');
+}
+
+window.copyRef = function() {
+  navigator.clipboard.writeText(userData.refCode);
+  alert('AgroFarm: Referral code copied!');
+}
+
+window.copyRefLink = function(link) {
+  navigator.clipboard.writeText(link);
+  alert('AgroFarm: Link copied!');
+}
+
+window.copyAddress = function() {
+  const addr = document.getElementById('usdtAddress').innerText;
+  navigator.clipboard.writeText(addr);
+  alert('AgroFarm: Address copied!');
+}
+
+window.checkWithdrawAddress = function() {
+  if(userData.withdrawAddress) {
+    alert('AgroFarm: Address locked! Contact Admin to change.');
+  } else {
+    showModal('withdrawAddress');
+  }
+}
+
+window.saveWithdrawAddress = async function() {
+  try {
+    const network = document.getElementById('modalNetwork').value;
+    const address = document.getElementById('modalAddress').value.trim();
+    if(!address) {
+      alert('AgroFarm: Address required');
+      return;
+    }
+
+    if(userData.withdrawAddress) {
+      alert('AgroFarm: Address already set! Contact Admin to change.');
+      closeModal();
+      return;
+    }
+
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      withdrawAddress: address,
+      withdrawNetwork: network,
+      addressSetAt: new Date(),
+      addressLocked: true
+    });
+    alert('AgroFarm: Address saved! Now locked.');
+    closeModal();
+    location.reload();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.switchTab = function(tab) {
+  ['dashboard', 'users', 'packages', 'recharge', 'withdraw', 'settings', 'reset'].forEach(t => {
+    document.getElementById(`content-${t}`).classList.add('hidden');
+    document.getElementById(`tab-${t}`).classList.remove('active');
+  });
+  document.getElementById(`content-${tab}`).classList.remove('hidden');
+  document.getElementById(`tab-${tab}`).classList.add('active');
+
+  if(tab === 'packages') loadAdminPackages();
+  if(tab === 'users') loadAllUsers();
+  if(tab === 'recharge') loadPendingRecharges();
+  if(tab === 'withdraw') loadPendingWithdrawals();
+  if(tab === 'settings') loadTaskConfig();
+}
+
+async function loadAdminData() {
+  try {
+    await loadTaskConfigGlobal();
+
+    const usersSnap = await getDocs(collection(db, "users"));
+    allUsersData = [];
+    usersSnap.forEach(doc => allUsersData.push({id: doc.id,...doc.data()}));
+    document.getElementById('totalUsers').innerText = usersSnap.size;
+
+    const rechargeSnap = await getDocs(collection(db, "recharges"));
+    let totalRecharge = 0;
+    rechargeSnap.forEach(doc => {
+      const data = doc.data();
+      if(data.status === 'approved') totalRecharge += data.amount;
+    });
+    document.getElementById('totalRecharge').innerText = '$' + totalRecharge;
+
+    const withdrawSnap = await getDocs(collection(db, "withdrawals"));
+    let totalWithdraw = 0;
+    let pendingWithdraw = 0;
+    withdrawSnap.forEach(doc => {
+      const data = doc.data();
+      if(data.status === 'success') totalWithdraw += data.amount;
+      if(data.status === 'pending') pendingWithdraw++;
+    });
+    document.getElementById('totalWithdraw').innerText = '$' + totalWithdraw;
+    document.getElementById('pendingCount').innerText = pendingWithdraw;
+
+    const settingsDoc = await getDoc(doc(db, "settings", "config"));
+    if(settingsDoc.exists()){
+      const data = settingsDoc.data();
+      document.getElementById('adminWalletInput').value = data.walletAddress || '';
+      document.getElementById('minRechargeInput').value = data.minRecharge || 10;
+      document.getElementById('minWithdrawInput').value = data.minWithdraw || 10;
+    }
+
+    loadAdminPackages();
+  } catch(e) {
+    console.error('AgroFarm Admin Data Error:', e);
+  }
+}
+
+function loadAllUsers() {
+  try {
+    const usersDiv = document.getElementById('allUsers');
+    usersDiv.innerHTML = '';
+    allUsersData.forEach(user => {
+      const pkg = user.vip!== null && user.vip!== undefined? vipPackages.find(p => p.id === user.vip) : null;
+      const hasAddress = user.withdrawAddress? true : false;
+      usersDiv.innerHTML += `
+        <div class="card mb-3">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="font-bold text-lg">${user.name}</p>
+              <p class="text-sm text-gray-400">${user.phone}</p>
+            </div>
+            <p class="text-yellow-400 font-bold">$${user.balance?.toFixed(2) || 0}</p>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-3 text-sm">
+            <div class="bg-[#2c2c2c] p-2 rounded">
+              <p class="text-gray-400">VIP</p>
+              <p class="font-bold">${pkg? pkg.icon + ' ' + pkg.name : 'None'}</p>
+            </div>
+            <div class="bg-[#2c2c2c] p-2 rounded">
+              <p class="text-gray-400">Recharge</p>
+              <p class="font-bold text-green-400">$${user.totalRecharge || 0}</p>
+            </div>
+            <div class="bg-[#2c2c2c] p-2 rounded">
+              <p class="text-gray-400">Withdraw</p>
+              <p class="font-bold text-red-400">$${user.totalWithdraw || 0}</p>
+            </div>
+          </div>
+          <div class="bg-[#2c2c2c] p-2 rounded mt-2">
+            <div class="flex justify-between items-center mb-1">
+              <p class="text-gray-400 text-xs">Withdraw Address (${user.withdrawNetwork || 'N/A'})</p>
+              <button onclick="adminEditAddress('${user.id}', '${user.name}', '${user.withdrawAddress || ''}', '${user.withdrawNetwork || 'BEP20'}')" class="text-xs bg-yellow-400 text-black px-2 py-1 rounded font-bold">Edit</button>
+            </div>
+            <p class="font-mono text-xs break-all ${hasAddress? 'text-green-400' : 'text-gray-500'}">
+              ${user.withdrawAddress || 'Not Set'}
+            </p>
+          </div>
+        </div>
+      `;
+    });
+  } catch(e) {
+    console.error('AgroFarm Load Users Error:', e);
+  }
+}
+
+window.adminEditAddress = function(uid, name, currentAddress, currentNetwork) {
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
+
+  title.innerText = `Edit Address - ${name}`;
+  content.innerHTML = `
+    <p class="text-sm text-gray-400 mb-3">Current: ${currentAddress || 'Not Set'}</p>
+    <select id="adminModalNetwork" class="input mb-3">
+      <option value="BEP20" ${currentNetwork === 'BEP20'? 'selected' : ''}>BEP20 (BSC)</option>
+      <option value="TRC20" ${currentNetwork === 'TRC20'? 'selected' : ''}>TRC20 (TRON)</option>
+    </select>
+    <input type="text" id="adminModalAddress" placeholder="New USDT Address" class="input mb-3" value="${currentAddress || ''}">
+    <button onclick="adminSaveAddress('${uid}')" class="btn-yellow">Update Address</button>
+  `;
+  modal.classList.remove('hidden');
+}
+
+window.adminSaveAddress = async function(uid) {
+  try {
+    const network = document.getElementById('adminModalNetwork').value;
+    const address = document.getElementById('adminModalAddress').value.trim();
+
+    if(!address) {
+      alert('AgroFarm: Address required');
+      return;
+    }
+
+    await updateDoc(doc(db, "users", uid), {
+      withdrawAddress: address,
+      withdrawNetwork: network,
+      addressUpdatedByAdmin: true,
+      addressUpdatedAt: new Date()
+    });
+
+    alert('AgroFarm: Address updated by Admin!');
+    closeModal();
+    loadAdminData();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+function loadAdminPackages() {
+  try {
+    const container = document.getElementById('adminPackageList');
+    container.innerHTML = '';
+    vipPackages.forEach((pkg, idx) => {
+      container.innerHTML += `
+        <div class="card mb-3">
+          <div class="flex justify-between items-start mb-3">
+            <div>
+              <p class="font-bold text-lg">${pkg.icon} ${pkg.name}</p>
+              <p class="text-xs text-gray-400">ID: ${pkg.id} | Level: ${pkg.level}</p>
+            </div>
+            ${pkg.id!== 0? `<button onclick="deletePackage(${idx})" class="btn-red px-3 py-1 text-sm">Delete</button>` : ''}
+          </div>
+          <div class="grid grid-cols-3 gap-2 mb-3">
+            <div>
+              <label class="text-xs text-gray-400">Price ($)</label>
+              <input id="pkgPrice${idx}" value="${pkg.price}" type="number" class="input text-sm py-2">
+            </div>
+            <div>
+              <label class="text-xs text-gray-400">Daily ($)</label>
+              <input id="pkgDaily${idx}" value="${pkg.daily}" type="number" step="0.01" class="input text-sm py-2">
+            </div>
+            <div>
+              <label class="text-xs text-gray-400">Days</label>
+              <input id="pkgDays${idx}" value="${pkg.days}" type="number" class="input text-sm py-2">
+            </div>
+          </div>
+          <button onclick="updatePackage(${idx})" class="btn-yellow w-full py-2">Update Package</button>
+        </div>
+      `;
+    });
+  } catch(e) {
+    console.error('AgroFarm Load Admin Packages Error:', e);
+  }
+}
+
+window.addPackage = async function() {
+  try {
+    const name = document.getElementById('newPkgName').value;
+    const icon = document.getElementById('newPkgIcon').value || '📦';
+    const price = parseFloat(document.getElementById('newPkgPrice').value);
+    const daily = parseFloat(document.getElementById('newPkgDaily').value);
+    const days = parseInt(document.getElementById('newPkgDays').value);
+    const level = document.getElementById('newPkgLevel').value;
+
+    if(!name ||!price ||!daily ||!days) {
+      alert('AgroFarm: Fill all fields!');
+      return;
+    }
+
+    const newId = vipPackages.length;
+    const colors = ['from-blue-400 to-cyan-600', 'from-purple-400 to-pink-600', 'from-red-400 to-orange-600'];
+    const newPkg = {
+      id: newId, name: name, price: price, daily: daily, days: days, level: level, icon: icon,
+      color: colors[newId % colors.length]
+    };
+
+    vipPackages.push(newPkg);
+    await setDoc(doc(db, "settings", "packages"), {list: vipPackages});
+    alert('AgroFarm: Package added successfully!');
+    loadAdminPackages();
+    await loadPackages();
+
+    document.getElementById('newPkgName').value = '';
+    document.getElementById('newPkgIcon').value = '';
+    document.getElementById('newPkgPrice').value = '';
+    document.getElementById('newPkgDaily').value = '';
+    document.getElementById('newPkgDays').value = '';
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.updatePackage = async function(idx) {
+  try {
+    const price = parseFloat(document.getElementById(`pkgPrice${idx}`).value);
+    const daily = parseFloat(document.getElementById(`pkgDaily${idx}`).value);
+    const days = parseInt(document.getElementById(`pkgDays${idx}`).value);
+
+    vipPackages[idx].price = price;
+    vipPackages[idx].daily = daily;
+    vipPackages[idx].days = days;
+
+    await setDoc(doc(db, "settings", "packages"), {list: vipPackages});
+    alert('AgroFarm: Package updated successfully!');
+    loadAdminPackages();
+    await loadPackages();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.deletePackage = async function(idx) {
+  try {
+    if(vipPackages[idx].id === 0) {
+      alert('AgroFarm: Cannot delete Free Intern package!');
+      return;
+    }
+    if(!confirm('AgroFarm: Are you sure you want to delete this package?')) return;
+
+    vipPackages.splice(idx, 1);
+    await setDoc(doc(db, "settings", "packages"), {list: vipPackages});
+    alert('AgroFarm: Package deleted successfully!');
+    loadAdminPackages();
+    await loadPackages();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+async function loadPendingRecharges() {
+  const rechargeDiv = document.getElementById('pendingRecharges');
+  rechargeDiv.innerHTML = '';
+  const rechargeSnap = await getDocs(collection(db, "recharges"));
+  rechargeSnap.forEach(docSnap => {
+    const data = docSnap.data();
+    if(data.status === 'pending') {
+      rechargeDiv.innerHTML += `
+        <div class="card mb-2">
+          <p class="font-bold">${data.name}</p>
+          <p class="text-sm text-gray-400">${data.phone}</p>
+          <p>Order: ${data.orderId}</p>
+          <p>Amount: ${data.amount} USDT</p>
+          <button onclick="approveRecharge('${docSnap.id}', ${data.amount}, '${data.uid}')" class="btn-green mt-2">Approve</button>
+        </div>
+      `;
+    }
+  });
+}
+
+async function loadPendingWithdrawals() {
+  const withdrawDiv = document.getElementById('pendingWithdrawals');
+  withdrawDiv.innerHTML = '';
+  const withdrawSnap = await getDocs(collection(db, "withdrawals"));
+  withdrawSnap.forEach(docSnap => {
+    const data = docSnap.data();
+    if(data.status === 'pending') {
+      withdrawDiv.innerHTML += `
+        <div class="card mb-2">
+          <p class="font-bold">${data.name}</p>
+          <p class="text-sm text-gray-400">${data.phone}</p>
+          <p>Network: ${data.network}</p>
+          <p>Address: ${data.address}</p>
+          <p>Amount: ${data.amount} USDT (Receive: ${data.receiveAmount} USDT)</p>
+          <button onclick="approveWithdraw('${docSnap.id}')" class="btn-green mt-2">Approve</button>
+        </div>
+      `;
+    }
+  });
+}
+
+window.approveRecharge = async function(docId, amount, uid) {
+  try {
+    await updateDoc(doc(db, "recharges", docId), {status: 'approved'});
+    await updateDoc(doc(db, "users", uid), {
+      balance: increment(amount),
+      totalRecharge: increment(amount)
+    });
+    alert('AgroFarm: Recharge approved!');
+    loadPendingRecharges();
+    loadAdminData();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.approveWithdraw = async function(docId) {
+  try {
+    await updateDoc(doc(db, "withdrawals", docId), {status: 'success'});
+    alert('AgroFarm: Withdraw approved!');
+    loadPendingWithdrawals();
+    loadAdminData();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.saveRechargeSettings = async function() {
+  try {
+    const walletAddress = document.getElementById('adminWalletInput').value.trim();
+    const minRecharge = parseFloat(document.getElementById('minRechargeInput').value);
+
+    if(!walletAddress) {
+      alert('AgroFarm: Wallet address required');
+      return;
+    }
+
+    await setDoc(doc(db, "settings", "config"), {
+      walletAddress: walletAddress,
+      minRecharge: minRecharge || 10
+    }, { merge: true });
+
+    alert('AgroFarm: Recharge settings saved!');
+    loadAdminSettings();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.saveWithdrawSettings = async function() {
+  try {
+    const minWithdraw = parseFloat(document.getElementById('minWithdrawInput').value);
+
+    await setDoc(doc(db, "settings", "config"), {
+      minWithdraw: minWithdraw || 10
+    }, { merge: true });
+
+    alert('AgroFarm: Withdraw settings saved!');
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.lockUser = async function() {
+  try {
+    const email = document.getElementById('lockUserEmail').value.trim();
+    if(!email) {
+      alert('AgroFarm: User phone required');
+      return;
+    }
+
+    const q = query(collection(db, "users"), where("phone", "==", email));
+    const snap = await getDocs(q);
+
+    if(snap.empty) {
+      alert('AgroFarm: User not found');
+      return;
+    }
+
+    const userDoc = snap.docs[0];
+    await updateDoc(doc(db, "users", userDoc.id), {isLocked: true});
+    alert('AgroFarm: User locked successfully!');
+    document.getElementById('lockUserEmail').value = '';
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.unlockUser = async function() {
+  try {
+    const email = document.getElementById('lockUserEmail').value.trim();
+    if(!email) {
+      alert('AgroFarm: User phone required');
+      return;
+    }
+
+    const q = query(collection(db, "users"), where("phone", "==", email));
+    const snap = await getDocs(q);
+
+    if(snap.empty) {
+      alert('AgroFarm: User not found');
+      return;
+    }
+
+    const userDoc = snap.docs[0];
+    await updateDoc(doc(db, "users", userDoc.id), {isLocked: false});
+    alert('AgroFarm: User unlocked successfully!');
+    document.getElementById('lockUserEmail').value = '';
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+window.logout = async function() {
+  try {
+    await signOut(auth);
+    location.reload();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+
+async function loadTaskConfig() {
+  try {
+    const docSnap = await getDoc(doc(db, "settings", "taskConfig"));
+    if(docSnap.exists()) {
+      taskConfig = docSnap.data();
+    } else {
+      taskConfig = defaultTaskConfig;
+      await setDoc(doc(db, "settings", "taskConfig"), defaultTaskConfig);
+    }
+
+    const container = document.getElementById('taskConfigList');
+    container.innerHTML = '';
+
+    vipPackages.forEach(pkg => {
+      const config = taskConfig[pkg.id] || {tasksPerDay: 1, reward: 0.02, name: pkg.name, icon: pkg.icon};
+      container.innerHTML += `
+        <div class="bg-[#2c2c2c] p-3 rounded mb-3">
+          <p class="font-bold mb-2">${config.icon || pkg.icon} ${config.name || pkg.name} - VIP ${pkg.id}</p>
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="text-xs text-gray-400">Tasks Per Day</label>
+              <input id="tasksPerDay${pkg.id}" value="${config.tasksPerDay}" type="number" class="input text-sm py-2">
+            </div>
+            <div>
+              <label class="text-xs text-gray-400">Reward Per Task ($)</label>
+              <input id="taskReward${pkg.id}" value="${config.reward}" type="number" step="0.01" class="input text-sm py-2">
+            </div>
+          </div>
+        </div>
+      `;
+    });
+  } catch(e) {
+    console.error('AgroFarm Load Task Config Error:', e);
+  }
+}
+
+window.saveTaskConfig = async function() {
+  try {
+    const newConfig = {};
+    vipPackages.forEach(pkg => {
+      const tasksPerDay = parseInt(document.getElementById(`tasksPerDay${pkg.id}`).value) || 1;
+      const reward = parseFloat(document.getElementById(`taskReward${pkg.id}`).value) || 0.02;
+      newConfig[pkg.id] = {
+        name: pkg.name,
+        icon: pkg.icon,
+        tasksPerDay: tasksPerDay,
+        reward: reward
+      };
+    });
+
+    await setDoc(doc(db, "settings", "taskConfig"), newConfig);
+    alert('AgroFarm: Task config saved successfully!');
+    taskConfig = newConfig;
+    loadTaskConfig();
+  } catch(e) {
+    alert('AgroFarm Error: ' + e.message);
+  }
+}
+</script>
+</body>
+</html>
