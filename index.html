@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroFarm Debug</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+body { background: #0f0f0f; color: white; font-family: sans-serif; padding: 20px; }
+.card { background: #1c1c1c; border-radius: 12px; padding: 16px; margin: 10px 0; }
+.btn { background: #facc15; color: black; font-weight: 700; padding: 12px; border-radius: 8px; width: 100%; }
+.input { background: #2c2c2c; border-radius: 8px; padding: 12px; width: 100%; margin: 8px 0; border: 1px solid #3a3a3a; }
+.error { background: #dc2626; padding: 12px; border-radius: 8px; margin: 10px 0; }
+.success { background: #22c55e; padding: 12px; border-radius: 8px; margin: 10px 0; }
+</style>
+</head>
+<body>
+
+<div id="log" class="card">
+  <h2 class="font-bold mb-2">Debug Log:</h2>
+  <div id="logContent" class="text-xs"></div>
+</div>
+
+<div id="authBox" class="card">
+  <h1 class="text-xl font-bold mb-4">AgroFarm Test</h1>
+  <input type="text" id="name" placeholder="Name" class="input">
+  <input type="tel" id="phone" placeholder="01700000000" class="input">
+  <input type="password" id="password" placeholder="Password" class="input">
+  <button onclick="doLogin()" class="btn">Login / Register</button>
+  <div id="status"></div>
+</div>
+
+<div id="homeBox" class="card hidden">
+  <h2 class="text-xl font-bold text-green-400">✅ Login Success!</h2>
+  <p class="mt-2">Name: <span id="uName"></span></p>
+  <p>Phone: <span id="uPhone"></span></p>
+  <button onclick="doLogout()" class="btn mt-4">Logout</button>
+</div>
+
+<script>
+function addLog(msg, type = 'info') {
+  const log = document.getElementById('logContent');
+  const color = type === 'error' ? 'text-red-400' : type === 'success' ? 'text-green-400' : 'text-gray-400';
+  log.innerHTML += `<div class="${color}">[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+  console.log(msg);
+}
+
+addLog('Page Loaded');
+
+// ========== তোমার আসল Firebase Config বসাও ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyAKi3cFh6B0hIwGwl-9ZEKTtf-INwlwF4k",
+  authDomain: "agrofarm-4e772.firebaseapp.com",
+  projectId: "agrofarm-4e772",
+  storageBucket: "agrofarm-4e772.firebasestorage.app",
+  messagingSenderId: "21830970925",
+  appId: "1:21830970925:web:3be2ba09a09af3141192a4",
+  measurementId: "G-149RFPS79K"
+};
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  addLog('Firebase Initialized', 'success');
+} catch(e) {
+  addLog('Firebase Init Error: ' + e.message, 'error');
+}
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+async function doLogin() {
+  const name = document.getElementById('name').value;
+  const phone = document.getElementById('phone').value;
+  const password = document.getElementById('password').value;
+  const status = document.getElementById('status');
+  
+  addLog(`Login clicked: ${phone}`);
+  
+  if(!name || !phone || !password) {
+    status.innerHTML = '<div class="error">সব ফিল্ড পূরণ করো</div>';
+    addLog('Validation failed: Empty fields', 'error');
+    return;
+  }
+  
+  status.innerHTML = '<div class="card">Loading...</div>';
+  
+  try {
+    const email = phone + '@agrofarm.com';
+    addLog(`Trying email: ${email}`);
+    
+    let userCred;
+    try {
+      userCred = await auth.createUserWithEmailAndPassword(email, password);
+      addLog('User created successfully', 'success');
+      
+      await db.collection("users").doc(userCred.user.uid).set({
+        name: name,
+        phone: phone,
+        createdAt: new Date()
+      });
+      addLog('User data saved to Firestore', 'success');
+      
+    } catch(e) {
+      if(e.code === 'auth/email-already-in-use') {
+        addLog('User exists, trying login...');
+        userCred = await auth.signInWithEmailAndPassword(email, password);
+        addLog('Login successful', 'success');
+      } else {
+        throw e;
+      }
+    }
+    
+    status.innerHTML = '<div class="success">Success!</div>';
+    showHome();
+    
+  } catch(e) {
+    addLog('ERROR: ' + e.message, 'error');
+    status.innerHTML = `<div class="error">Error: ${e.code}<br>${e.message}</div>`;
+  }
+}
+
+async function showHome() {
+  const user = auth.currentUser;
+  if(!user) return;
+  
+  try {
+    const doc = await db.collection("users").doc(user.uid).get();
+    if(doc.exists) {
+      const data = doc.data();
+      document.getElementById('authBox').classList.add('hidden');
+      document.getElementById('homeBox').classList.remove('hidden');
+      document.getElementById('uName').innerText = data.name;
+      document.getElementById('uPhone').innerText = data.phone;
+      addLog('Home page loaded', 'success');
+    }
+  } catch(e) {
+    addLog('Error loading user: ' + e.message, 'error');
+  }
+}
+
+function doLogout() {
+  auth.signOut();
+  document.getElementById('authBox').classList.remove('hidden');
+  document.getElementById('homeBox').classList.add('hidden');
+  addLog('Logged out', 'success');
+}
+
+auth.onAuthStateChanged(user => {
+  if(user) {
+    addLog('User already logged in: ' + user.email, 'success');
+    showHome();
+  } else {
+    addLog('No user logged in');
+  }
+});
+
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+</script>
+</body>
+</html>
