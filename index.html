@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroFarm</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+body { background: #0f0f0f; color: white; font-family: 'Poppins', sans-serif; overflow-x: hidden; }
+.card { background: #1c1c1c; border-radius: 16px; padding: 16px; box-shadow: 0 2px 10px rgba(0,0,0,0.2); border: 1px solid #2a2a2a; }
+.btn-yellow { background: #facc15; color: black; font-weight: 700; padding: 12px; border-radius: 12px; width: 100%; }
+.btn-outline { border: 1px solid #444; padding: 12px; border-radius: 12px; text-align: center; width: 100%; }
+.btn-green { background: #22c55e; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
+.btn-gray { background: #444; color: white; font-weight: 700; padding: 8px; border-radius: 8px; width: 100%; }
+.btn-red { background: #dc2626; color: white; font-weight: 700; padding: 12px; border-radius: 12px; width: 100%; }
+.input { background: #2c2c2c; border-radius: 10px; padding: 12px; width: 100%; border: 1px solid #3a3a3a; outline: none; }
+.input:focus { border-color: #facc15; }
+.select-input { background: #2c2c2c; border-radius: 10px; padding: 12px; border: 1px solid #3a3a3a; outline: none; color: white; }
+.hidden { display: none!important; }
+.tab-btn { padding: 10px; border-radius: 8px; background: #2c2c2c; }
+.tab-btn.active { background: #facc15; color: black; font-weight: 700; }
+.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; color: #6b7280; cursor: pointer; }
+.nav-item.active { color: #facc15; }
+.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #1c1c1c; border-top: 1px solid #2c2c2c; display: flex; justify-content: space-around; padding: 8px 0; z-index: 40; }
+.fullpage { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 100; overflow-y: auto; background: #0f0f0f; }
+.telegram-btn { position: fixed; bottom: 80px; right: 16px; background: #0088cc; width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 0 4px 12px rgba(0,136,204,0.4); z-index: 30; }
+.file-upload { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+.file-upload input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; width: 100%; height: 100%; cursor: pointer; }
+.proof-img { max-width: 100%; border-radius: 8px; margin-top: 8px; }
+.icon-btn { background: #2c2c2c; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; border: 1px solid #3a3a3a; position: relative; }
+.icon-btn:hover { background: #3c3c3c; }
+.icon-btn.apk { background: #dc2626; color: white; border: 1px solid #ef4444; }
+.notice-badge { position: absolute; top: -4px; right: -4px; background: #dc2626; color: white; font-size: 10px; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.slider-container { position: relative; overflow: hidden; border-radius: 16px; height: 180px; }
+.slider-wrapper { display: flex; transition: transform 0.5s ease; height: 100%; }
+.slider-slide { min-width: 100%; height: 100%; }
+.slider-slide img { width: 100%; height: 100%; object-fit: cover; }
+.slider-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; }
+.slider-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
+.slider-dot.active { background: #facc15; width: 24px; border-radius: 4px; }
+.agrofarm-logo { font-family: 'Poppins', sans-serif; font-weight: 800; background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 2px 10px rgba(34,197,94,0.3); letter-spacing: -0.5px; }
+.agrofarm-logo-box { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: linear-gradient(135deg, rgba(34,197,94,0.15), rgba(22,163,74,0.1)); border: 2px solid rgba(34,197,94,0.3); border-radius: 12px; box-shadow: 0 4px 15px rgba(34,197,94,0.2); }
+.logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 2px 8px rgba(34,197,94,0.4); }
+.vip-card { background: linear-gradient(145deg, #1a1a1a, #222); border: 1px solid rgba(250,204,21,0.2); border-radius: 14px; padding: 12px; position: relative; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.2s ease; }
+.vip-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #facc15, #f59e0b); }
+.vip-card:active { transform: scale(0.98); }
+.vip-card.active { border: 1.5px solid #facc15; box-shadow: 0 6px 20px rgba(250,204,21,0.25); }
+.vip-badge { background: linear-gradient(135deg, #facc15, #f59e0b); color: black; padding: 3px 8px; border-radius: 5px; font-weight: 800; font-size: 9px; }
+.vip-icon { font-size: 28px; }
+.vip-price { font-size: 24px; font-weight: 900; }
+.vip-stat-box { background: #0f0f0f; padding: 6px; border-radius: 8px; border: 1px solid #2a2a2a; }
+.home-func-btn { background: linear-gradient(145deg, #1c1c1c, #222); border: 1px solid #2a2a2a; border-radius: 14px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s; }
+.home-func-btn:active { transform: scale(0.95); background: #252525; }
+.home-func-icon { font-size: 32px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SECTION -->
+<div id="authSection" class="min-h-screen p-6 pb-24">
+  <div class="text-center mb-8">
+    <div class="agrofarm-logo-box mx-auto w-fit">
+      <div class="logo-icon">🌾</div>
+      <span class="agrofarm-logo text-3xl">AgroFarm</span>
+    </div>
+    <h1 class="text-2xl font-bold mt-4" id="formTitle">Create Account</h1>
+  </div>
+  <div id="refInfo" class="text-green-400 text-sm mb-2 hidden"></div>
+  <input type="text" id="name" placeholder="Full Name" class="input mb-3">
+  <div class="flex gap-2 mb-3">
+    <select id="countryCode" class="select-input w-32">
+      <option value="+880">🇧🇩 +880</option>
+      <option value="+1">🇺🇸 +1</option>
+      <option value="+44">🇬🇧 +44</option>
+      <option value="+91">🇮🇳 +91</option>
+      <option value="+92">🇵🇰 +92</option>
+      <option value="+971">🇦🇪 +971</option>
+      <option value="+966">🇸🇦 +966</option>
+      <option value="+60">🇲🇾 +60</option>
+      <option value="+65">🇸🇬 +65</option>
+      <option value="+61">🇦🇺 +61</option>
+    </select>
+    <input type="tel" id="phone" placeholder="1700000000" class="input flex-1">
+  </div>
+  <input type="password" id="password" placeholder="Password (min 6 chars)" class="input mb-3">
+  <input type="text" id="refCode" placeholder="Referral Code" class="input mb-3" required>
+  <p id="errorMsg" class="text-red-500 text-sm mb-3 hidden"></p>
+  <button onclick="handleAuth()" class="btn-yellow mb-3" id="authBtn">Register</button>
+  <button onclick="toggleAuth()" class="btn-outline" id="switchBtn">Already have account? Login</button>
+  <p class="text-xs text-gray-500 text-center mt-4">Forget password? Contact Admin</p>
+</div>
+
+<!-- ADMIN SECTION -->
+<div id="adminSection" class="hidden p-6 pb-24">
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold">Admin Panel</h2>
+    <div class="text-right">
+      <p class="text-sm text-gray-400">Admin</p>
+      <p class="font-bold" id="adminPhone"></p>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-3 mb-6">
+    <div class="card text-center"><p class="text-gray-400 text-sm">Total Users</p><p class="text-2xl font-bold text-yellow-400" id="totalUsers">0</p></div>
+    <div class="card text-center"><p class="text-gray-400 text-sm">Total Recharge</p><p class="text-2xl font-bold text-green-400" id="totalRecharge">$0</p></div>
+    <div class="card text-center"><p class="text-gray-400 text-sm">Total Withdraw</p><p class="text-2xl font-bold text-red-400" id="totalWithdraw">$0</p></div>
+    <div class="card text-center"><p class="text-gray-400 text-sm">Pending</p><p class="text-2xl font-bold text-blue-400" id="pendingCount">0</p></div>
+  </div>
+  <div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+    <button onclick="switchTab('dashboard')" class="tab-btn active whitespace-nowrap" id="tab-dashboard">Dashboard</button>
+    <button onclick="switchTab('users')" class="tab-btn whitespace-nowrap" id="tab-users">Users</button>
+    <button onclick="switchTab('teamreport')" class="tab-btn whitespace-nowrap" id="tab-teamreport">Team Report</button>
+    <button onclick="switchTab('packages')" class="tab-btn whitespace-nowrap" id="tab-packages">Packages</button>
+    <button onclick="switchTab('recharge')" class="tab-btn whitespace-nowrap" id="tab-recharge">Recharge</button>
+    <button onclick="switchTab('withdraw')" class="tab-btn whitespace-nowrap" id="tab-withdraw">Withdraw</button>
+    <button onclick="switchTab('appSettings')" class="tab-btn whitespace-nowrap" id="tab-appSettings">App Settings</button>
+    <button onclick="switchTab('settings')" class="tab-btn whitespace-nowrap" id="tab-settings">Task Config</button>
+    <button onclick="switchTab('reset')" class="tab-btn whitespace-nowrap" id="tab-reset">Reset Pass</button>
+  </div>
+  <div id="content-dashboard">
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">Recharge Settings</h3>
+      <input type="text" id="adminWalletInput" placeholder="USDT Wallet Address" class="input mb-3">
+      <input type="number" id="minRechargeInput" placeholder="Min Recharge (USDT)" class="input mb-3" value="10">
+      <button onclick="saveRechargeSettings()" class="btn-yellow">Save Settings</button>
+    </div>
+    <div class="card">
+      <h3 class="font-bold mb-3">Withdraw Settings</h3>
+      <input type="number" id="minWithdrawInput" placeholder="Min Withdraw (USDT)" class="input mb-3" value="10">
+      <button onclick="saveWithdrawSettings()" class="btn-yellow">Save Settings</button>
+    </div>
+  </div>
+  <div id="content-users" class="hidden"><h3 class="font-bold mb-3">All Users</h3><div id="allUsers"></div></div>
+  <div id="content-teamreport" class="hidden"><h3 class="font-bold mb-3">Team Reports</h3><div id="adminTeamReport"></div></div>
+  <div id="content-packages" class="hidden"><h3 class="font-bold mb-3">Manage Packages</h3><div id="adminPackageList"></div></div>
+  <div id="content-recharge" class="hidden"><h3 class="font-bold mb-3">Pending Recharges</h3><div id="pendingRecharges"></div></div>
+  <div id="content-withdraw" class="hidden"><h3 class="font-bold mb-3">Pending Withdrawals</h3><div id="pendingWithdrawals"></div></div>
+  <div id="content-appSettings" class="hidden">
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">APK Download Settings</h3>
+      <input type="text" id="apkLinkInput" placeholder="APK Download Link" class="input mb-3">
+      <div class="flex items-center gap-2 mb-3"><input type="checkbox" id="apkActiveCheck" class="w-5 h-5"><label class="text-sm">Show APK Download Button</label></div>
+      <button onclick="saveApkSettings()" class="btn-yellow">Save APK Settings</button>
+    </div>
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">Notice Settings</h3>
+      <input type="text" id="noticeTitleInput" placeholder="Notice Title" class="input mb-3">
+      <textarea id="noticeTextInput" placeholder="Notice Text" class="input mb-3" rows="3"></textarea>
+      <div class="flex items-center gap-2 mb-3"><input type="checkbox" id="noticeActiveCheck" class="w-5 h-5"><label class="text-sm">Show Notice</label></div>
+      <button onclick="saveNoticeSettings()" class="btn-yellow">Save Notice</button>
+    </div>
+    <div class="card">
+      <h3 class="font-bold mb-3">Slider Images</h3>
+      <div id="sliderImagesList"></div>
+      <button onclick="addSliderImage()" class="btn-outline mb-3">+ Add Image</button>
+      <button onclick="saveSliderImages()" class="btn-yellow">Save Slider Images</button>
+    </div>
+  </div>
+  <div id="content-settings" class="hidden">
+    <h3 class="font-bold mb-3">Task Configuration</h3>
+    <div id="taskConfigList"></div>
+    <button onclick="saveTaskConfig()" class="btn-yellow mt-4">Save Task Config</button>
+  </div>
+  <div id="content-reset" class="hidden">
+    <div class="card">
+      <h3 class="font-bold mb-3">Reset User Password</h3>
+      <div class="flex gap-2 mb-3">
+        <select id="resetCountryCode" class="select-input w-32">
+          <option value="+880">🇧🇩 +880</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+91">🇮🇳 +91</option>
+        </select>
+        <input type="tel" id="resetUserPhone" placeholder="1700000000" class="input flex-1">
+      </div>
+      <input type="text" id="resetNewPass" placeholder="New Password (min 6 chars)" class="input mb-3">
+      <button onclick="adminResetPassword()" class="btn-yellow">Reset Password</button>
+      <p class="text-xs text-gray-400 mt-3">ইউজারকে নতুন পাসওয়ার্ড জানায় দিবা। ইউজার লগিন করে চেঞ্জ করে নিবে।</p>
+    </div>
+  </div>
+  <button onclick="logout()" class="btn-red mt-6">Logout</button>
+</div>
+
+<!-- HOME SECTION -->
+<div id="page-home" class="hidden pb-24">
+  <div class="flex justify-between items-center p-4 bg-[#1c1c1c]">
+    <div class="flex items-center gap-3">
+      <div class="agrofarm-logo-box">
+        <div class="logo-icon" style="width: 28px; height: 28px; font-size: 16px;">🌾</div>
+        <span class="agrofarm-logo text-lg">AgroFarm</span>
+      </div>
+      <div>
+        <p class="text-gray-400 text-xs">Welcome</p>
+        <p class="font-bold text-sm" id="userName">User</p>
+        <p class="text-xs text-gray-500">Ref: <span id="myRefCode"></span></p>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="downloadAPK()" class="icon-btn apk" id="apkBtn">📱</button>
+      <button onclick="showNotice()" class="icon-btn">
+        🔔
+        <span class="notice-badge" id="noticeBadge">3</span>
+      </button>
+    </div>
+  </div>
+  <div class="p-4">
+    <div class="slider-container mb-4">
+      <div class="slider-wrapper" id="sliderWrapper">
+        <div class="slider-slide"><img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&h=400&fit=crop" alt="Farm 1"></div>
+        <div class="slider-slide"><img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&h=400&fit=crop" alt="Farm 2"></div>
+        <div class="slider-slide"><img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800&h=400&fit=crop" alt="Farm 3"></div>
+        <div class="slider-slide"><img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&h=400&fit=crop" alt="Farm 4"></div>
+        <div class="slider-slide"><img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=800&h=400&fit=crop" alt="Farm 5"></div>
+      </div>
+      <div class="slider-dots" id="sliderDots"></div>
+    </div>
+    <div class="card mb-4 bg-gradient-to-r from-green-500 to-blue-600">
+      <p class="text-sm opacity-80">Total Balance</p>
+      <p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
+      <div class="grid grid-cols-2 gap-3 mt-4">
+        <button onclick="openRechargePage()" class="bg-white text-black font-bold py-2 rounded-lg">Recharge</button>
+        <button onclick="openWithdrawPage()" class="bg-white text-black font-bold py-2 rounded-lg">Withdraw</button>
+      </div>
+    </div>
+    <div class="grid grid-cols-3 gap-3 mb-4">
+      <div class="home-func-btn" onclick="showModal('invite')">
+        <div class="home-func-icon">👥</div>
+        <p class="text-xs font-semibold">Invite</p>
+      </div>
+      <div class="home-func-btn" onclick="showModal('spin')">
+        <div class="home-func-icon">🎰</div>
+        <p class="text-xs font-semibold">Spin</p>
+      </div>
+      <div class="home-func-btn" onclick="showTeamReport()">
+        <div class="home-func-icon">📊</div>
+        <p class="text-xs font-semibold">Team Report</p>
+      </div>
+      <div class="home-func-btn" onclick="showRechargeRecord()">
+        <div class="home-func-icon">💳</div>
+        <p class="text-xs font-semibold">Recharge Record</p>
+      </div>
+      <div class="home-func-btn" onclick="showWithdrawRecord()">
+        <div class="home-func-icon">💰</div>
+        <p class="text-xs font-semibold">Withdraw Record</p>
+      </div>
+      <div class="home-func-btn" onclick="switchPage('earnings')">
+        <div class="home-func-icon">📈</div>
+        <p class="text-xs font-semibold">Earnings</p>
+      </div>
+    </div>
+  </div>
+  <a href="https://t.me/agrofarm_support" target="_blank" class="telegram-btn">📱</a>
+</div>
+
+<!-- JOB LEVEL PAGE -->
+<div id="page-joblevel" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3">
+    <button onclick="switchPage('home')" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">VIP Packages</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-yellow-400 to-orange-500">
+      <p class="text-sm opacity-80">Current VIP</p>
+      <p class="text-3xl font-bold" id="currentVipName">Free Intern</p>
+      <p class="text-sm mt-2">Total Earnings: $<span id="totalEarn">0</span></p>
+    </div>
+    <h3 class="font-bold mb-3">All Packages</h3>
+    <div id="packageList"></div>
+  </div>
+</div>
+
+<!-- TASKS PAGE -->
+<div id="page-tasks" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3">
+    <button onclick="switchPage('home')" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Daily Tasks</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-purple-500 to-pink-600">
+      <p class="text-sm opacity-80">Today's Earning</p>
+      <p class="text-2xl font-bold">$<span id="todayEarn">0.00</span></p>
+      <p class="text-xs mt-1 opacity-80">Yesterday: $<span id="yesterdayEarn">0.00</span></p>
+    </div>
+    <div id="taskList"></div>
+  </div>
+</div>
+
+<!-- EARNINGS PAGE -->
+<div id="page-earnings" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3">
+    <button onclick="switchPage('home')" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Earnings History</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-blue-500 to-purple-600">
+      <p class="text-sm opacity-80">Your VIP Package</p>
+      <p class="text-2xl font-bold" id="earnVipName">Free Intern</p>
+      <div class="grid grid-cols-3 gap-2 mt-3 text-sm">
+        <div><p class="opacity-80">Daily Income</p><p class="font-bold">$<span id="earnVipDaily">0.02</span></p></div>
+        <div><p class="opacity-80">Duration</p><p class="font-bold"><span id="earnVipDays">3</span> Days</p></div>
+        <div><p class="opacity-80">Total Earn</p><p class="font-bold">$<span id="earnVipTotal">0</span></p></div>
+      </div>
+    </div>
+    <h3 class="font-bold mb-3">Transaction History</h3>
+    <div id="earningsList"></div>
+  </div>
+</div>
+
+<!-- MY PAGE -->
+<div id="page-my" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c]"><h2 class="text-xl font-bold">My Profile</h2></div>
+  <div class="p-4">
+    <div class="card mb-4">
+      <div class="flex items-center gap-3 mb-4 pb-4 border-b border-[#2f2f2f]">
+        <div class="agrofarm-logo-box">
+          <div class="logo-icon" style="width: 32px; height: 32px; font-size: 18px;">🌾</div>
+          <span class="agrofarm-logo text-xl">AF</span>
+        </div>
+        <div>
+          <p class="text-xs text-gray-400">Account Status</p>
+          <p class="font-bold text-green-400 flex items-center gap-1">
+            <span class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span> Active
+          </p>
+        </div>
+      </div>
+      <div class="space-y-4">
+        <div><p class="text-gray-400 text-xs uppercase tracking-wider">Name</p><p class="font-bold text-lg mt-1" id="myName">-</p></div>
+        <div><p class="text-gray-400 text-xs uppercase tracking-wider">Phone</p><p class="font-bold text-lg mt-1" id="myPhone">-</p></div>
+        <div>
+          <p class="text-gray-400 text-xs uppercase tracking-wider">Referral Code</p>
+          <div class="flex gap-2 items-center mt-1">
+            <p class="font-bold text-lg text-yellow-400" id="myRef">-</p>
+            <button onclick="copyRef()" class="bg-[#2c2c2c] hover:bg-[#3c3c3c] px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border border-[#3c3c3c]">Copy</button>
+          </div>
+        </div>
+      </div>
+    <div class="card mb-4">
+      <p class="text-gray-400">Total Recharge</p>
+      <p class="font-bold text-green-400">$<span id="myRecharge">0</span></p>
+      <p class="text-gray-400 mt-3">Total Withdraw</p>
+      <p class="font-bold text-red-400">$<span id="myWithdraw">0</span></p>
+    </div>
+    <button onclick="checkWithdrawAddress()" class="btn-outline mb-3" id="withdrawBtn">Set Withdraw Address</button>
+    <button onclick="switchPage('earnings')" class="btn-outline mb-3">Earnings History</button>
+    <button onclick="logout()" class="btn-red">Logout</button>
+  </div>
+</div>
+
+<!-- RECHARGE PAGE -->
+<div id="page-recharge" class="hidden fullpage">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3 sticky top-0">
+    <button onclick="closeRechargePage()" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Recharge USDT</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4">
+      <p class="text-gray-400 text-sm">USDT Wallet Address (BEP20)</p>
+      <div class="flex gap-2 items-center mt-2">
+        <p class="font-mono text-sm break-all" id="usdtAddress">TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x</p>
+        <button onclick="copyAddress()" class="bg-[#2c2c2c] px-3 py-1 rounded text-sm">Copy</button>
+      </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Amount (USDT)</label>
+      <input type="number" id="rechargeAmount" placeholder="Min 10 USDT" class="input mt-2" min="10">
+      <p class="text-xs text-gray-500 mt-2">Minimum: 10 USDT</p>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400 mb-2 block">Payment Proof Screenshot</label>
+      <div class="file-upload">
+        <div class="bg-[#2c2c2c] border-2 border-dashed border-gray-600 rounded-lg p-8 text-center cursor-pointer hover:border-yellow-400 transition-all">
+          <p class="text-4xl mb-2">📸</p>
+          <p class="text-sm text-gray-400" id="uploadText">Click to upload screenshot</p>
+          <p class="text-xs text-gray-500 mt-1" id="fileName"></p>
+          <img id="previewImg" class="hidden proof-img">
+        </div>
+        <input type="file" id="proofFile" accept="image/*" onchange="handleFileSelect(event)">
+      </div>
+    </div>
+    <button onclick="submitRecharge()" class="btn-yellow">Submit Recharge</button>
+    <p class="text-xs text-gray-500 text-center mt-4">Payment will be verified within 24 hours</p>
+  </div>
+</div>
+
+<!-- WITHDRAW PAGE -->
+<div id="page-withdraw" class="hidden fullpage">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3 sticky top-0">
+    <button onclick="closeWithdrawPage()" class="text-xl">←</button>
+    <h2 class="text-xl font-bold">Withdraw USDT</h2>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-green-500 to-blue-600">
+      <p class="text-sm opacity-80">Available Balance</p>
+      <p class="text-3xl font-bold">$<span id="withdrawBalance">0.00</span></p>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Amount (USDT)</label>
+      <input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mt-2" min="10">
+      <p class="text-xs text-gray-500 mt-2">Minimum: 10 USDT | Fee: 3%</p>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Network</label>
+      <select id="withdrawNetwork" class="input mt-2">
+        <option value="BEP20">BEP20 (BSC)</option>
+        <option value="TRC20">TRC20 (TRON)</option>
+      </select>
+    </div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400">Wallet Address</label>
+      <input type="text" id="withdrawAddress" placeholder="Enter USDT address" class="input mt-2">
+    </div>
+    <button onclick="submitWithdraw()" class="btn-yellow">Submit Withdraw</button>
+    <p class="text-xs text-gray-500 text-center mt-4">Processing time: 24-48 hours</p>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div id="bottomNav" class="bottom-nav hidden">
+  <div class="nav-item active" onclick="switchPage('home')"><span class="text-xl">🏠</span><span>Home</span></div>
+  <div class="nav-item" onclick="switchPage('joblevel')"><span class="text-xl">👑</span><span>Job</span></div>
+  <div class="nav-item" onclick="switchPage('tasks')"><span class="text-xl">📝</span><span>Tasks</span></div>
+  <div class="nav-item" onclick="switchPage('earnings')"><span class="text-xl">💰</span><span>Earnings</span></div>
+  <div class="nav-item" onclick="switchPage('my')"><span class="text-xl">👤</span><span>My</span></div>
+</div>
+
+<!-- MODALS -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="card w-full max-w-md max-h-96 overflow-y-auto">
+    <h3 class="text-xl font-bold mb-4" id="modalTitle"></h3>
+    <div id="modalContent"></div>
+    <button onclick="closeModal()" class="btn-gray mt-4">Close</button>
+  </div>
+</div>
+
+<!-- NOTICE MODAL -->
+<div id="noticeModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="card w-full max-w-md">
+    <h3 class="text-xl font-bold mb-4">📢 Notice</h3>
+    <div class="space-y-3" id="noticeList">
+      <div class="bg-[#2c2c2c] p-3 rounded-lg">
+        <p class="font-bold text-yellow-400">🎉 Welcome Bonus!</p>
+        <p class="text-sm text-gray-400 mt-1">নতুন ইউজারদের জন্য $0.50 বোনাস</p>
+        <p class="text-xs text-gray-500 mt-2">2 hours ago</p>
+      </div>
+      <div class="bg-[#2c2c2c] p-3 rounded-lg">
+        <p class="font-bold text-green-400">✅ Withdraw Open</p>
+        <p class="text-sm text-gray-400 mt-1">24/7 Withdraw চালু আছে</p>
+        <p class="text-xs text-gray-500 mt-2">1 day ago</p>
+      </div>
+      <div class="bg-[#2c2c2c] p-3 rounded-lg">
+        <p class="font-bold text-blue-400">📱 APK Available</p>
+        <p class="text-sm text-gray-400 mt-1">Android App ডাউনলোড করুন</p>
+        <p class="text-xs text-gray-500 mt-2">3 days ago</p>
+      </div>
+    </div>
+    <button onclick="closeNotice()" class="btn-gray mt-4">Close</button>
+  </div>
+</div>
+
+<script>
+// Firebase Config
+const firebaseConfig = {
+  apiKey: "AIzaSyAKi3cFh6B0hIwGwl-9ZEKTtf-INwlwF4k",
+  authDomain: "agrofarm-4e772.firebaseapp.com",
+  projectId: "agrofarm-4e772",
+  storageBucket: "agrofarm-4e772.firebasestorage.app",
+  messagingSenderId: "21830970925",
+  appId: "1:21830970925:web:3be2ba09a09af3141192a4"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let currentUser = null;
+let isLoginMode = false;
+let userData = {};
+let isAdmin = false;
+let allUsersData = [];
+let taskConfig = {};
+let uploadedProofBase64 = '';
+let currentSlide = 0;
+
+const ADMIN_PHONE = "+8801748059815";
+
+const defaultTaskConfig = {
+  0: {name: "Free Intern", tasksPerDay: 1, reward: 0.30, icon: "🆓"},
+  1: {name: "VIP 1", tasksPerDay: 3, reward: 0.70, icon: "🥉"},
+  2: {name: "VIP 2", tasksPerDay: 5, reward: 1.60, icon: "🥈"},
+  3: {name: "VIP 3", tasksPerDay: 8, reward: 2.40, icon: "🥇"},
+  4: {name: "VIP 4", tasksPerDay: 12, reward: 4.00, icon: "💎"}
+};
+
+const defaultPackages = [
+  {id: 0, name: "Free Intern", price: 0, daily: 0.02, days: 3, level: "Free", icon: "🆓", color: "from-gray-400 to-gray-600"},
+  {id: 1, name: "VIP 1", price: 10, daily: 0.70, days: 30, level: "1", icon: "🥉", color: "from-blue-400 to-blue-600"},
+  {id: 2, name: "VIP 2", price: 30, daily: 1.60, days: 35, level: "2", icon: "🥈", color: "from-green-400 to-green-600"},
+  {id: 3, name: "VIP 3", price: 50, daily: 2.40, days: 45, level: "3", icon: "🥇", color: "from-yellow-400 to-yellow-600"},
+  {id: 4, name: "VIP 4", price: 100, daily: 4.00, days: 60, level: "4", icon: "💎", color: "from-purple-400 to-pink-600"}
+];
+
+let vipPackages = [...defaultPackages];
+
+// Auth State
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    const docSnap = await db.collection("users").doc(user.uid).get();
+    if (docSnap.exists) {
+      userData = docSnap.data();
+      if(userData.isLocked) { showError('Your account is locked! Contact Admin.'); await auth.signOut(); return; }
+      if(userData.tempPassword) {
+        const currentPass = prompt('Admin তোমার পাসওয়ার্ড রিসেট করছে। Temp password দাও:');
+        if(currentPass === userData.tempPassword) {
+          const newPass = prompt('নতুন পাসওয়ার্ড সেট করো (min 6 chars):');
+          if(newPass && newPass.length >= 6) {
+            await user.updatePassword(newPass);
+            await db.collection("users").doc(user.uid).update({ tempPassword: null, passwordResetAt: null });
+            showSuccess('Success', 'Password আপডেট হয়ে গেছে!');
+          }
+        } else { showError('Wrong temp password!'); await auth.signOut(); return; }
+      }
+      isAdmin = userData.phone === ADMIN_PHONE;
+      document.getElementById('authSection').classList.add('hidden');
+      if(isAdmin) {
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('adminPhone').innerText = userData.phone;
+        await loadAdminData();
+      } else {
+        document.getElementById('page-home').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
+        await loadUserData();
+        initSlider();
+      }
+    } else { await auth.signOut(); showError('User data not found. Please register again.'); }
+  } else {
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('adminSection').classList.add('hidden');
+    document.getElementById('page-home').classList.add('hidden');
+    document.getElementById('bottomNav').classList.add('hidden');
+  }
+});
+
+// URL Ref Code Check
+window.onload = function() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const refCodeFromURL = urlParams.get('ref');
+  if(refCodeFromURL){
+    document.getElementById('refCode').value = refCodeFromURL;
+    document.getElementById('refInfo').innerText = `Referral Code: ${refCodeFromURL}`;
+    document.getElementById('refInfo').classList.remove('hidden');
+  }
+}
+
+function initSlider() {
+  const wrapper = document.getElementById('sliderWrapper');
+  const dotsContainer = document.getElementById('sliderDots');
+  const slides = document.querySelectorAll('.slider-slide');
+  if(!wrapper ||!dotsContainer) return;
+  dotsContainer.innerHTML = '';
+  slides.forEach((_, index) => {
+    const dot = document.createElement('div');
+    dot.className = 'slider-dot' + (index === 0? ' active' : '');
+    dot.onclick = () => goToSlide(index);
+    dotsContainer.appendChild(dot);
+  });
+  setInterval(() => {
+    currentSlide = (currentSlide + 1) % slides.length;
+    goToSlide(currentSlide);
+  }, 3000);
+}
+
+function goToSlide(index) {
+  const wrapper = document.getElementById('sliderWrapper');
+  const dots = document.querySelectorAll('.slider-dot');
+  if(!wrapper) return;
+  currentSlide = index;
+  wrapper.style.transform = `translateX(-${index * 100}%)`;
+  dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); });
+}
+
+function showSuccess(title, message) {
+  const modal = document.getElementById('modal');
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalContent').innerHTML = `<div class="text-center"><div class="text-6xl mb-4">✅</div><p class="text-lg">${message}</p></div>`;
+  modal.classList.remove('hidden');
+}
+
+function showError(message) {
+  const modal = document.getElementById('modal');
+  document.getElementById('modalTitle').innerText = 'Error';
+  document.getElementById('modalContent').innerHTML = `<div class="text-center"><div class="text-6xl mb-4">❌</div><p class="text-lg text-red-400">${message}</p></div>`;
+  modal.classList.remove('hidden');
+}
+
+function handleFileSelect(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      uploadedProofBase64 = e.target.result;
+      document.getElementById('uploadText').innerText = 'Image uploaded';
+      document.getElementById('fileName').innerText = file.name;
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('previewImg').classList.remove('hidden');
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+function toggleAuth() {
+  isLoginMode =!isLoginMode;
+  document.getElementById('formTitle').innerText = isLoginMode? 'Login' : 'Create Account';
+  document.getElementById('authBtn').innerText = isLoginMode? 'Login' : 'Register';
+  document.getElementById('switchBtn').innerText = isLoginMode? 'Create account' : 'Already have account? Login';
+  document.getElementById('name').style.display = isLoginMode? 'none' : 'block';
+  document.getElementById('refCode').style.display = isLoginMode? 'none' : 'block';
+  document.getElementById('refInfo').classList.add('hidden');
+  document.getElementById('errorMsg').classList.add('hidden');
+}
+
+async function handleAuth() {
+  try {
+    const countryCode = document.getElementById('countryCode').value;
+    const phoneNumber = document.getElementById('phone').value.trim().replace(/[^0-9]/g, '');
+    const phone = countryCode + phoneNumber;
+    const pass = document.getElementById('password').value;
+    const errorMsg = document.getElementById('errorMsg');
+    const refCode = document.getElementById('refCode').value.trim();
+    if(!phoneNumber || phoneNumber.length < 6) { errorMsg.innerText = 'Valid phone number required!'; errorMsg.classList.remove('hidden'); return; }
+    if(!pass || pass.length < 6) { errorMsg.innerText = 'Password must be at least 6 characters'; errorMsg.classList.remove('hidden'); return; }
+    if (!isLoginMode &&!refCode) { errorMsg.innerText = 'Referral code is required!'; errorMsg.classList.remove('hidden'); return; }
+    const email = phone.replace('+', '') + '@agrofarm.user';
+    if (isLoginMode) {
+      await auth.signInWithEmailAndPassword(email, pass);
+    } else {
+      const name = document.getElementById('name').value.trim();
+      if(!name){ errorMsg.innerText = 'Name is required!'; errorMsg.classList.remove('hidden'); return; }
+      const userCred = await auth.createUserWithEmailAndPassword(email, pass);
+      const myRefCode = Math.random().toString(36).substr(2, 8).toUpperCase();
+      const expiryDate = new Date(); expiryDate.setDate(expiryDate.getDate() + 3);
+      await db.collection("users").doc(userCred.user.uid).set({
+        name: name, phone: phone, email: email, balance: 0, refCode: myRefCode, refBy: refCode,
+        vip: 0, level: "Free", totalRecharge: 0, totalWithdraw: 0, totalEarn: 0, todayEarn: 0,
+        yesterdayEarn: 0, doneTasks: [], lastTaskDate: "", withdrawAddress: null, withdrawNetwork: null,
+        lastWithdrawDate: null, vipExpiry: expiryDate, vipStartDate: new Date(), hasUsedFree: true,
+        isLocked: false, createdAt: new Date(), addressLocked: false, addressSetAt: null, addressUpdatedByAdmin: false
+      });
+      if(refCode){ await giveReferralBonus(refCode); }
+    }
+    errorMsg.classList.add('hidden');
+  } catch(error) {
+    const errorMsg = document.getElementById('errorMsg');
+    if(error.code === 'auth/email-already-in-use'){ errorMsg.innerText = 'এই নাম্বার দিয়ে আগেই একাউন্ট খোলা আছে। Login করুন।'; }
+    else if(error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential'){ errorMsg.innerText = 'নাম্বার বা পাসওয়ার্ড ভুল।'; }
+    else if(error.code === 'auth/invalid-email'){ errorMsg.innerText = 'নাম্বার ফরম্যাট ভুল। শুধু নাম্বার দিন।'; }
+    else { errorMsg.innerText = 'Error: ' + error.message; }
+    errorMsg.classList.remove('hidden');
+  }
+}
+
+async function giveReferralBonus(refCode) {
+  try {
+    const snap = await db.collection("users").where("refCode", "==", refCode).get();
+    if(!snap.empty){
+      const refUser = snap.docs[0];
+      await db.collection("users").doc(refUser.id).update({
+        balance: firebase.firestore.FieldValue.increment(0.5),
+        totalEarn: firebase.firestore.FieldValue.increment(0.5)
+      });
+    }
+  } catch(e) { console.error('Referral Error:', e); }
+}
+
+async function loadTaskConfigGlobal() {
+  try {
+    const taskConfigDoc = await db.collection("settings").doc("taskConfig").get();
+    if(taskConfigDoc.exists){ taskConfig = taskConfigDoc.data(); }
+    else { taskConfig = defaultTaskConfig; await db.collection("settings").doc("taskConfig").set(defaultTaskConfig); }
+  } catch(e) { console.error('Load Task Config Error:', e); taskConfig = defaultTaskConfig; }
+}
+
+async function loadUserData() {
+  try {
+    await loadTaskConfigGlobal();
+    const currentVip = vipPackages.find(p => p.id === userData.vip) || vipPackages[0];
+    document.getElementById('userName').innerText = userData.name;
+    document.getElementById('balance').innerText = userData.balance?.toFixed(2) || 0;
+    document.getElementById('myRefCode').innerText = userData.refCode;
+    document.getElementById('myName').innerText = userData.name;
+    document.getElementById('myPhone').innerText = userData.phone;
+    document.getElementById('myRef').innerText = userData.refCode;
+    document.getElementById('myRecharge').innerText = userData.totalRecharge || 0;
+    document.getElementById('myWithdraw').innerText = userData.totalWithdraw || 0;
+    document.getElementById('currentVipName').innerText = currentVip.name;
+    document.getElementById('totalEarn').innerText = userData.totalEarn?.toFixed(2) || 0;
+    document.getElementById('todayEarn').innerText = userData.todayEarn?.toFixed(2) || 0;
+    document.getElementById('yesterdayEarn').innerText = userData.yesterdayEarn?.toFixed(2) || 0;
+    document.getElementById('earnVipName').innerText = currentVip.name;
+    document.getElementById('earnVipDaily').innerText = currentVip.daily.toFixed(2);
+    document.getElementById('earnVipDays').innerText = currentVip.days;
+    document.getElementById('earnVipTotal').innerText = (currentVip.daily * currentVip.days).toFixed(2);
+    if(userData.withdrawAddress) {
+      document.getElementById('withdrawBtn').innerText = 'Withdraw Address Locked 🔒';
+      document.getElementById('withdrawBtn').classList.add('opacity-60');
+    }
+    await loadPackages();
+    loadTasks();
+    loadEarnings();
+  } catch(e) { console.error('Load User Data Error:', e); }
+}
+
+async function loadPackages() {
+  try {
+    const pkgDoc = await db.collection("settings").doc("packages").get();
+    if(pkgDoc.exists){ vipPackages = pkgDoc.data().list; }
+    const container = document.getElementById('packageList');
+    container.innerHTML = '';
+    vipPackages.forEach(pkg => {
+      const isActive = userData.vip === pkg.id;
+      container.innerHTML += `
+        <div class="vip-card mb-3 ${isActive? 'active' : ''}">
+          <div class="flex justify-between items-center mb-2">
+            <div class="flex items-center gap-2">
+              <div class="vip-icon">${pkg.icon}</div>
+              <div>
+                <p class="font-bold text-sm">${pkg.name}</p>
+                <p class="text-xs text-gray-500">Level ${pkg.level}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="vip-price">$${pkg.price}</p>
+              ${isActive? '<div class="vip-badge mt-0.5">ACTIVE</div>' : ''}
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-1.5 mb-2">
+            <div class="vip-stat-box text-center">
+              <p class="text-xs text-gray-500">Daily</p>
+              <p class="text-sm font-bold text-green-400">$${pkg.daily}</p>
+            </div>
+            <div class="vip-stat-box text-center">
+              <p class="text-xs text-gray-500">Days</p>
+              <p class="text-sm font-bold text-blue-400">${pkg.days}</p>
+            </div>
+            <div class="vip-stat-box text-center">
+              <p class="text-xs text-gray-500">Total</p>
+              <p class="text-sm font-bold text-yellow-400">$${(pkg.daily * pkg.days).toFixed(2)}</p>
+            </div>
+          </div>
+          ${!isActive? `<button onclick="buyPackage(${pkg.id})" class="btn-yellow py-2 text-sm font-bold">Buy Now</button>` : ''}
+        </div>
+      `;
+    });
+  } catch(e) { console.error('Load Packages Error:', e); }
+}
+
+async function buyPackage(pkgId) {
+  try {
+    const pkg = vipPackages.find(p => p.id === pkgId);
+    if(userData.balance < pkg.price) { showError('Insufficient balance! Please recharge.'); return; }
+    if(!confirm(`Buy ${pkg.name} for $${pkg.price}?`)) return;
+    const expiryDate = new Date(); expiryDate.setDate(expiryDate.getDate() + pkg.days);
+    await db.collection("users").doc(currentUser.uid).update({
+      balance: firebase.firestore.FieldValue.increment(-pkg.price),
+      vip: pkgId,
+      vipExpiry: expiryDate,
+      vipStartDate: new Date()
+    });
+    showSuccess('Success', 'Package purchased successfully!');
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) { showError(e.message); }
+}
+
+function loadTasks() {
+  const container = document.getElementById('taskList');
+  container.innerHTML = '';
+  const today = new Date().toDateString();
+  const lastDate = userData.lastTaskDate || "";
+  if(lastDate!== today){
+    userData.doneTasks = []; userData.todayEarn = 0;
+    db.collection("users").doc(currentUser.uid).update({ doneTasks: [], todayEarn: 0, lastTaskDate: today });
+  }
+  const currentVipId = userData.vip!== null && userData.vip!== undefined? userData.vip : 0;
+  const vipConfig = taskConfig[currentVipId] || defaultTaskConfig[currentVipId];
+  const totalTasks = vipConfig.tasksPerDay;
+  const rewardPerTask = vipConfig.reward;
+  for(let i = 1; i <= totalTasks; i++){
+    const isDone = userData.doneTasks?.includes(i);
+    container.innerHTML += `
+      <div class="card mb-2">
+        <div class="flex justify-between items-center">
+          <div><p class="font-bold">Task ${i}</p><p class="text-sm text-gray-400">Reward: $${rewardPerTask.toFixed(2)}</p></div>
+          <button onclick="completeTask(${i}, ${rewardPerTask})" class="${isDone? 'btn-gray' : 'btn-green'} px-4 py-2" ${isDone? 'disabled' : ''}>
+            ${isDone? '✓ Done' : 'Complete'}
+          </button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+async function completeTask(taskId, reward) {
+  try {
+    const today = new Date().toDateString();
+    const doneTasks = userData.doneTasks || [];
+    if(doneTasks.includes(taskId)) { showError('Task already completed!'); return; }
+    doneTasks.push(taskId);
+    await db.collection("users").doc(currentUser.uid).update({
+      balance: firebase.firestore.FieldValue.increment(reward),
+      totalEarn: firebase.firestore.FieldValue.increment(reward),
+      todayEarn: firebase.firestore.FieldValue.increment(reward),
+      doneTasks: doneTasks,
+      lastTaskDate: today
+    });
+    await db.collection("earnings").add({
+      uid: currentUser.uid, taskId: taskId, amount: reward, type: 'task', createdAt: new Date()
+    });
+    showSuccess('Task Completed', `You earned $${reward.toFixed(2)}`);
+    userData.doneTasks = doneTasks;
+    loadTasks();
+    loadUserData();
+  } catch(e) { showError(e.message); }
+}
+
+async function loadEarnings() {
+  const container = document.getElementById('earningsList');
+  container.innerHTML = '';
+  const snap = await db.collection("earnings").where("uid", "==", currentUser.uid).get();
+  const earnings = [];
+  snap.forEach(doc => earnings.push({...doc.data(), id: doc.id}));
+  earnings.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+  if(earnings.length === 0) { container.innerHTML = '<p class="text-center text-gray-400 py-8">No earnings yet</p>'; return; }
+  earnings.slice(0, 20).forEach(earn => {
+    const date = earn.createdAt.toDate().toLocaleDateString();
+    const time = earn.createdAt.toDate().toLocaleTimeString();
+    container.innerHTML += `
+      <div class="card mb-2">
+        <div class="flex justify-between items-center">
+          <div><p class="font-bold">${earn.type === 'task'? 'Task' : 'Referral'} Reward</p><p class="text-xs text-gray-400">${date} ${time}</p></div>
+          <p class="text-green-400 font-bold">+$${earn.amount.toFixed(2)}</p>
+        </div>
+      </div>
+    `;
+  });
+}
+
+function switchPage(page) {
+  ['home', 'joblevel', 'tasks', 'earnings', 'my'].forEach(p => {
+    document.getElementById(`page-${p}`).classList.add('hidden');
+  });
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  document.getElementById(`page-${page}`).classList.remove('hidden');
+  event.target.closest('.nav-item').classList.add('active');
+  if(page === 'tasks') loadTasks();
+  if(page === 'earnings') loadEarnings();
+}
+
+function openRechargePage() {
+  document.getElementById('page-recharge').classList.remove('hidden');
+  loadAdminSettings();
+}
+
+function closeRechargePage() {
+  document.getElementById('page-recharge').classList.add('hidden');
+  document.getElementById('rechargeAmount').value = '';
+  document.getElementById('uploadText').innerText = 'Click to upload screenshot';
+  document.getElementById('fileName').innerText = '';
+  document.getElementById('previewImg').classList.add('hidden');
+  uploadedProofBase64 = '';
+}
+
+function openWithdrawPage() {
+  if(userData.withdrawAddress) {
+    document.getElementById('withdrawAddress').value = userData.withdrawAddress;
+    document.getElementById('withdrawNetwork').value = userData.withdrawNetwork || 'BEP20';
+    document.getElementById('withdrawAddress').disabled = true;
+    document.getElementById('withdrawNetwork').disabled = true;
+  }
+  document.getElementById('withdrawBalance').innerText = userData.balance?.toFixed(2) || 0;
+  document.getElementById('page-withdraw').classList.remove('hidden');
+}
+
+function closeWithdrawPage() {
+  document.getElementById('page-withdraw').classList.add('hidden');
+  document.getElementById('withdrawAmount').value = '';
+  if(!userData.withdrawAddress) { document.getElementById('withdrawAddress').value = ''; }
+}
+
+async function loadAdminSettings() {
+  const settingsDoc = await db.collection("settings").doc("config").get();
+  if(settingsDoc.exists){
+    const data = settingsDoc.data();
+    document.getElementById('usdtAddress').innerText = data.walletAddress || 'TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x';
+  }
+}
+
+async function submitRecharge() {
+  try {
+    const amount = parseFloat(document.getElementById('rechargeAmount').value);
+    if(!amount || amount < 10) { showError('Minimum recharge amount is 10 USDT'); return; }
+    if(!uploadedProofBase64) { showError('Please upload payment screenshot'); return; }
+    const orderId = 'R' + Date.now();
+    await db.collection("recharges").add({
+      uid: currentUser.uid, name: userData.name, phone: userData.phone, amount: amount,
+      orderId: orderId, proofImage: uploadedProofBase64, status: 'pending', createdAt: new Date()
+    });
+    closeRechargePage();
+    showSuccess('Submitted', 'Recharge request submitted! Wait for admin approval.');
+  } catch(e) { showError(e.message); }
+}
+
+async function submitWithdraw() {
+  try {
+    const amount = parseFloat(document.getElementById('withdrawAmount').value);
+    const address = document.getElementById('withdrawAddress').value.trim();
+    const network = document.getElementById('withdrawNetwork').value;
+    if(!amount || amount < 10) { showError('Minimum withdraw amount is 10 USDT'); return; }
+    if(amount > userData.balance) { showError('Insufficient balance!'); return; }
+    if(!address) { showError('USDT address required!'); return; }
+    const fee = amount * 0.03;
+    const receiveAmount = amount - fee;
+    await db.collection("withdrawals").add({
+      uid: currentUser.uid, name: userData.name, phone: userData.phone, amount: amount,
+      receiveAmount: receiveAmount, fee: fee, address: address, network: network, status: 'pending', createdAt: new Date()
+    });
+    await db.collection("users").doc(currentUser.uid).update({
+      balance: firebase.firestore.FieldValue.increment(-amount),
+      totalWithdraw: firebase.firestore.FieldValue.increment(amount),
+      lastWithdrawDate: new Date()
+    });
+    closeWithdrawPage();
+    showSuccess('Withdraw Submitted', `You will receive $${receiveAmount.toFixed(2)}`);
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) { showError(e.message); }
+}
+
+function showModal(type) {
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
+  if(type === 'spin') {
+    title.innerText = 'Spin & Win';
+    content.innerHTML = '<div class="text-center py-12"><div class="text-6xl mb-4">🎰</div><p class="text-xl font-bold text-yellow-400">Coming Soon!</p><p class="text-sm text-gray-400 mt-2">Spin & Win ফিচার খুব শীঘ্রই আসছে</p></div>';
+  } else if(type === 'invite') {
+    title.innerText = 'Invite Friends';
+    const refLink = window.location.origin + '?ref=' + userData.refCode;
+    content.innerHTML = `
+      <p class="text-sm text-gray-400 mb-2">Share your referral link:</p>
+      <div class="bg-[#2c2c2c] p-3 rounded break-all text-sm mb-3">${refLink}</div>
+      <button onclick="copyRefLink('${refLink}')" class="btn-yellow">Copy Link</button>
+      <div class="bg-[#2c2c2c] p-3 rounded mt-3">
+        <p class="text-xs text-gray-400">Your Referral Code</p>
+        <p class="font-bold text-lg text-yellow-400">${userData.refCode}</p>
+      </div>
+      <p class="text-xs text-gray-500 mt-3">💰 Earn $0.50 for each friend who joins!</p>
+    `;
+  } else if(type === 'withdrawAddress') {
+    title.innerText = 'Set Withdraw Address';
+    content.innerHTML = `
+      <select id="modalNetwork" class="input mb-3">
+        <option value="BEP20">BEP20 (BSC)</option>
+        <option value="TRC20">TRC20 (TRON)</option>
+      </select>
+      <input type="text" id="modalAddress" placeholder="USDT Address" class="input mb-3">
+      <button onclick="saveWithdrawAddress()" class="btn-yellow">Save</button>
+      <p class="text-xs text-yellow-400 mt-3">⚠️ Address can be set only once. Contact Admin to change.</p>
+    `;
+  }
+  modal.classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+
+function copyRef() {
+  navigator.clipboard.writeText(userData.refCode);
+  showSuccess('Success', 'Referral code copied!');
+}
+
+function copyRefLink(link) {
+  navigator.clipboard.writeText(link);
+  showSuccess('Success', 'Link copied!');
+}
+
+function copyAddress() {
+  const addr = document.getElementById('usdtAddress').innerText;
+  navigator.clipboard.writeText(addr);
+  showSuccess('Success', 'Address copied!');
+}
+
+function checkWithdrawAddress() {
+  if(userData.withdrawAddress) {
+    showError('Address locked! Contact Admin to change.');
+  } else {
+    showModal('withdrawAddress');
+  }
+}
+
+async function saveWithdrawAddress() {
+  try {
+    const network = document.getElementById('modalNetwork').value;
+    const address = document.getElementById('modalAddress').value.trim();
+    if(!address) { showError('Address required'); return; }
+    if(userData.withdrawAddress) { showError('Address already set! Contact Admin to change.'); closeModal(); return; }
+    await db.collection("users").doc(currentUser.uid).update({
+      withdrawAddress: address, withdrawNetwork: network, addressSetAt: new Date(), addressLocked: true
+    });
+    closeModal();
+    showSuccess('Success', 'Address saved! Now locked.');
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) { showError(e.message); }
+}
+
+async function showTeamReport() {
+  const modal = document.getElementById('modal');
+  document.getElementById('modalTitle').innerText = 'My Team Report';
+  const content = document.getElementById('modalContent');
+  content.innerHTML = '<p class="text-center py-4 text-gray-400">Loading...</p>';
+  modal.classList.remove('hidden');
+  try {
+    const snap = await db.collection("users").where("refBy", "==", userData.refCode).get();
+    const teamMembers = [];
+    snap.forEach(doc => teamMembers.push({...doc.data(), id: doc.id}));
+    if(teamMembers.length === 0) {
+      content.innerHTML = '<div class="text-center py-8"><div class="text-6xl mb-3">👥</div><p class="text-gray-400">No team members yet</p><p class="text-xs text-gray-500 mt-2">Share your referral code to build your team</p></div>';
+      return;
+    }
+    let html = `<div class="bg-[#2c2c2c] p-3 rounded mb-3"><p class="text-sm text-gray-400">Total Team Members</p><p class="text-2xl font-bold text-yellow-400">${teamMembers.length}</p></div>`;
+    let totalTeamRecharge = 0;
+    teamMembers.forEach(member => {
+      const hasRecharged = member.totalRecharge > 0;
+      if(hasRecharged) totalTeamRecharge += member.totalRecharge;
+      html += `
+           <div class="bg-[#1c1c1c] border border-[#2a2a2a] p-3 rounded mb-2">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <p class="font-bold">${member.name}</p>
+              <p class="text-xs text-gray-400">${member.phone}</p>
+            </div>
+            <span class="text-xs px-2 py-1 rounded ${hasRecharged? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}">
+              ${hasRecharged? '✓ Recharged' : 'No Recharge'}
+            </span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-xs">
+            <div><p class="text-gray-500">Balance</p><p class="font-bold">$${member.balance?.toFixed(2) || 0}</p></div>
+            <div><p class="text-gray-500">Recharge</p><p class="font-bold text-green-400">$${member.totalRecharge || 0}</p></div>
+            <div><p class="text-gray-500">VIP</p><p class="font-bold">${member.vip || 0}</p></div>
+          </div>
+        </div>
+      `;
+    });
+    html += `<div class="bg-[#2c2c2c] p-3 rounded mt-3"><p class="text-sm text-gray-400">Total Team Recharge</p><p class="text-2xl font-bold text-green-400">$${totalTeamRecharge.toFixed(2)}</p></div>`;
+    content.innerHTML = html;
+  } catch(e) {
+    content.innerHTML = `<p class="text-red-400 text-center py-4">Error: ${e.message}</p>`;
+  }
+}
+
+async function showRechargeRecord() {
+  const modal = document.getElementById('modal');
+  document.getElementById('modalTitle').innerText = 'Recharge Records';
+  const content = document.getElementById('modalContent');
+  content.innerHTML = '<p class="text-center py-4 text-gray-400">Loading...</p>';
+  modal.classList.remove('hidden');
+  try {
+    const snap = await db.collection("recharges").where("uid", "==", currentUser.uid).get();
+    const records = [];
+    snap.forEach(doc => records.push({...doc.data(), id: doc.id}));
+    records.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+    if(records.length === 0) {
+      content.innerHTML = '<div class="text-center py-8"><div class="text-6xl mb-3">💳</div><p class="text-gray-400">No recharge records</p></div>';
+      return;
+    }
+    let html = '';
+    records.forEach(rec => {
+      const date = rec.createdAt.toDate().toLocaleString();
+      const statusColor = rec.status === 'approved'? 'text-green-400' : rec.status === 'pending'? 'text-yellow-400' : 'text-red-400';
+      const statusText = rec.status === 'approved'? '✓ Approved' : rec.status === 'pending'? '⏳ Pending' : '✗ Rejected';
+      html += `
+        <div class="bg-[#1c1c1c] border border-[#2a2a2a] p-3 rounded mb-2">
+          <div class="flex justify-between items-start mb-1">
+            <div>
+              <p class="font-bold text-lg">$${rec.amount} USDT</p>
+              <p class="text-xs text-gray-400">Order: ${rec.orderId}</p>
+            </div>
+            <span class="text-xs ${statusColor}">${statusText}</span>
+          </div>
+          <p class="text-xs text-gray-500">${date}</p>
+        </div>
+      `;
+    });
+    content.innerHTML = html;
+  } catch(e) {
+    content.innerHTML = `<p class="text-red-400 text-center py-4">Error: ${e.message}</p>`;
+  }
+}
+
+async function showWithdrawRecord() {
+  const modal = document.getElementById('modal');
+  document.getElementById('modalTitle').innerText = 'Withdraw Records';
+  const content = document.getElementById('modalContent');
+  content.innerHTML = '<p class="text-center py-4 text-gray-400">Loading...</p>';
+  modal.classList.remove('hidden');
+  try {
+    const snap = await db.collection("withdrawals").where("uid", "==", currentUser.uid).get();
+    const records = [];
+    snap.forEach(doc => records.push({...doc.data(), id: doc.id}));
+    records.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+    if(records.length === 0) {
+      content.innerHTML = '<div class="text-center py-8"><div class="text-6xl mb-3">💰</div><p class="text-gray-400">No withdraw records</p></div>';
+      return;
+    }
+    let html = '';
+    records.forEach(rec => {
+      const date = rec.createdAt.toDate().toLocaleString();
+      const statusColor = rec.status === 'success'? 'text-green-400' : rec.status === 'pending'? 'text-yellow-400' : 'text-red-400';
+      const statusText = rec.status === 'success'? '✓ Success' : rec.status === 'pending'? '⏳ Pending' : '✗ Failed';
+      html += `
+        <div class="bg-[#1c1c1c] border border-[#2a2a2a] p-3 rounded mb-2">
+          <div class="flex justify-between items-start mb-1">
+            <div>
+              <p class="font-bold text-lg">$${rec.amount} USDT</p>
+              <p class="text-xs text-gray-400">Receive: $${rec.receiveAmount.toFixed(2)} | Fee: $${rec.fee.toFixed(2)}</p>
+            </div>
+            <span class="text-xs ${statusColor}">${statusText}</span>
+          </div>
+          <p class="text-xs text-gray-500 break-all">To: ${rec.address}</p>
+          <p class="text-xs text-gray-500">${date}</p>
+        </div>
+      `;
+    });
+    content.innerHTML = html;
+  } catch(e) {
+    content.innerHTML = `<p class="text-red-400 text-center py-4">Error: ${e.message}</p>`;
+  }
+}
+
+async function downloadAPK() {
+  const apkDoc = await db.collection("settings").doc("apkSettings").get();
+  if(apkDoc.exists && apkDoc.data().active && apkDoc.data().link) {
+    window.open(apkDoc.data().link, '_blank');
+  } else {
+    showSuccess('Coming Soon', 'APK Download link will be available soon!');
+  }
+}
+
+async function showNotice() {
+  const noticeDoc = await db.collection("settings").doc("noticeSettings").get();
+  if(noticeDoc.exists && noticeDoc.data().active) {
+    document.getElementById('noticeList').innerHTML = `
+      <div class="bg-[#2c2c2c] p-3 rounded-lg">
+        <p class="font-bold text-yellow-400">${noticeDoc.data().title || 'Notice'}</p>
+        <p class="text-sm text-gray-400 mt-1">${noticeDoc.data().text}</p>
+        <p class="text-xs text-gray-500 mt-2">Just now</p>
+      </div>
+    `;
+  }
+  document.getElementById('noticeModal').classList.remove('hidden');
+  document.getElementById('noticeBadge').classList.add('hidden');
+}
+
+function closeNotice() {
+  document.getElementById('noticeModal').classList.add('hidden');
+}
+
+async function logout() {
+  try { await auth.signOut(); location.reload(); } catch(e) { showError(e.message); }
+}
+
+// Make functions global
+window.handleAuth = handleAuth;
+window.toggleAuth = toggleAuth;
+window.switchPage = switchPage;
+window.openRechargePage = openRechargePage;
+window.closeRechargePage = closeRechargePage;
+window.openWithdrawPage = openWithdrawPage;
+window.closeWithdrawPage = closeWithdrawPage;
+window.submitRecharge = submitRecharge;
+window.submitWithdraw = submitWithdraw;
+window.showModal = showModal;
+window.closeModal = closeModal;
+window.copyRef = copyRef;
+window.copyRefLink = copyRefLink;
+window.copyAddress = copyAddress;
+window.checkWithdrawAddress = checkWithdrawAddress;
+window.saveWithdrawAddress = saveWithdrawAddress;
+window.showTeamReport = showTeamReport;
+window.showRechargeRecord = showRechargeRecord;
+window.showWithdrawRecord = showWithdrawRecord;
+window.downloadAPK = downloadAPK;
+window.showNotice = showNotice;
+window.closeNotice = closeNotice;
+window.logout = logout;
+window.handleFileSelect = handleFileSelect;
+window.completeTask = completeTask;
+window.buyPackage = buyPackage;
+</script>
+</body>
+</html>
