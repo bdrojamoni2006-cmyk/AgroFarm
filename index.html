@@ -1012,47 +1012,8 @@ setInterval(() => {
 window.handleAuth = handleAuth;
 window.toggleAuth = toggleAuth;
 window.logout = logout;
- // Slider Fix - Error Handle করা
-document.addEventListener('DOMContentLoaded', function() {
-  const wrapper = document.getElementById('sliderWrapper');
-  const slides = document.querySelectorAll('.slider-slide');
-  
-  if (!wrapper || slides.length === 0) return;
-  
-  let currentSlide = 0;
-  const totalSlides = slides.length;
-  const dots = document.querySelectorAll('.slider-dot');
-
-  function updateSlider() {
-    wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
-    dots.forEach((dot, index) => {
-      if (index === currentSlide) {
-        dot.classList.add('active');
-      } else {
-        dot.classList.remove('active');
-      }
-    });
-  }
-
-  setInterval(() => {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    updateSlider();
-  }, 3000);
-  
-  dots.forEach((dot, index) => {
-    dot.addEventListener('click', () => {
-      currentSlide = index;
-      updateSlider();
-    });
-  });
-  
-  updateSlider();
-});
-
-// নিচের লাইন থেকে তোমার পুরান কোড শুরু
 window.switchPage = switchPage;
 window.switchTab = switchTab;
-... 
 window.switchPage = switchPage;
 window.switchTab = switchTab;
 window.copyRefLink = copyRefLink;
@@ -1080,6 +1041,39 @@ window.addNewTask = addNewTask;
 window.deleteTask = deleteTask;
 window.saveSettings = saveSettings;
 window.saveApkLink = saveApkLink;
+  // Slider Fix - সবার শেষে বসবে
+document.addEventListener('DOMContentLoaded', function() {
+  const wrapper = document.getElementById('sliderWrapper');
+  const slides = document.querySelectorAll('.slider-slide');
+  const dots = document.querySelectorAll('.slider-dot');
+  
+  // Slider না থাকলে চুপচাপ বের হয়ে যাও, Error দিও না
+  if (!wrapper || slides.length === 0) return;
+  
+  let currentSlide = 0;
+  const totalSlides = slides.length;
+
+  function updateSlider() {
+    wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+    dots.forEach((dot, index) => {
+      dot.classList.toggle('active', index === currentSlide);
+    });
+  }
+
+  setInterval(() => {
+    currentSlide = (currentSlide + 1) % totalSlides;
+    updateSlider();
+  }, 3000);
+  
+  dots.forEach((dot, index) => {
+    dot.addEventListener('click', () => {
+      currentSlide = index;
+      updateSlider();
+    });
+  });
+  
+  updateSlider();
+});
 </script>
 </body>
 </html>
