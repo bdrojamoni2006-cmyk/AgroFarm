@@ -195,14 +195,7 @@ body{background:#0f0f0f;color:#fff;overflow-x:hidden}
   <button onclick="showNotice()" class="relative p-2"><span class="text-2xl">🔔</span></button>
 </div>
   <div class="p-4">
-    <div class="slider-container slider-premium-neon mb-4"><div class="slider-wrapper" id="sliderWrapper">
-      <div class="slider-slide bg-gradient-to-r from-purple<div class="slider-wrapper" id="sliderWrapper">
-  <div class="slider-slide">
-    <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800&q=80" class="w-full h-full object-cover" alt="Farm 1">
-    <div class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
-      <p class="text-white font-bold text-sm">🌾 Modern Farming</p>
-    </div>
-  </div>
+  
   <div class="slider-slide">
     <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800&q=80" class="w-full h-full object-cover" alt="Farm 2">
     <div class="absolute bottom-4 left-4 bg-black/50 px-3 py-1 rounded-lg">
@@ -1041,39 +1034,6 @@ window.addNewTask = addNewTask;
 window.deleteTask = deleteTask;
 window.saveSettings = saveSettings;
 window.saveApkLink = saveApkLink;
-  // Slider Fix - সবার শেষে বসবে
-document.addEventListener('DOMContentLoaded', function() {
-  const wrapper = document.getElementById('sliderWrapper');
-  const slides = document.querySelectorAll('.slider-slide');
-  const dots = document.querySelectorAll('.slider-dot');
-  
-  // Slider না থাকলে চুপচাপ বের হয়ে যাও, Error দিও না
-  if (!wrapper || slides.length === 0) return;
-  
-  let currentSlide = 0;
-  const totalSlides = slides.length;
-
-  function updateSlider() {
-    wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
-    dots.forEach((dot, index) => {
-      dot.classList.toggle('active', index === currentSlide);
-    });
-  }
-
-  setInterval(() => {
-    currentSlide = (currentSlide + 1) % totalSlides;
-    updateSlider();
-  }, 3000);
-  
-  dots.forEach((dot, index) => {
-    dot.addEventListener('click', () => {
-      currentSlide = index;
-      updateSlider();
-    });
-  });
-  
-  updateSlider();
-});
 </script>
 </body>
 </html>
