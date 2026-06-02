@@ -67,10 +67,10 @@ body{background:#0f0f0f;color:#fff;overflow-x:hidden}
           <option value="+65">🇸🇬 +65</option>
           <option value="+61">🇦🇺 +61</option>
         </select>
-        <input type="tel" id="phone" placeholder="1XXXXXXXXX" class="input flex-1">
+        <input type="tel" id="phone" placeholder="Number" class="input flex-1">
       </div>
-      <input type="password" id="password" placeholder="Password (min 6)" class="input">
-      <input type="text" id="refCode" placeholder="Referral Code (Optional)" class="input">
+      <input type="password" id="password" placeholder="Password (min 8)" class="input">
+      <input type="text" id="refCode" placeholder="Referral Code" class="input mb-3" required>
       <button onclick="handleAuth()" class="btn-yellow mb-3" id="authBtn">Register</button>
       <button onclick="toggleAuth()" class="text-yellow-400 text-sm w-full" id="switchBtn">Already have account? Login</button>
       <p id="errorMsg" class="text-red-500 text-sm mt-3 hidden"></p>
