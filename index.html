@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>AgroFarm Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+body{font-family:'Poppins',sans-serif;background:#0a0a0a;color:#fff;user-select:none;-webkit-user-select:none}
+.btn-gold{background:linear-gradient(135deg,#facc15 0%,#eab308 100%);color:#000;font-weight:700;transition:all.3s}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(250,204,21,.4)}
+.btn-green{background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%)}
+.btn-red{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%)}
+.btn-blue{background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%)}
+.btn-yellow{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%)}
+.input{background:#1c1c1c;border:1px solid #333;padding:12px;border-radius:12px;color:#fff;width:100%}
+.input:focus{outline:none;border-color:#facc15;box-shadow:0 0 0 3px rgba(250,204,21,.1)}
+.card{background:linear-gradient(145deg,#1a1a1a 0%,#141414 100%);border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:16px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1c1c1c;color:#fff;padding:14px 24px;border-radius:12px;z-index:9999;box-shadow:0 8px 25px rgba(0,0,0,.6);font-weight:600}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 0;font-size:10px;color:#999;cursor:pointer;transition:all.2s}
+.nav-item.active{color:#facc15}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(20,20,20,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(255,255,255,.1);display:flex;z-index:50}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="authSection" class="min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="text-7xl mb-3">🌾</div>
+      <h1 class="text-5xl font-bold mb-2 bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">AgroFarm</h1>
+      <p class="text-gray-400">Premium Investment Platform</p>
+    </div>
+    <div class="card">
+      <div class="flex gap-2 mb-6">
+        <button onclick="switchAuthTab('login')" id="loginTab" class="flex-1 py-3 rounded-xl font-bold bg-gray-800 text-gray-400">Login</button>
+        <button onclick="switchAuthTab('register')" id="registerTab" class="flex-1 py-3 rounded-xl font-bold btn-gold">Register</button>
+      </div>
+      <div class="space-y-4">
+        <div id="nameField"><input type="text" id="nameInput" placeholder="Full Name" class="input"></div>
+        <input type="tel" id="phoneInput" placeholder="Phone Number (01XXXXXXXXX)" class="input">
+        <input type="password" id="passwordInput" placeholder="Password" class="input">
+        <div id="referField"><input type="text" id="referInput" placeholder="Referral Code (Optional)" class="input"></div>
+        <button onclick="handleAuth()" id="authBtn" class="btn-gold w-full py-3 rounded-xl">Create Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="page-home" class="hidden pb-24">
+  <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] p-5">
+    <div class="flex items-center justify-between mb-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-2xl font-bold text-black">🌾</div>
+        <div><h2 class="text-xl font-bold" id="userName">User</h2><p class="text-xs text-gray-400" id="userPhone">017...</p></div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="showNotice()" class="relative bg-[#1c1c1c] p-3 rounded-xl">
+          <span class="text-xl">🔔</span>
+          <span id="noticeRedDot" class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full hidden"></span>
+        </button>
+        <button onclick="handleLogout()" class="bg-[#1c1c1c] p-3 rounded-xl"><span class="text-xl">🚪</span></button>
+      </div>
+    </div>
+    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl p-5 text-black mb-4">
+      <p class="text-sm font-semibold opacity-80 mb-1">Total Balance</p>
+      <p class="text-4xl font-bold mb-4">$<span id="userBalance">0.00</span></p>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-black/10 rounded-xl p-2"><p class="text-xs opacity-80">Recharge</p><p class="text-lg font-bold">$<span id="totalRecharge">0</span></p></div>
+        <div class="bg-black/10 rounded-xl p-2"><p class="text-xs opacity-80">Earned</p><p class="text-lg font-bold">$<span id="totalEarned">0</span></p></div>
+        <div class="bg-black/10 rounded-xl p-2"><p class="text-xs opacity-80">Withdraw</p><p class="text-lg font-bold">$<span id="totalWithdraw">0</span></p></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="showRecharge()" class="btn-green py-4 rounded-2xl font-bold text-lg">💳 Recharge</button>
+      <button onclick="showWithdraw()" class="btn-red py-4 rounded-2xl font-bold text-lg">💸 Withdraw</button>
+    </div>
+  </div>
+  <div class="px-5 mt-6">
+    <div class="relative rounded-2xl overflow-hidden h-48 mb-6">
+      <div class="flex transition-transform duration-500 h-full" id="sliderWrapper">
+        <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800" class="w-full h-full object-cover flex-shrink-0">
+        <img src="https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=800" class="w-full h-full object-cover flex-shrink-0">
+        <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=800" class="w-full h-full object-cover flex-shrink-0">
+        <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800" class="w-full h-full object-cover flex-shrink-0">
+        <img src="https://images.unsplash.com/photo-1592982537447-6f2a6a0c8b7e?w=800" class="w-full h-full object-cover flex-shrink-0">
+      </div>
+      <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-2" id="sliderDots"></div>
+    </div>
+    <h3 class="text-xl font-bold mb-4">Quick Access</h3>
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div onclick="showRecharge()" class="card text-center py-4 cursor-pointer hover:scale-105 transition-transform"><div class="text-3xl mb-2">💳</div><p class="text-xs">Recharge</p></div>
+      <div onclick="showWithdraw()" class="card text-center py-4 cursor-pointer hover:scale-105 transition-transform"><div class="text-3xl mb-2">💸</div><p class="text-xs">Withdraw</p></div>
+      <div onclick="switchPage('tasks')" class="card text-center py-4 cursor-pointer hover:scale-105 transition-transform"><div class="text-3xl mb-2">✅</div><p class="text-xs">Tasks</p></div>
+      <div onclick="switchPage('job')" class="card text-center py-4 cursor-pointer hover:scale-105 transition-transform"><div class="text-3xl mb-2">👑</div><p class="text-xs">VIP</p></div>
+    </div>
+    <div class="card mb-6">
+      <h3 class="font-bold mb-4">💰 Recent Recharge History</h3>
+      <div id="rechargeHistoryBox" class="space-y-2"></div>
+    </div>
+    <div class="card">
+      <h3 class="font-bold mb-4">💸 Recent Withdraw History</h3>
+      <div id="withdrawHistoryBox" class="space-y-2"></div>
+    </div>
+  </div>
+</div>
+
+<!-- VIP -->
+<div id="page-job" class="hidden pb-24 p-5">
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="switchPage('home')" class="bg-[#1c1c1c] p-2 rounded-xl">←</button>
+    <h2 class="text-2xl font-bold">VIP Plans</h2>
+  </div>
+  <div id="vipPlansList" class="space-y-4"></div>
+</div>
+
+<!-- TASKS -->
+<div id="page-tasks" class="hidden pb-24 p-5">
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="switchPage('home')" class="bg-[#1c1c1c] p-2 rounded-xl">←</button>
+    <h2 class="text-2xl font-bold">Daily Tasks</h2>
+  </div>
+  <div class="card mb-6">
+    <div class="flex items-center justify-between">
+      <div><p class="text-sm text-gray-400 mb-1">Your VIP Level</p><p class="text-3xl font-bold text-yellow-400">VIP <span id="userVipLevel">0</span></p></div>
+      <div class="text-right"><p class="text-sm text-gray-400 mb-1">Daily Income</p><p class="text-2xl font-bold text-green-400">$<span id="dailyIncome">0</span></p></div>
+    </div>
+  </div>
+  <div id="taskList" class="space-y-3"></div>
+</div>
+
+<!-- MY -->
+<div id="page-my" class="hidden pb-24">
+  <div class="bg-gradient-to-br from-[#1a1a1a] to-[#0f0f0f] p-5">
+    <h2 class="text-2xl font-bold mb-6">My Account</h2>
+    <div class="card mb-6">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-20 h-20 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-full flex items-center justify-center text-4xl">👤</div>
+        <div><h3 class="text-2xl font-bold" id="myUserName">User</h3><p class="text-sm text-gray-400" id="myUserPhone">017...</p><div class="mt-2 bg-yellow-500/20 px-3 py-1 rounded-full inline-block"><span class="text-yellow-400 text-sm font-bold">VIP <span id="myVipLevel">0</span></span></div></div>
+      </div>
+      <div class="bg-[#0a0a0a] rounded-xl p-4">
+        <p class="text-xs text-gray-400 mb-1">Referral Code</p>
+        <div class="flex items-center justify-between"><p class="text-xl font-bold" id="myReferCode">------</p><button onclick="copyReferCode()" class="bg-yellow-500 text-black px-4 py-2 rounded-lg text-sm font-bold">Copy</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="px-5">
+    <div class="grid grid-cols-2 gap-3 mb-6">
+      <div class="card"><p class="text-xs text-gray-400 mb-1">Total Recharge</p><p class="text-2xl font-bold text-green-400">$<span id="myTotalRecharge">0</span></p></div>
+      <div class="card"><p class="text-xs text-gray-400 mb-1">Total Withdraw</p><p class="text-2xl font-bold text-red-400">$<span id="myTotalWithdraw">0</span></p></div>
+      <div class="card"><p class="text-xs text-gray-400 mb-1">Total Earned</p><p class="text-2xl font-bold text-blue-400">$<span id="myTotalEarned">0</span></p></div>
+      <div class="card"><p class="text-xs text-gray-400 mb-1">Team Members</p><p class="text-2xl font-bold text-purple-400"><span id="myTeamCount">0</span></p></div>
+    </div>
+    <h3 class="text-lg font-bold mb-3">Services</h3>
+    <div class="space-y-2">
+      <div onclick="showOrderHistory()" class="card flex items-center justify-between cursor-pointer hover:bg-[#222]"><div class="flex items-center gap-3"><span class="text-2xl">📋</span><span>Order History</span></div><span class="text-gray-400">→</span></div>
+      <div onclick="showWithdrawHistory()" class="card flex items-center justify-between cursor-pointer hover:bg-[#222]"><div class="flex items-center gap-3"><span class="text-2xl">💸</span><span>Withdraw History</span></div><span class="text-gray-400">→</span></div>
+      <div onclick="showTeam()" class="card flex items-center justify-between cursor-pointer hover:bg-[#222]"><div class="flex items-center gap-3"><span class="text-2xl">👥</span><span>My Team</span></div><span class="text-gray-400">→</span></div>
+      <div onclick="showBankCard()" class="card flex items-center justify-between cursor-pointer hover:bg-[#222]"><div class="flex items-center gap-3"><span class="text-2xl">🏦</span><span>Bank Card</span></div><span class="text-gray-400">→</span></div>
+      <div onclick="downloadApp()" class="card flex items-center justify-between cursor-pointer hover:bg-[#222]"><div class="flex items-center gap-3"><span class="text-2xl">📱</span><span>Download App</span></div><span class="text-gray-400">→</span></div>
+      <div onclick="handleLogout()" class="card flex items-center justify-between cursor-pointer hover:bg-[#222]"><div class="flex items-center gap-3"><span class="text-2xl">🚪</span><span>Logout</span></div><span class="text-gray-400">→</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- RECHARGE -->
+<div id="page-recharge" class="hidden pb-24 p-5">
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="switchPage('home')" class="bg-[#1c1c1c] p-2 rounded-xl">←</button>
+    <h2 class="text-2xl font-bold">Recharge</h2>
+  </div>
+  <div class="card mb-6">
+    <div class="text-center mb-4">
+      <p class="text-sm text-gray-400 mb-2">USDT Wallet Address (TRC20)</p>
+      <div class="bg-[#0a0a0a] p-4 rounded-xl">
+        <p class="text-xs break-all font-mono" id="walletAddress">TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x</p>
+        <button onclick="copyWallet()" class="btn-yellow px-6 py-2 rounded-lg text-sm font-bold mt-3">Copy Address</button>
+      </div>
+    </div>
+  </div>
+  <div class="card mb-6">
+    <h3 class="font-bold mb-4">Submit Recharge</h3>
+    <div class="space-y-4">
+      <div><label class="text-sm text-gray-400 mb-2 block">Amount (USDT)</label><input type="number" id="rechargeAmount" placeholder="Minimum 10 USDT" class="input" min="10"></div>
+      <div><label class="text-sm text-gray-400 mb-2 block">Payment Screenshot</label><input type="file" id="rechargeScreenshot" accept="image/*" class="input"></div>
+      <button onclick="submitRecharge()" class="btn-green w-full py-3 rounded-xl font-bold" id="submitRechargeBtn">Submit Recharge</button>
+    </div>
+  <div class="card">
+    <h3 class="font-bold mb-4">Recharge History</h3>
+    <div id="rechargeHistory" class="space-y-2"></div>
+  </div>
+</div>
+
+<!-- WITHDRAW -->
+<div id="page-withdraw" class="hidden pb-24 p-5">
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="switchPage('home')" class="bg-[#1c1c1c] p-2 rounded-xl">←</button>
+    <h2 class="text-2xl font-bold">Withdraw</h2>
+  </div>
+  <div class="card mb-6">
+    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl p-4 text-black mb-4">
+      <p class="text-sm font-semibold opacity-80">Available Balance</p>
+      <p class="text-3xl font-bold">$<span id="withdrawBalance">0.00</span></p>
+    </div>
+    <div class="space-y-4">
+      <div><label class="text-sm text-gray-400 mb-2 block">Amount (USDT)</label><input type="number" id="withdrawAmount" placeholder="Minimum 10 USDT" class="input" min="10"></div>
+      <div><label class="text-sm text-gray-400 mb-2 block">USDT Wallet Address (TRC20)</label><input type="text" id="withdrawAddress" placeholder="Enter your USDT address" class="input"></div>
+      <button onclick="submitWithdraw()" class="btn-red w-full py-3 rounded-xl font-bold" id="submitWithdrawBtn">Submit Withdraw</button>
+    </div>
+  </div>
+  <div class="card">
+    <h3 class="font-bold mb-4">Withdraw History</h3>
+    <div id="withdrawHistory" class="space-y-2"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminSection" class="hidden pb-24 p-5">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold">👑 Admin Panel</h2>
+    <button onclick="handleLogout()" class="bg-red-600 px-4 py-2 rounded-xl font-bold">Logout</button>
+  </div>
+  <div class="grid grid-cols-2 gap-4 mb-6">
+    <div class="card"><p class="text-sm text-gray-400 mb-1">Total Users</p><p class="text-3xl font-bold" id="adminTotalUsers">0</p></div>
+    <div class="card"><p class="text-sm text-gray-400 mb-1">Pending Recharge</p><p class="text-3xl font-bold text-yellow-400" id="adminPendingRecharge">0</p></div>
+    <div class="card"><p class="text-sm text-gray-400 mb-1">Pending Withdraw</p><p class="text-3xl font-bold text-red-400" id="adminPendingWithdraw">0</p></div>
+    <div class="card"><p class="text-sm text-gray-400 mb-1">Total Balance</p><p class="text-3xl font-bold text-green-400">$<span id="adminTotalBalance">0</span></p></div>
+  </div>
+  <div class="flex gap-2 mb-6 overflow-x-auto">
+    <button onclick="switchAdminTab('recharges')" id="adminTab-recharges" class="btn-gold px-6 py-2 rounded-xl font-bold whitespace-nowrap">Recharges</button>
+    <button onclick="switchAdminTab('withdrawals')" id="adminTab-withdrawals" class="bg-gray-800 px-6 py-2 rounded-xl font-bold whitespace-nowrap">Withdrawals</button>
+    <button onclick="switchAdminTab('users')" id="adminTab-users" class="bg-gray-800 px-6 py-2 rounded-xl font-bold whitespace-nowrap">Users</button>
+    <button onclick="switchAdminTab('tasks')" id="adminTab-tasks" class="bg-gray-800 px-6 py-2 rounded-xl font-bold whitespace-nowrap">Tasks</button>
+    <button onclick="switchAdminTab('settings')" id="adminTab-settings" class="bg-gray-800 px-6 py-2 rounded-xl font-bold whitespace-nowrap">Settings</button>
+  </div>
+  <div id="admin-recharges" class="admin-tab"><h3 class="text-xl font-bold mb-4">Pending Recharges</h3><div id="pendingRecharges"></div></div>
+  <div id="admin-withdrawals" class="admin-tab hidden"><h3 class="text-xl font-bold mb-4">Pending Withdrawals</h3><div id="pendingWithdrawals"></div></div>
+  <div id="admin-users" class="admin-tab hidden"><h3 class="text-xl font-bold mb-4">All Users</h3><div id="adminUserList"></div></div>
+  <div id="admin-tasks" class="admin-tab hidden">
+    <h3 class="text-xl font-bold mb-4">Task Management</h3>
+    <div class="card mb-4">
+      <h4 class="font-bold mb-3">Add/Edit Task</h4>
+      <div class="space-y-3">
+        <input type="hidden" id="editTaskId">
+        <input type="text" id="taskTitleInput" placeholder="Task Title" class="input">
+        <textarea id="taskDescInput" placeholder="Description" class="input"></textarea>
+        <input type="text" id="taskIconInput" placeholder="Icon Emoji (e.g. ✅)" class="input">
+        <input type="number" id="taskRewardInput" placeholder="Reward Amount" class="input" step="0.01">
+        <input type="text" id="taskLinkInput" placeholder="Premium Install Link (Optional)" class="input">
+        <select id="taskVipInput" class="input"><option value="0">VIP 0+</option><option value="1">VIP 1+</option><option value="2">VIP 2+</option><option value="3">VIP 3+</option><option value="4">VIP 4+</option></select>
+        <label class="flex items-center gap-2"><input type="checkbox" id="taskActiveInput" checked><span>Active</span></label>
+        <button onclick="saveTask()" class="btn-green w-full py-2 rounded-xl font-bold">Save Task</button>
+      </div>
+    <div id="adminTaskList"></div>
+  </div>
+  <div id="admin-settings" class="admin-tab hidden">
+    <h3 class="text-xl font-bold mb-4">Settings</h3>
+    <div class="card mb-4">
+      <h4 class="font-bold mb-3">USDT Wallet Address</h4>
+      <input type="text" id="adminWalletInput" placeholder="USDT TRC20 Address" class="input mb-3">
+      <button onclick="saveSettings()" class="btn-blue w-full py-2 rounded-xl font-bold">Save Wallet</button>
+    </div>
+    <div class="card mb-4">
+      <h4 class="font-bold mb-3">App Download Link</h4>
+      <input type="text" id="apkLinkInput" placeholder="APK Download Link" class="input mb-3">
+      <button onclick="saveApkLink()" class="btn-blue w-full py-2 rounded-xl font-bold">Save APK Link</button>
+    </div>
+    <div class="card">
+      <h4 class="font-bold mb-3">Notice Board</h4>
+      <textarea id="adminNoticeInput" placeholder="Enter notice for users" class="input mb-3" rows="4"></textarea>
+      <button onclick="saveNotice()" class="btn-blue w-full py-2 rounded-xl font-bold">Save Notice</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4">
+  <div class="bg-[#1c1c1c] rounded-2xl p-6 max-w-md w-full">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-xl font-bold" id="modalTitle"></h3>
+      <button onclick="closeModal()" class="text-2xl">×</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<div id="bottomNav" class="bottom-nav hidden">
+  <div class="nav-item active" onclick="switchPage('home')"><span class="text-2xl">🏠</span><span>Home</span></div>
+  <div class="nav-item" onclick="switchPage('job')"><span class="text-2xl">💼</span><span>VIP</span></div>
+  <div class="nav-item" onclick="switchPage('tasks')"><span class="text-2xl">✅</span><span>Task</span></div>
+  <div class="nav-item" onclick="switchPage('my')"><span class="text-2xl">👤</span><span>My</span></div>
+</div>
+
+<script>
+// ========== FIREBASE CONFIG ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyAKi3cFh6B0hIwGwl-9ZEKTtf-INwlwF4k",
+  authDomain: "agrofarm-4e772.firebaseapp.com",
+  projectId: "agrofarm-4e772",
+  storageBucket: "agrofarm-4e772.firebasestorage.app",
+  messagingSenderId: "21830970925",
+  appId: "1:21830970925:web:3be2ba09a09af3141192a4",
+  measurementId: "G-149RFPS79K"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const ADMIN_PHONE = "+8801748059815";
+let currentUser = null;
+let userData = null;
+let isRegistering = true;
+let vipPlans = [];
+let appSettings = {wallet: 'TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x', apkLink: '#'};
+
+// ========== TOAST ==========
+function showToast(msg, type='info') {
+  const colors = {info:'#1c1c1c',success:'#16a34a',error:'#dc2626'};
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.background = colors[type];
+  toast.innerHTML = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ========== INIT ==========
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    if (userDoc.exists) {
+      userData = userDoc.data();
+      if(userData.locked) {
+        showError(`Account locked by admin. Reason: ${userData.lockReason || 'Violation of terms'}`);
+        setTimeout(() => auth.signOut(), 2000);
+        return;
+      }
+      await loadSettings();
+      if (userData.phone === ADMIN_PHONE) {
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        loadAdminDashboard();
+      } else {
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('page-home').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
+        loadUserData();
+        loadVipPlans();
+        initSlider();
+        checkDailyIncome();
+        loadRechargeHistoryBox();
+        loadWithdrawHistoryBox();
+        loadBankCard();
+      }
+    }
+  } else {
+    currentUser = null;
+    userData = null;
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('adminSection').classList.add('hidden');
+    document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+    document.getElementById('bottomNav').classList.add('hidden');
+  }
+});
+
+// ========== AUTH ==========
+function switchAuthTab(tab) {
+  isRegistering = tab === 'register';
+  document.getElementById('loginTab').className = isRegistering? 'flex-1 py-3 rounded-xl font-bold bg-gray-800 text-gray-400' : 'flex-1 py-3 rounded-xl font-bold btn-gold';
+  document.getElementById('registerTab').className = isRegistering? 'flex-1 py-3 rounded-xl font-bold btn-gold' : 'flex-1 py-3 rounded-xl font-bold bg-gray-800 text-gray-400';
+  document.getElementById('nameField').style.display = isRegistering? 'block' : 'none';
+  document.getElementById('referField').style.display = isRegistering? 'block' : 'none';
+  document.getElementById('authBtn').innerText = isRegistering? 'Create Account' : 'Login';
+}
+
+async function handleAuth() {
+  const phone = document.getElementById('phoneInput').value.trim();
+  const password = document.getElementById('passwordInput').value;
+  const name = document.getElementById('nameInput').value.trim();
+  const refer = document.getElementById('referInput').value.trim();
+  if(!phone ||!password) { showToast('Fill all fields', 'error'); return; }
+  const email = phone + '@agrofarm.com';
+  try {
+    if (isRegistering) {
+      if(!name) { showToast('Enter name', 'error'); return; }
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      const referCode = 'AF' + Math.random().toString(36).substr(2, 6).toUpperCase();
+      const newUser = {uid: cred.user.uid, name, phone, password, referCode, referredBy: refer || null, balance: 0, vipLevel: 0, vipExpiry: null, totalRecharge: 0, totalWithdraw: 0, totalEarned: 0, teamCount: 0, createdAt: new Date(), lastClaim: null, locked: false};
+      await db.collection("users").doc(cred.user.uid).set(newUser);
+      if(refer) {
+        const refSnap = await db.collection("users").where("referCode", "==", refer).get();
+        if(!refSnap.empty) await db.collection("users").doc(refSnap.docs[0].id).update({teamCount: firebase.firestore.FieldValue.increment(1)});
+      }
+      showToast('Account created!', 'success');
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+      showToast('Login successful!', 'success');
+    }
+  } catch(error) {
+    showToast(error.message, 'error');
+  }
+}
+
+function handleLogout() {
+  if(confirm('Are you sure you want to logout?')) {
+    auth.signOut();
+    showToast('Logged out', 'info');
+  }
+}
+
+// ========== SETTINGS ==========
+async function loadSettings() {
+  const doc = await db.collection("settings").doc("config").get();
+  if(doc.exists) {
+    appSettings = {...appSettings,...doc.data()};
+    document.getElementById('walletAddress').innerText = appSettings.wallet;
+    if(doc.data().showRedDot) document.getElementById('noticeRedDot')?.classList.remove('hidden');
+  }
+}
+
+// ========== USER DATA ==========
+async function loadUserData() {
+  if(!currentUser) return;
+  const doc = await db.collection("users").doc(currentUser.uid).get();
+  if(doc.exists) {
+    userData = doc.data();
+    document.getElementById('userName').innerText = userData.name;
+    document.getElementById('userPhone').innerText = userData.phone;
+    document.getElementById('userBalance').innerText = (userData.balance || 0).toFixed(2);
+    document.getElementById('totalRecharge').innerText = userData.totalRecharge || 0;
+    document.getElementById('totalEarned').innerText = userData.totalEarned || 0;
+    document.getElementById('totalWithdraw').innerText = userData.totalWithdraw || 0;
+    document.getElementById('withdrawBalance').innerText = (userData.balance || 0).toFixed(2);
+    document.getElementById('myUserName').innerText = userData.name;
+    document.getElementById('myUserPhone').innerText = userData.phone;
+    document.getElementById('myVipLevel').innerText = userData.vipLevel || 0;
+    document.getElementById('userVipLevel').innerText = userData.vipLevel || 0;
+    document.getElementById('myReferCode').innerText = userData.referCode;
+    document.getElementById('myTotalRecharge').innerText = userData.totalRecharge || 0;
+    document.getElementById('myTotalWithdraw').innerText = userData.totalWithdraw || 0;
+    document.getElementById('myTotalEarned').innerText = userData.totalEarned || 0;
+    document.getElementById('myTeamCount').innerText = userData.teamCount || 0;
+    loadTasks();
+  }
+}
+
+// ========== VIP PLANS ==========
+async function loadVipPlans() {
+  const snap = await db.collection("vipPlans").orderBy("level").get();
+  vipPlans = [];
+  let html = '';
+  snap.forEach(doc => {
+    const p = doc.data();
+    vipPlans.push({...p, id: doc.id});
+    const isActive = userData.vipLevel === p.level && userData.vipExpiry && new Date(userData.vipExpiry.toDate()) > new Date();
+    const canBuy = userData.vipLevel < p.level && userData.balance >= p.price;
+    html += `<div class="card ${isActive?'border-2 border-yellow-400':''}">
+      <div class="flex justify-between items-start mb-3">
+        <div><h3 class="text-2xl font-bold text-yellow-400">VIP ${p.level}</h3><p class="text-sm text-gray-400">${p.name}</p></div>
+        ${isActive?'<span class="bg-green-500 px-3 py-1 rounded-full text-xs font-bold">ACTIVE</span>':''}
+      </div>
+      <div class="space-y-2 mb-4">
+        <div class="flex justify-between"><span class="text-gray-400">Price:</span><span class="font-bold">$${p.price}</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">Daily Income:</span><span class="font-bold text-green-400">$${p.dailyIncome}</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">Duration:</span><span class="font-bold">${p.duration} Days</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">Total Return:</span><span class="font-bold text-yellow-400">$${p.dailyIncome * p.duration}</span></div>
+        <div class="flex justify-between"><span class="text-gray-400">Daily Tasks:</span><span class="font-bold">${p.tasksCount} Tasks</span></div>
+      </div>
+      <button onclick="buyVipPlan('${doc.id}')" ${!canBuy?'disabled':''} class="${canBuy?'btn-gold':'bg-gray-700 text-gray-500'} w-full py-3 rounded-xl font-bold">${isActive?'Active':canBuy?'Buy Now':'Locked'}</button>
+    </div>`;
+  });
+  document.getElementById('vipPlansList').innerHTML = html || '<p class="text-center text-gray-400 py-8">No VIP plans available</p>';
+}
+
+async function buyVipPlan(planId) {
+  const plan = vipPlans.find(p => p.id === planId);
+  if(!plan) return;
+  if(userData.balance < plan.price) { showToast('Insufficient balance', 'error'); return; }
+  if(!confirm(`Buy VIP ${plan.level} for $${plan.price}?`)) return;
+  const expiry = new Date();
+  expiry.setDate(expiry.getDate() + plan.duration);
+  await db.collection("users").doc(currentUser.uid).update({
+    balance: firebase.firestore.FieldValue.increment(-plan.price),
+    vipLevel: plan.level,
+    vipExpiry: expiry,
+    dailyIncome: plan.dailyIncome
+  });
+  showToast(`VIP ${plan.level} activated!`, 'success');
+  loadUserData();
+  loadVipPlans();
+}
+
+// ========== DAILY INCOME ==========
+async function checkDailyIncome() {
+  if(!userData.vipLevel ||!userData.dailyIncome) return;
+  if(userData.vipExpiry && new Date(userData.vipExpiry.toDate()) < new Date()) {
+    await db.collection("users").doc(currentUser.uid).update({vipLevel: 0, dailyIncome: 0});
+    return;
+  }
+  const lastClaim = userData.lastClaim? new Date(userData.lastClaim.toDate()) : null;
+  const now = new Date();
+  if(!lastClaim || lastClaim.toDateString()!== now.toDateString()) {
+    await db.collection("users").doc(currentUser.uid).update({
+      balance: firebase.firestore.FieldValue.increment(userData.dailyIncome),
+      totalEarned: firebase.firestore.FieldValue.increment(userData.dailyIncome),
+      lastClaim: now
+    });
+    await db.collection("earnings").add({uid: currentUser.uid, type: 'daily', amount: userData.dailyIncome, createdAt: now});
+    showToast(`+$${userData.dailyIncome} daily income!`, 'success');
+    loadUserData();
+  }
+  document.getElementById('dailyIncome').innerText = userData.dailyIncome || 0;
+}
+
+// ========== TASKS - USER SIDE ==========
+async function loadTasks() {
+  const snap = await db.collection("tasks").where("active", "==", true).where("vipLevel", "<=", userData.vipLevel || 0).get();
+  let html = '';
+  for(const doc of snap.docs) {
+    const task = doc.data();
+    const userTaskDoc = await db.collection("userTasks").doc(`${currentUser.uid}_${doc.id}`).get();
+    const completed = userTaskDoc.exists && userTaskDoc.data().completedDate === new Date().toDateString();
+    html += `<div class="card">
+      <div class="flex items-start gap-3">
+        <div class="text-3xl">${task.icon || '✅'}</div>
+        <div class="flex-1">
+          <h4 class="font-bold mb-1">${task.title}</h4>
+          <p class="text-sm text-gray-400 mb-2">${task.desc}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-green-400 font-bold">+$${task.reward}</span>
+            <button onclick="completeTask('${doc.id}', ${task.reward}, '${task.link || ''}')" ${completed?'disabled':''} class="${completed?'bg-gray-700 text-gray-500':'btn-green'} px-4 py-2 rounded-lg text-sm font-bold">${completed?'Completed':'Do Task'}</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('taskList').innerHTML = html || '<p class="text-center text-gray-400 py-8">No tasks available. Upgrade VIP to unlock more tasks!</p>';
+}
+
+async function completeTask(taskId, reward, link) {
+  if(link) window.open(link, '_blank');
+  const today = new Date().toDateString();
+  await db.collection("userTasks").doc(`${currentUser.uid}_${taskId}`).set({uid: currentUser.uid, taskId, completedDate: today, reward, createdAt: new Date()});
+  await db.collection("users").doc(currentUser.uid).update({balance: firebase.firestore.FieldValue.increment(reward), totalEarned: firebase.firestore.FieldValue.increment(reward)});
+  await db.collection("earnings").add({uid: currentUser.uid, type: 'task', amount: reward, createdAt: new Date()});
+  showToast(`+$${reward} earned!`, 'success');
+  loadUserData();
+  loadTasks();
+}
+
+// ========== PAGE NAVIGATION ==========
+function switchPage(page) {
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+  document.getElementById(`page-${page}`).classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  event?.currentTarget?.classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showRecharge() { switchPage('recharge'); loadRechargeHistory(); }
+function showWithdraw() { switchPage('withdraw'); loadWithdrawHistory(); }
+function showOrderHistory() { switchPage('recharge'); loadRechargeHistory(); }
+function showWithdrawHistory() { switchPage('withdraw'); loadWithdrawHistory(); }
+function showTeam() { showToast('Team feature coming soon!', 'info'); }
+function showBankCard() { loadBankCard(); showToast('Bank card section in My page', 'info'); switchPage('my'); }
+function downloadApp() { window.open(appSettings.apkLink, '_blank'); }
+
+// ========== RECHARGE HISTORY ==========
+async function loadRechargeHistory() {
+  const snap = await db.collection("recharges").where("uid", "==", currentUser.uid).orderBy("timestamp", "desc").limit(20).get();
+  let html = '';
+  snap.forEach(doc => {
+    const r = doc.data();
+    const statusColor = r.status === 'approved'? 'text-green-400' : r.status === 'rejected'? 'text-red-400' : 'text-yellow-400';
+    html += `<div class="bg-[#0a0a0a] p-3 rounded-xl">
+      <div class="flex justify-between items-center mb-1">
+        <span class="font-bold">$${r.amount}</span>
+        <span class="${statusColor} text-xs font-bold">${r.status.toUpperCase()}</span>
+      </div>
+      <p class="text-xs text-gray-400">${r.date}</p>
+      <p class="text-xs text-gray-500 font-mono">ID: ${r.orderId}</p>
+    </div>`;
+  });
+  document.getElementById('rechargeHistory').innerHTML = html || '<p class="text-center text-gray-400 py-4">No recharge history</p>';
+}
+
+async function loadRechargeHistoryBox() {
+  const snap = await db.collection("recharges").where("uid", "==", currentUser.uid).orderBy("timestamp", "desc").limit(5).get();
+  let html = '';
+  snap.forEach(doc => {
+    const r = doc.data();
+    const statusColor = r.status === 'approved'? 'text-green-400' : r.status === 'rejected'? 'text-red-400' : 'text-yellow-400';
+    html += `<div class="flex justify-between items-center py-2 border-b border-gray-800">
+      <div><p class="font-bold">$${r.amount}</p><p class="text-xs text-gray-400">${r.date}</p></div>
+      <span class="${statusColor} text-xs font-bold">${r.status.toUpperCase()}</span>
+    </div>`;
+  });
+  document.getElementById('rechargeHistoryBox').innerHTML = html || '<p class="text-center text-gray-400 py-4">No records</p>';
+}
+
+// ========== WITHDRAW HISTORY ==========
+async function loadWithdrawHistory() {
+  const snap = await db.collection("withdrawals").where("uid", "==", currentUser.uid).orderBy("timestamp", "desc").limit(20).get();
+  let html = '';
+  snap.forEach(doc => {
+    const w = doc.data();
+    const statusColor = w.status === 'success'? 'text-green-400' : w.status === 'failed'? 'text-red-400' : 'text-yellow-400';
+    html += `<div class="bg-[#0a0a0a] p-3 rounded-xl">
+      <div class="flex justify-between items-center mb-1">
+        <span class="font-bold">$${w.amount}</span>
+        <span class="${statusColor} text-xs font-bold">${w.status.toUpperCase()}</span>
+      </div>
+      <p class="text-xs text-gray-400 break-all">${w.address}</p>
+      <p class="text-xs text-gray-500">${w.date}</p>
+    </div>`;
+  });
+  document.getElementById('withdrawHistory').innerHTML = html || '<p class="text-center text-gray-400 py-4">No withdraw history</p>';
+}
+
+async function loadWithdrawHistoryBox() {
+  const snap = await db.collection("withdrawals").where("uid", "==", currentUser.uid).orderBy("timestamp", "desc").limit(5).get();
+  let html = '';
+  snap.forEach(doc => {
+    const w = doc.data();
+    const statusColor = w.status === 'success'? 'text-green-400' : w.status === 'failed'? 'text-red-400' : 'text-yellow-400';
+    html += `<div class="flex justify-between items-center py-2 border-b border-gray-800">
+      <div><p class="font-bold">$${w.amount}</p><p class="text-xs text-gray-400">${w.date}</p></div>
+      <span class="${statusColor} text-xs font-bold">${w.status.toUpperCase()}</span>
+    </div>`;
+  });
+  document.getElementById('withdrawHistoryBox').innerHTML = html || '<p class="text-center text-gray-400 py-4">No records</p>';
+}
+
+// ========== RECHARGE SUBMIT ==========
+async function submitRecharge() {
+  const amount = parseFloat(document.getElementById('rechargeAmount').value);
+  const fileInput = document.getElementById('rechargeScreenshot');
+  if(!amount || amount < 10) { showToast('Minimum 10 USDT required', 'error'); return; }
+  if(!fileInput.files[0]) { showToast('Upload payment screenshot', 'error'); return; }
+  const btn = document.getElementById('submitRechargeBtn');
+  btn.disabled = true;
+  btn.innerText = 'Uploading...';
+  try {
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    const imgbbApiKey = '678a270a1d2cf7566aa66499566d434b';
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: 'POST', body: formData });
+    const result = await response.json();
+    if(!result.success) throw new Error('Image upload failed');
+    const screenshotUrl = result.data.url;
+    const orderId = 'RC' + Date.now() + Math.random().toString(36).substr(2, 3).toUpperCase();
+    const now = new Date();
+    const dateStr = now.toLocaleString('en-BD', { timeZone: 'Asia/Dhaka', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    await db.collection('recharges').doc(orderId).set({
+      orderId: orderId, uid: currentUser.uid, name: userData.name, phone: userData.phone,
+      amount: amount, screenshotUrl: screenshotUrl, status: 'pending', date: dateStr,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(), balanceBefore: userData.balance || 0
+    });
+    showToast('Recharge Order Submitted!', 'success');
+    document.getElementById('rechargeAmount').value = '';
+    fileInput.value = '';
+    loadRechargeHistoryBox();
+    setTimeout(() => { showOrderHistory(); }, 1000);
+  } catch(error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerText = 'Submit Recharge';
+}
+
+// ========== WITHDRAW SUBMIT ==========
+async function submitWithdraw() {
+  const amount = parseFloat(document.getElementById('withdrawAmount').value);
+  const address = document.getElementById('withdrawAddress').value.trim();
+  if(!amount || amount < 10) { showToast('Minimum 10 USDT required', 'error'); return; }
+  if(!address) { showToast('Enter wallet address', 'error'); return; }
+  if(amount > (userData.balance || 0)) { showToast('Insufficient balance', 'error'); return; }
+  const btn = document.getElementById('submitWithdrawBtn');
+  btn.disabled = true;
+  btn.innerText = 'Processing...';
+  try {
+    const orderId = 'WD' + Date.now() + Math.random().toString(36).substr(2, 3).toUpperCase();
+    const now = new Date();
+    const dateStr = now.toLocaleString('en-BD', { timeZone: 'Asia/Dhaka', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    await db.collection("withdrawals").add({
+      orderId, uid: currentUser.uid, phone: userData.phone, name: userData.name,
+      amount, address, status: 'pending', date: dateStr,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-amount) });
+    showToast('Withdraw request submitted!', 'success');
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('withdrawAddress').value = '';
+    await loadUserData();
+    loadWithdrawHistoryBox();
+    setTimeout(() => { showWithdrawHistory(); }, 1000);
+  } catch(error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerText = 'Submit Withdraw';
+}
+
+// ========== ADMIN ==========
+async function loadAdminDashboard() {
+  const usersSnap = await db.collection("users").get();
+  const rechargeSnap = await db.collection("recharges").where("status", "==", "pending").get();
+  const withdrawSnap = await db.collection("withdrawals").where("status", "==", "pending").get();
+  let totalBalance = 0;
+  usersSnap.forEach(doc => { totalBalance += doc.data().balance || 0; });
+  document.getElementById('adminTotalUsers').innerText = usersSnap.size;
+  document.getElementById('adminPendingRecharge').innerText = rechargeSnap.size;
+  document.getElementById('adminPendingWithdraw').innerText = withdrawSnap.size;
+  document.getElementById('adminTotalBalance').innerText = totalBalance.toFixed(2);
+  loadAdminRecharges();
+}
+
+function switchAdminTab(tab) {
+  document.querySelectorAll('.admin-tab').forEach(t => t.classList.add('hidden'));
+  document.getElementById(`admin-${tab}`).classList.remove('hidden');
+  document.querySelectorAll('[id^="adminTab-"]').forEach(b => b.className = 'bg-gray-800 px-6 py-2 rounded-xl font-bold whitespace-nowrap');
+  document.getElementById(`adminTab-${tab}`).className = 'btn-gold px-6 py-2 rounded-xl font-bold whitespace-nowrap';
+  if(tab === 'recharges') loadAdminRecharges();
+  if(tab === 'withdrawals') loadAdminWithdrawals();
+  if(tab === 'users') loadAdminUsers();
+  if(tab === 'tasks') loadAdminTasks();
+}
+
+async function loadAdminRecharges() {
+  const snap = await db.collection("recharges").where("status", "==", "pending").get();
+  let html = '';
+  const docs = [];
+  snap.forEach(doc => docs.push({id: doc.id,...doc.data()}));
+  docs.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+  docs.forEach(r => {
+    html += `<div class="card mb-3">
+      <div class="flex justify-between items-start mb-3">
+        <div><p class="font-bold text-lg">$${r.amount} USDT</p><p class="text-xs text-gray-400">${r.name} - ${r.phone}</p><p class="text-xs text-gray-400">${r.date}</p><p class="text-xs font-mono text-yellow-400 mt-1">ID: ${r.orderId}</p></div>
+        <span class="text-xs font-bold px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">PENDING</span>
+      </div>
+      ${r.screenshotUrl?`<img src="${r.screenshotUrl}" class="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer" onclick="window.open('${r.screenshotUrl}')">`:''}
+      <div class="flex gap-2">
+        <button onclick="approveRecharge('${r.id}', '${r.uid}', ${r.amount})" class="btn-green text-xs px-3 py-2 flex-1">Approve</button>
+        <button onclick="rejectRecharge('${r.id}')" class="btn-red text-xs px-3 py-2 flex-1">Reject</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('pendingRecharges').innerHTML = html || '<p class="text-center text-gray-400 py-4">No pending recharges</p>';
+}
+
+async function approveRecharge(id, uid, amount) {
+  if(!confirm('Approve this recharge?')) return;
+  const userRef = db.collection('users').doc(uid);
+  const userDoc = await userRef.get();
+  const newBalance = (userDoc.data().balance || 0) + amount;
+  await userRef.update({balance: newBalance, totalRecharge: firebase.firestore.FieldValue.increment(amount)});
+  await db.collection("recharges").doc(id).update({status: 'approved', balanceAfter: newBalance, approvedAt: firebase.firestore.FieldValue.serverTimestamp()});
+  await db.collection("earnings").add({uid, type: 'recharge', amount, createdAt: new Date()});
+  showToast('Recharge Approved!', 'success');
+  loadAdminRecharges();
+  loadAdminDashboard();
+}
+
+async function rejectRecharge(id) {
+  if(!confirm('Reject this recharge?')) return;
+  await db.collection("recharges").doc(id).update({status: 'rejected', rejectedAt: new Date()});
+  showToast('Recharge Rejected', 'info');
+  loadAdminRecharges();
+}
+
+async function loadAdminWithdrawals() {
+  const snap = await db.collection("withdrawals").where("status", "==", "pending").get();
+  let html = '';
+  const docs = [];
+  snap.forEach(doc => docs.push({id: doc.id,...doc.data()}));
+  docs.sort((a,b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+  docs.forEach(w => {
+    html += `<div class="card mb-3">
+      <div class="mb-3">
+        <div class="flex justify-between items-start mb-2"><p class="font-bold text-lg">$${w.amount} USDT</p><span class="text-xs font-bold px-2 py-1 rounded-full bg-yellow-500/20 text-yellow-400">PENDING</span></div>
+        <p class="text-xs text-gray-400">${w.name} - ${w.phone}</p>
+        <p class="text-xs text-gray-400 break-all mt-1">To: ${w.address}</p>
+        <p class="text-xs text-gray-400">${w.date}</p>
+        <p class="text-xs font-mono text-yellow-400 mt-1">ID: ${w.orderId}</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="approveWithdraw('${w.id}', '${w.uid}', ${w.amount})" class="btn-green text-xs px-3 py-2 flex-1">Approve</button>
+        <button onclick="rejectWithdraw('${w.id}', '${w.uid}', ${w.amount})" class="btn-red text-xs px-3 py-2 flex-1">Reject</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('pendingWithdrawals').innerHTML = html || '<p class="text-center text-gray-400 py-4">No pending withdrawals</p>';
+}
+
+async function approveWithdraw(id, uid, amount) {
+  if(!confirm('Approve this withdrawal?')) return;
+  await db.collection("withdrawals").doc(id).update({status: 'success', approvedAt: new Date()});
+  await db.collection("users").doc(uid).update({totalWithdraw: firebase.firestore.FieldValue.increment(amount)});
+  showToast('Withdrawal Approved!', 'success');
+  loadAdminWithdrawals();
+  loadAdminDashboard();
+}
+
+async function rejectWithdraw(id, uid, amount) {
+  if(!confirm('Reject and refund this withdrawal?')) return;
+  await db.collection("withdrawals").doc(id).update({status: 'failed', rejectedAt: new Date()});
+  await db.collection("users").doc(uid).update({balance: firebase.firestore.FieldValue.increment(amount)});
+  showToast('Withdrawal Rejected & Refunded', 'info');
+  loadAdminWithdrawals();
+}
+
+async function loadAdminUsers() {
+  const snap = await db.collection("users").orderBy("createdAt", "desc").limit(50).get();
+  let html = '';
+  snap.forEach(doc => {
+    const u = doc.data();
+    html += `<div class="card mb-2">
+      <div class="flex justify-between items-center">
+        <div><p class="font-bold">${u.name}</p><p class="text-xs text-gray-400">${u.phone}</p><p class="text-xs text-yellow-400">VIP ${u.vipLevel} | Balance: $${(u.balance||0).toFixed(2)}</p></div>
+        <button onclick="editUser('${u.phone}')" class="btn-blue px-3 py-1 rounded text-xs">Edit</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById('adminUserList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No users</p>';
+}
+
+function editUser(phone) {
+  db.collection("users").where("phone", "==", phone).get().then(snap => {
+    if (snap.empty) return alert('ইউজার পাওয়া যায়নি');
+    const doc = snap.docs[0];
+    const u = doc.data();
+    const newPass = prompt(`পাসওয়ার্ড পরিবর্তন:\n\nইউজার: ${u.name}\nফোন: ${phone}\nবর্তমান পাসওয়ার্ড: ${u.password || 'N/A'}\n\nনতুন পাসওয়ার্ড দিন:`, u.password || '');
+    if(newPass === null) return;
+    if(newPass.trim() === '') return alert('পাসওয়ার্ড ফাঁকা রাখা যাবে না');
+    const newCard = prompt(`ব্যাংক কার্ড পরিবর্তন:\n\nবর্তমান: ${u.bankCard || 'সেট করা নাই'}\n\nনতুন নাম্বার দিন:`, u.bankCard || '');
+    if(newCard === null) return;
+    db.collection("users").doc(doc.id).update({password: newPass.trim(), bankCard: newCard.trim(), bankCardLocked: true}).then(() => {
+      alert('ইউজার আপডেট হয়ে গেছে');
+      loadAdminUsers();
+    });
+  });
+}
+
+// ========== ADMIN TASKS - PREMIUM INSTALL ==========
+async function loadAdminTasks() {
+  const snap = await db.collection("tasks").orderBy("vipLevel").get();
+  let html = '';
+  snap.forEach(doc => {
+    const t = doc.data();
+    html += `<div class="card mb-2">
+      <div class="flex justify-between items-start">
+        <div class="flex gap-3">
+          <div class="text-3xl">${t.icon || '✅'}</div>
+          <div>
+            <p class="font-bold">${t.title}</p>
+            <p class="text-xs text-gray-400">${t.desc}</p>
+            <p class="text-xs text-green-400">Reward: $${t.reward} | VIP: ${t.vipLevel || 0}+ | ${t.active?'Active':'Inactive'}</p>
+            ${t.link?`<p class="text-xs text-blue-400 break-all">Link: ${t.link}</p>`:''}
+          </div>
+        </div>
+        <div class="flex gap-1">
+          <button onclick="editTask('${doc.id}')" class="bg-blue-600 px-3 py-1 rounded text-xs">Edit</button>
+          <button onclick="deleteTask('${doc.id}')" class="btn-red px-3 py-1 rounded text-xs">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('adminTaskList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No tasks</p>';
+}
+
+async function saveTask() {
+  const id = document.getElementById('editTaskId').value;
+  const title = document.getElementById('taskTitleInput').value.trim();
+  const desc = document.getElementById('taskDescInput').value.trim();
+  const icon = document.getElementById('taskIconInput').value.trim() || '✅';
+  const reward = parseFloat(document.getElementById('taskRewardInput').value);
+  const link = document.getElementById('taskLinkInput').value.trim();
+  const vipLevel = parseInt(document.getElementById('taskVipInput').value);
+  const active = document.getElementById('taskActiveInput').checked;
+  if(!title ||!desc || isNaN(reward)) { showToast('Fill all required fields', 'error'); return; }
+  const data = {title, desc, icon, reward, link, vipLevel, active, updatedAt: new Date()};
+  if(id) {
+    await db.collection("tasks").doc(id).update(data);
+    showToast('Task Updated!', 'success');
+  } else {
+    data.createdAt = new Date();
+    await db.collection("tasks").add(data);
+    showToast('Task Added!', 'success');
+  }
+  clearTaskForm();
+  loadAdminTasks();
+}
+
+function editTask(id) {
+  db.collection("tasks").doc(id).get().then(doc => {
+    if(!doc.exists) return;
+    const t = doc.data();
+    document.getElementById('editTaskId').value = id;
+    document.getElementById('taskTitleInput').value = t.title;
+    document.getElementById('taskDescInput').value = t.desc;
+    document.getElementById('taskIconInput').value = t.icon || '✅';
+    document.getElementById('taskRewardInput').value = t.reward;
+    document.getElementById('taskLinkInput').value = t.link || '';
+    document.getElementById('taskVipInput').value = t.vipLevel || 0;
+    document.getElementById('taskActiveInput').checked = t.active!== false;
+  });
+}
+
+function clearTaskForm() {
+  document.getElementById('editTaskId').value = '';
+  document.getElementById('taskTitleInput').value = '';
+  document.getElementById('taskDescInput').value = '';
+  document.getElementById('taskIconInput').value = '';
+  document.getElementById('taskRewardInput').value = '';
+  document.getElementById('taskLinkInput').value = '';
+  document.getElementById('taskVipInput').value = '0';
+  document.getElementById('taskActiveInput').checked = true;
+}
+
+async function deleteTask(id) {
+  if(confirm('Delete this task?')) {
+    await db.collection("tasks").doc(id).delete();
+    showToast('Deleted!', 'success');
+    loadAdminTasks();
+  }
+}
+
+async function saveSettings() {
+  const wallet = document.getElementById('adminWalletInput').value.trim();
+  if(!wallet) { showToast('Enter wallet address', 'error'); return; }
+  await db.collection("settings").doc("config").set({wallet}, {merge: true});
+  appSettings.wallet = wallet;
+  showToast('Wallet address saved!', 'success');
+}
+
+async function saveApkLink() {
+  const apkLink = document.getElementById('apkLinkInput').value.trim();
+  await db.collection("settings").doc("config").set({apkLink}, {merge: true});
+  appSettings.apkLink = apkLink;
+  showToast('APK link saved!', 'success');
+}
+
+// ========== SLIDER ==========
+let currentSlide = 0;
+const totalSlides = 5;
+function initSlider() {
+  try {
+    const dotsContainer = document.getElementById('sliderDots');
+    if(!dotsContainer) return;
+    dotsContainer.innerHTML = '';
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.style.cssText = `width:${i===0?'20px':'6px'};height:6px;border-radius:3px;background:${i===0?'#facc15':'rgba(255,255,255,0.5)'};cursor:pointer;transition:all 0.3s`;
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    }
+    startAutoSlide();
+  } catch(e) { console.error('Slider error:', e); }
+}
+
+function goToSlide(n) {
+  currentSlide = n;
+  const wrapper = document.getElementById('sliderWrapper');
+  if(wrapper) wrapper.style.transform = `translateX(-${n * 100}%)`;
+  document.querySelectorAll('#sliderDots div').forEach((dot, i) => {
+    dot.style.width = i === n? '20px' : '6px';
+    dot.style.background = i === n? '#facc15' : 'rgba(255,255,255,0.5)';
+  });
+}
+
+function nextSlide() {
+  currentSlide = (currentSlide + 1) % totalSlides;
+  goToSlide(currentSlide);
+}
+
+function startAutoSlide() {
+  setInterval(nextSlide, 3000);
+}
+
+// ========== MODAL ==========
+function showNotice() {
+  db.collection("settings").doc("config").get().then(doc => {
+    const notice = doc.exists? doc.data().notice : 'No new notices';
+    showModal('Notice Board', `<div class="bg-[#0a0a0a] p-4 rounded-xl"><p>${notice || 'No new notices'}</p></div>`);
+    db.collection("settings").doc("config").update({showRedDot: false});
+    document.getElementById('noticeRedDot').classList.add('hidden');
+  });
+}
+
+function showModal(title, content) {
+  document.getElementById('modalTitle').innerText = title;
+  document.getElementById('modalContent').innerHTML = content;
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+
+// ========== BANK CARD ==========
+async function loadBankCard() {
+  if(!currentUser ||!userData) return;
+  if(userData.bankCardLocked) {
+    showToast('Bank card is locked by admin', 'error');
+    return;
+  }
+}
+
+function copyWallet() {
+  navigator.clipboard.writeText(appSettings.wallet);
+  showToast('Wallet address copied!', 'success');
+}
+
+function copyReferCode() {
+  navigator.clipboard.writeText(userData.referCode);
+  showToast('Referral code copied!', 'success');
+}
+
+async function saveNotice() {
+  const notice = document.getElementById('adminNoticeInput').value.trim();
+  await db.collection("settings").doc("config").set({notice, showRedDot: true}, {merge: true});
+  showToast('Notice saved!', 'success');
+}
+
+// ========== ERROR HANDLER ==========
+function showError(msg) {
+  showToast(msg, 'error');
+}
+
+window.addEventListener('error', (e) => {
+  console.error('Error:', e);
+});
+
+// ========== INIT SLIDER ON LOAD ==========
+document.addEventListener('DOMContentLoaded', () => {
+  switchAuthTab('register');
+});
+</script>
+</body>
+</html>
