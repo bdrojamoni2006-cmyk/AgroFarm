@@ -1,0 +1,1357 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgroFarm Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<style>
+*{font-family:Inter,system-ui,sans-serif}
+body{background:#0f0f0f;color:#fff;overflow-x:hidden}
+.glass{background:rgba(28,28,28,.8);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1)}
+.card{background:#1c1c1c;border-radius:16px;padding:16px;border:1px solid #2c2c2c}
+.btn-yellow{background:linear-gradient(135deg,#facc15,#eab308);color:#000;font-weight:700;padding:12px;border-radius:12px;width:100%;box-shadow:0 4px 15px rgba(250,204,21,0.3);transition:all 0.3s}
+.btn-yellow:active{transform:scale(0.95)}
+.btn-yellow:disabled{opacity:0.5;cursor:not-allowed}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a);color:#fff;font-weight:700;padding:12px;border-radius:12px;width:100%;box-shadow:0 4px 15px rgba(34,197,94,0.3)}
+.btn-red{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-weight:700;padding:12px;border-radius:12px;width:100%;box-shadow:0 4px 15px rgba(239,68,0.3)}
+.btn-outline{border:2px solid #3c3c3c;background:#1c1c1c;color:#fff;font-weight:700;padding:12px;border-radius:12px;width:100%}
+.input{background:#2c2c2c;border:1px solid #3a3a3a;border-radius:10px;padding:12px;width:100%;margin-bottom:12px;color:#fff}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#1c1c1c;border-top:1px solid #2c2c2c;display:flex;justify-content:space-around;padding:8px 0;z-index:50}
+.nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px;cursor:pointer;padding:8px;flex:1;color:#9ca3af;transition:all 0.3s}
+.nav-item.active{color:#facc15}
+.hidden{display:none!important}
+.tab-btn{padding:10px 16px;border-radius:10px;font-weight:600;background:#2c2c2c;color:#9ca3af;cursor:pointer;transition:all 0.3s}
+.tab-btn.active{background:#facc15;color:#000}
+.fullpage{position:fixed;top:0;left:0;right:0;bottom:0;background:#0f0f0f;z-index:100;overflow-y:auto}
+.vip-badge{position:absolute;top:8px;right:8px;background:linear-gradient(135deg,#facc15,#eab308);color:#000;font-size:10px;font-weight:700;padding:4px 8px;border-radius:6px}
+.slider-neon{
+  box-shadow:0 0 25px rgba(250,204,21,0.5),
+             0 0 50px rgba(250,204,21,0.3),
+             0 8px 32px rgba(0,0,0,0.6);
+  animation:neonGlow 3s ease-in-out infinite;
+}
+@keyframes neonGlow{
+  0%,100%{box-shadow:0 0 25px rgba(250,204,21,0.5),0 0 50px rgba(250,204,21,0.3),0 8px 32px rgba(0,0,0,0.6)}
+  50%{box-shadow:0 0 35px rgba(250,204,21,0.7),0 0 70px rgba(250,204,21,0.4),0 8px 32px rgba(0,0,0,0.6)}
+}
+.toast{position:fixed;top:20px;right:20px;background:#1c1c1c;border:1px solid #2c2c2c;padding:16px;border-radius:12px;z-index:9999;animation:slideIn 0.3s}
+@keyframes slideIn{from{transform:translateX(400px)}to{transform:translateX(0)}}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="authSection" class="min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="text-6xl mb-4">🌾</div>
+      <h1 class="text-3xl font-bold">AgroFarm Pro</h1>
+      <p class="text-gray-400 mt-2">Invest & Earn Daily</p>
+    </div>
+    <div class="card">
+      <h2 class="text-xl font-bold mb-4" id="formTitle">Create Account</h2>
+      <input type="text" id="name" placeholder="Full Name" class="input">
+      <div class="flex gap-2">
+        <select id="countryCode" class="input w-28">
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+91">🇮🇳 +91</option>
+          <option value="+92">🇵🇰 +92</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+880">🇧🇩 +880</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+966">🇸🇦 +966</option>
+          <option value="+60">🇲🇾 +60</option>
+          <option value="+65">🇸🇬 +65</option>
+          <option value="+61">🇦🇺 +61</option>
+        </select>
+        <input type="tel" id="phone" placeholder="Number" class="input flex-1">
+      </div>
+      <input type="password" id="password" placeholder="Password (min 8)" class="input">
+      <input type="text" id="refCode" placeholder="Referral Code" class="input mb-3" required>
+      <button onclick="handleAuth()" class="btn-yellow mb-3" id="authBtn">Register</button>
+      <button onclick="toggleAuth()" class="text-yellow-400 text-sm w-full" id="switchBtn">Already have account? Login</button>
+      <p id="errorMsg" class="text-red-500 text-sm mt-3 hidden"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminSection" class="hidden min-h-screen">
+  <div class="p-4 bg-[#1c1c1c] flex justify-between items-center sticky top-0 z-40">
+    <h1 class="text-xl font-bold">🔧 Admin Panel</h1>
+    <button onclick="logout()" class="text-red-400">Logout</button>
+  </div>
+  <div class="p-4">
+    <div class="flex gap-2 overflow-x-auto pb-3 mb-4">
+      <button onclick="switchTab('dashboard')" class="tab-btn active" id="tab-dashboard">Dashboard</button>
+      <button onclick="switchTab('users')" class="tab-btn" id="tab-users">Users</button>
+      <button onclick="switchTab('vip')" class="tab-btn" id="tab-vip">VIP Plans</button>
+      <button onclick="switchTab('teamreport')" class="tab-btn" id="tab-teamreport">Team Report</button>
+      <button onclick="switchTab('recharge')" class="tab-btn" id="tab-recharge">Recharge</button>
+      <button onclick="switchTab('withdraw')" class="tab-btn" id="tab-withdraw">Withdraw</button>
+      <button onclick="switchTab('tasks')" class="tab-btn" id="tab-tasks">Tasks</button>
+      <button onclick="switchTab('settings')" class="tab-btn" id="tab-settings">Settings</button>
+    </div>
+    <div id="content-dashboard">
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="card"><p class="text-gray-400 text-xs">Total Users</p><p class="text-2xl font-bold" id="totalUsers">0</p></div>
+        <div class="card"><p class="text-gray-400 text-xs">Total Recharge</p><p class="text-2xl font-bold text-green-400" id="totalRecharge">$0</p></div>
+        <div class="card"><p class="text-gray-400 text-xs">Total Withdraw</p><p class="text-2xl font-bold text-red-400" id="totalWithdraw">$0</p></div>
+        <div class="card"><p class="text-gray-400 text-xs">Pending</p><p class="text-2xl font-bold text-yellow-400" id="pendingCount">0</p></div>
+      </div>
+    </div>
+    <div class="card mb-4">
+      <h3 class="font-bold mb-3">📢 Admin Notice</h3>
+      <textarea id="adminNoticeInput" class="w-full bg-[#2c2c2c] p-3 rounded mb-2" rows="3" placeholder="নোটিশ লিখুন..."></textarea>
+      <button onclick="saveNotice()" class="btn-green w-full py-2 rounded">Update Notice</button>
+    </div>
+    <div id="content-users" class="hidden"><h3 class="font-bold mb-3">All Users</h3><div id="allUsers"></div></div>
+    <div id="content-vip" class="hidden">
+      <h3 class="font-bold mb-3">VIP Packages Management</h3>
+      <div class="card mb-4">
+        <h4 class="font-bold mb-3">Add / Edit VIP Package</h4>
+        <input type="hidden" id="editVipId">
+        <input id="vipNameInput" placeholder="Package Name (e.g., VIP 5)" class="input mb-2">
+        <input id="vipLevelInput" type="number" placeholder="Level (e.g., 5)" class="input mb-2">
+        <input id="vipPriceInput" type="number" placeholder="Price $" class="input mb-2">
+        <input id="vipDailyInput" type="number" placeholder="Daily Income $" class="input mb-2">
+        <input id="vipDaysInput" type="number" placeholder="Duration Days" class="input mb-2">
+        <input id="vipIconInput" placeholder="Icon Emoji (e.g., 💎)" class="input mb-2">
+        <label class="flex items-center mb-3">
+          <input id="vipActiveInput" type="checkbox" checked class="mr-2"> Active
+        </label>
+        <button onclick="saveVipPlan()" class="btn-yellow">Save Package</button>
+        <button onclick="clearVipForm()" class="btn-outline ml-2">Clear</button>
+      </div>
+      <div id="adminVipList"></div>
+    </div>
+    <div id="content-teamreport" class="hidden">
+      <h3 class="font-bold mb-3">Team Report - All Users</h3>
+      <div class="grid grid-cols-2 gap-2 mb-4">
+        <div class="card text-center"><p class="text-gray-400 text-xs">Total Members</p><p class="text-xl font-bold" id="adminTotalMembers">0</p></div>
+        <div class="card text-center"><p class="text-gray-400 text-xs">Total Team Recharge</p><p class="text-xl font-bold text-green-400" id="adminTotalTeamRecharge">$0</p></div>
+      </div>
+      <div id="adminTeamReportList"></div>
+    </div>
+    <div id="content-recharge" class="hidden"><h3 class="font-bold mb-3">Pending Recharges</h3><div id="pendingRecharges"></div></div>
+    <div id="content-withdraw" class="hidden"><h3 class="font-bold mb-3">Pending Withdrawals</h3><div id="pendingWithdrawals"></div></div>
+    <div id="content-tasks" class="hidden">
+      <h3 class="font-bold mb-3">Daily Tasks</h3>
+      <div id="adminTaskList"></div>
+      <button onclick="addNewTask()" class="btn-yellow mt-3">+ Add New Task</button>
+    </div>
+    <div id="content-settings" class="hidden">
+      <h3 class="font-bold mb-3">App Settings</h3>
+      <div class="card mb-3">
+        <label class="text-sm text-gray-400">USDT Wallet Address (BEP20)</label>
+        <input type="text" id="adminWalletInput" placeholder="TXzN8YfL..." class="input mt-2">
+        <button onclick="saveSettings()" class="btn-yellow">Save Wallet</button>
+      </div>
+      <div class="card">
+        <label class="text-sm text-gray-400">APK Download Link</label>
+        <input type="text" id="apkLinkInput" placeholder="https://..." class="input mt-2">
+        <button onclick="saveApkLink()" class="btn-yellow">Save APK Link</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- USER PAGES -->
+<div id="page-home" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex justify-between items-center">
+    <div><h1 class="text-xl font-bold">Hello, <span id="userName">User</span></h1><p class="text-xs text-gray-400">Welcome back!</p></div>
+    <button onclick="showNotice()" class="relative p-2">
+      <span class="text-2xl">🔔</span>
+      <span id="noticeRedDot" class="hidden absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse"></span>
+    </button>
+  </div>
+  <div class="p-4">
+    <div class="slider-neon" style="height:180px;border-radius:16px;overflow:hidden;position:relative;margin-bottom:16px;">
+      <div id="sliderWrapper" style="display:flex;height:100%;transition:transform 0.5s ease;">
+        <div style="min-width:100%;height:100%;position:relative;">
+          <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=800" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.7);padding:6px 12px;border-radius:20px;color:white;font-size:13px;font-weight:600;">💰 Daily Profit</div>
+        </div>
+        <div style="min-width:100%;height:100%;position:relative;">
+          <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=800" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.7);padding:6px 12px;border-radius:20px;color:white;font-size:13px;font-weight:600;">🚀 Invest & Earn</div>
+        </div>
+        <div style="min-width:100%;height:100%;position:relative;">
+          <img src="https://images.unsplash.com/photo-1595356700395-6f14b5c1f33f?w=800" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.7);padding:6px 12px;border-radius:20px;color:white;font-size:13px;font-weight:600;">🌾 AgroFarm Pro</div>
+        </div>
+        <div style="min-width:100%;height:100%;position:relative;">
+          <img src="https://images.unsplash.com/photo-1530836369250-ef72a3f5cda8?w=800" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.7);padding:6px 12px;border-radius:20px;color:white;font-size:13px;font-weight:600;">⭐ VIP Packages</div>
+        </div>
+        <div style="min-width:100%;height:100%;position:relative;">
+          <img src="https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=800" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;bottom:12px;left:12px;background:rgba(0,0,0,0.7);padding:6px 12px;border-radius:20px;color:white;font-size:13px;font-weight:600;">🎯 Join Now</div>
+        </div>
+      </div>
+      <div style="position:absolute;bottom:10px;left:0;right:0;display:flex;justify-content:center;gap:6px;" id="sliderDots"></div>
+    </div>
+
+    <div class="card mb-4 bg-gradient-to-r from-yellow-400 to-orange-500">
+      <p class="text-sm opacity-80">Total Balance</p><p class="text-3xl font-bold">$<span id="balance">0.00</span></p>
+      <div class="grid grid-cols-2 gap-2 mt-4">
+        <button onclick="openRechargePage()" class="bg-white/20 rounded-lg py-2 text-sm font-semibold">Recharge</button>
+        <button onclick="openWithdrawPage()" class="bg-white/20 rounded-lg py-2 text-sm font-semibold">Withdraw</button>
+      </div>
+    </div>
+    <div class="grid grid-cols-4 gap-3 mb-4">
+      <button onclick="switchPage('invite')" class="card text-center py-4"><div class="text-3xl mb-1">👥</div><p class="text-xs">Invite</p></button>
+      <button onclick="switchPage('job')" class="card text-center py-4"><div class="text-3xl mb-1">💼</div><p class="text-xs">VIP</p></button>
+      <button onclick="switchPage('task')" class="card text-center py-4"><div class="text-3xl mb-1">✅</div><p class="text-xs">Tasks</p></button>
+      <button onclick="switchPage('earnings')" class="card text-center py-4"><div class="text-3xl mb-1">📈</div><p class="text-xs">Earnings</p></button>
+      <button onclick="switchPage('teamreport')" class="card text-center py-4"><div class="text-3xl mb-1">📊</div><p class="text-xs">Team</p></button>
+      <button onclick="switchPage('rechargerecord')" class="card text-center py-4"><div class="text-3xl mb-1">💳</div><p class="text-xs">Recharge</p></button>
+      <button onclick="switchPage('withdrawrecord')" class="card text-center py-4"><div class="text-3xl mb-1">💰</div><p class="text-xs">Withdraw</p></button>
+      <button onclick="downloadApk()" class="card text-center py-4"><div class="text-3xl mb-1">📱</div><p class="text-xs">APK</p></button>
+    </div>
+  </div>
+</div>
+
+<div id="page-job" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3"><button onclick="switchPage('home')" class="text-xl">←</button><h2 class="text-xl font-bold">VIP Packages</h2></div>
+  <div class="p-4"><div id="vipPackages"></div></div>
+</div>
+
+<div id="page-task" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3"><button onclick="switchPage('home')" class="text-xl">←</button><h2 class="text-xl font-bold">Daily Tasks</h2></div>
+  <div class="p-4"><div id="taskList"></div></div>
+</div>
+
+<div id="page-earnings" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3"><button onclick="switchPage('home')" class="text-xl">←</button><h2 class="text-xl font-bold">Earnings History</h2></div>
+  <div class="p-4">
+    <div class="grid grid-cols-3 gap-2 mb-4">
+      <div class="card text-center"><p class="text-gray-400 text-xs">Today</p><p class="text-lg font-bold text-green-400" id="todayEarn">$0</p></div>
+      <div class="card text-center"><p class="text-gray-400 text-xs">Week</p><p class="text-lg font-bold text-green-400" id="weekEarn">$0</p></div>
+      <div class="card text-center"><p class="text-gray-400 text-xs">Total</p><p class="text-lg font-bold text-green-400" id="totalEarn">$0</p></div>
+    </div>
+    <div id="earningsList"></div>
+  </div>
+</div>
+
+<div id="page-invite" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3"><button onclick="switchPage('home')" class="text-xl">←</button><h2 class="text-xl font-bold">Invite Friends</h2></div>
+  <div class="p-4">
+    <div class="card mb-4"><p class="text-sm text-gray-400 mb-2">Your Referral Link:</p><div class="bg-[#2c2c2c] p-3 rounded break-all text-sm mb-3" id="refLinkText"></div><button onclick="copyRefLink()" class="btn-yellow mb-3">Copy Link</button></div>
+    <div class="card"><p class="font-bold mb-2">My Referrals: <span id="totalRefers">0</span></p><div id="referList"></div></div>
+  </div>
+</div>
+
+<div id="page-teamreport" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c] flex items-center gap-3"><button onclick="switchPage('home')" class="text-xl">←</button><h2 class="text-xl font-bold">Team Report</h2></div>
+  <div class="p-4"><div class="grid grid-cols-2 gap-3 mb-4"><div class="card text-center"><p class="text-gray-400 text-xs">Total Team</p><p class="text-xl font-bold text-yellow-400" id="teamTotal">0</p></div><div class="card text-center"><p class="text-gray-400 text-xs">Team Recharge</p><p class="text-xl font-bold text-green-400" id="teamRecharge">$0</p></div></div><h3 class="font-bold mb-3">Team Members</h3><div id="teamList"></div></div>
+</div>
+
+<div id="page-rechargerecord" class="hidden pb-24"><div class="p-4 bg-[#1c1c1c] flex items-center gap-3"><button onclick="switchPage('home')" class="text-xl">←</button><h2 class="text-xl font-bold">Recharge Records</h2></div><div class="p-4"><div id="rechargeRecordList"></div></div></div>
+<div id="page-withdrawrecord" class="hidden pb-24"><div class="p-4 bg-[#1c1c1c] flex items-center gap-3"><button onclick="switchPage('home')" class="text-xl">←</button><h2 class="text-xl font-bold">Withdraw Records</h2></div><div class="p-4"><div id="withdrawRecordList"></div></div></div>
+
+<div id="page-my" class="hidden pb-24">
+  <div class="p-4 bg-[#1c1c1c]"><h2 class="text-xl font-bold">My Account</h2></div>
+  <div class="p-4">
+    <div class="card mb-4"><div class="flex items-center gap-3 mb-4"><div class="w-16 h-16 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-2xl font-bold" id="avatarInitial">U</div><div><p class="font-bold text-lg" id="myName">User</p><p class="text-sm text-gray-400" id="myPhone">+8801XXXXXXX</p></div></div></div>
+    <div class="card mb-4"><p class="text-gray-400">Current VIP</p><p class="font-bold text-yellow-400" id="myVip">Free User</p><p class="text-gray-400 mt-3">Total Recharge</p><p class="font-bold text-green-400">$<span id="myRecharge">0</span></p><p class="text-gray-400 mt-3">Total Withdraw</p><p class="font-bold text-red-400">$<span id="myWithdraw">0</span></p></div>
+    <div class="card mb-4">
+      <h3 class="font-bold mb-2">ব্যাংক কার্ড সেটআপ</h3>
+      <div id="bankCardSection">
+        <input type="text" id="bankCardInput" placeholder="ব্যাংক একাউন্ট / বিকাশ / নগদ নাম্বার" class="input mb-2">
+        <button id="saveBankCardBtn" class="btn-yellow" onclick="saveBankCard()">সেভ করুন</button>
+        <p id="bankCardStatus" style="margin-top:10px; color:#aaa;"></p>
+      </div>
+    </div>
+    <button onclick="logout()" class="btn-red">Logout</button>
+  </div>
+</div>
+
+<!-- RECHARGE PAGE -->
+<div id="page-recharge" class="hidden fullpage">
+  <div class="p-4 bg-[#1c1c1c] flex items-center justify-between sticky top-0">
+    <div class="flex items-center gap-3">
+      <button onclick="closeRechargePage()" class="text-xl">←</button>
+      <h2 class="text-xl font-bold">Recharge USDT</h2>
+    </div>
+    <button onclick="showOrderHistory()" class="text-yellow-400 text-sm font-semibold flex items-center gap-1">
+      <span class="text-lg">📋</span>
+      <span>History</span>
+    </button>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4"><p class="text-gray-400 text-sm">USDT Wallet Address (BEP20)</p><div class="flex gap-2 items-center mt-2"><p class="font-mono text-sm break-all" id="usdtAddress">TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x</p><button onclick="copyAddress()" class="bg-[#2c2c2c] px-3 py-1 rounded text-sm">Copy</button></div></div>
+    <div class="card mb-4"><label class="text-sm text-gray-400">Amount (USDT)</label><input type="number" id="rechargeAmount" placeholder="Min 10 USDT" class="input mt-2" min="10"></div>
+    <div class="card mb-4">
+      <label class="text-sm text-gray-400 mb-2 block">Payment Screenshot</label>
+      <input type="file" id="rechargeScreenshot" accept="image/*" class="input" style="padding:8px">
+      <p class="text-xs text-gray-500 mt-1">Upload payment proof screenshot</p>
+    </div>
+    <button onclick="submitRecharge()" class="btn-yellow" id="submitRechargeBtn">Submit Recharge</button>
+    <div id="rechargeHistoryBox" class="mt-4"></div>
+  </div>
+</div>
+
+<!-- WITHDRAW PAGE -->
+<div id="page-withdraw" class="hidden fullpage">
+  <div class="p-4 bg-[#1c1c1c] flex items-center justify-between sticky top-0">
+    <div class="flex items-center gap-3">
+      <button onclick="closeWithdrawPage()" class="text-xl">←</button>
+      <h2 class="text-xl font-bold">Withdraw USDT</h2>
+    </div>
+    <button onclick="showWithdrawHistory()" class="text-yellow-400 text-sm font-semibold flex items-center gap-1">
+      <span class="text-lg">📋</span>
+      <span>History</span>
+    </button>
+  </div>
+  <div class="p-4">
+    <div class="card mb-4 bg-gradient-to-r from-green-500 to-blue-600"><p class="text-sm opacity-80">Available Balance</p><p class="text-3xl font-bold">$<span id="withdrawBalance">0.00</span></p></div>
+    <div class="card mb-4"><label class="text-sm text-gray-400">Amount (USDT)</label><input type="number" id="withdrawAmount" placeholder="Min 10 USDT" class="input mt-2" min="10"></div>
+    <div class="card mb-4"><label class="text-sm text-gray-400">Wallet Address (BEP20)</label><input type="text" id="withdrawAddress" placeholder="Enter USDT address" class="input mt-2"></div>
+    <button onclick="submitWithdraw()" class="btn-yellow" id="submitWithdrawBtn">Submit Withdraw</button>
+    <div id="withdrawHistoryBox" class="mt-4"></div>
+  </div>
+</div>
+
+<!-- ORDER HISTORY MODAL -->
+<div id="orderHistoryModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-[200] overflow-y-auto">
+  <div class="min-h-screen p-4">
+    <div class="bg-[#1c1c1c] rounded-2xl max-w-2xl mx-auto">
+      <div class="p-4 bg-[#2c2c2c] rounded-t-2xl flex justify-between items-center sticky top-0">
+        <h3 class="text-xl font-bold">📋 Recharge Order History</h3>
+        <button onclick="closeOrderHistory()" class="text-2xl">×</button>
+      </div>
+      <div class="p-4" id="orderHistoryList">
+        <div class="text-center py-8 text-gray-400">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WITHDRAW HISTORY MODAL -->
+<div id="withdrawHistoryModal" class="hidden fixed inset-0 bg-black bg-opacity-90 z-[200] overflow-y-auto">
+  <div class="min-h-screen p-4">
+    <div class="bg-[#1c1c1c] rounded-2xl max-w-2xl mx-auto">
+      <div class="p-4 bg-[#2c2c2c] rounded-t-2xl flex justify-between items-center sticky top-0">
+        <h3 class="text-xl font-bold">📋 Withdraw Order History</h3>
+        <button onclick="closeWithdrawHistory()" class="text-2xl">×</button>
+      </div>
+      <div class="p-4" id="withdrawHistoryList">
+        <div class="text-center py-8 text-gray-400">Loading...</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal" class="hidden fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4"><div class="bg-[#1c1c1c] rounded-2xl p-6 max-w-md w-full"><div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold" id="modalTitle"></h3><button onclick="closeModal()" class="text-2xl">×</button></div><div id="modalContent"></div></div></div>
+
+<div id="bottomNav" class="bottom-nav hidden">
+  <div class="nav-item active" onclick="switchPage('home')"><span class="text-2xl">🏠</span><span>Home</span></div>
+  <div class="nav-item" onclick="switchPage('job')"><span class="text-2xl">💼</span><span>VIP</span></div>
+  <div class="nav-item" onclick="switchPage('task')"><span class="text-2xl">✅</span><span>Task</span></div>
+  <div class="nav-item" onclick="switchPage('my')"><span class="text-2xl">👤</span><span>My</span></div>
+</div>
+
+<script>
+// ========== FIREBASE CONFIG ==========
+const firebaseConfig = {
+  apiKey: "AIzaSyAKi3cFh6B0hIwGwl-9ZEKTtf-INwlwF4k",
+  authDomain: "agrofarm-4e772.firebaseapp.com",
+  projectId: "agrofarm-4e772",
+  storageBucket: "agrofarm-4e772.firebasestorage.app",
+  messagingSenderId: "21830970925",
+  appId: "1:21830970925:web:3be2ba09a09af3141192a4",
+  measurementId: "G-149RFPS79K"
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+const ADMIN_PHONE = "+8801748059815";
+let currentUser = null;
+let userData = null;
+let isRegistering = true;
+let vipPlans = [];
+let appSettings = {wallet: 'TXzN8YfL9kP2mQ4rS7wV3eD5hJ6gB1aC9x', apkLink: '#'};
+
+// ========== TOAST ==========
+function showToast(msg, type='info') {
+  const colors = {info:'#1c1c1c',success:'#16a34a',error:'#dc2626'};
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.style.background = colors[type];
+  toast.innerHTML = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// ========== INIT ==========
+auth.onAuthStateChanged(async (user) => {
+  if (user) {
+    currentUser = user;
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    if (userDoc.exists) {
+      userData = userDoc.data();
+      if(userData.locked) {
+        showError(`Account locked by admin. Reason: ${userData.lockReason || 'Violation of terms'}`);
+        setTimeout(() => auth.signOut(), 2000);
+        return;
+      }
+      await loadSettings();
+      if (userData.phone === ADMIN_PHONE) {
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('adminSection').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.add('hidden');
+        loadAdminDashboard();
+      } else {
+        document.getElementById('authSection').classList.add('hidden');
+        document.getElementById('page-home').classList.remove('hidden');
+        document.getElementById('bottomNav').classList.remove('hidden');
+        loadUserData();
+        loadVipPlans();
+        initSlider();
+        checkDailyIncome();
+        loadRechargeHistoryBox();
+        loadWithdrawHistoryBox();
+        loadBankCard();
+      }
+    }
+  } else {
+    currentUser = null;
+    userData = null;
+    document.getElementById('authSection').classList.remove('hidden');
+    document.getElementById('adminSection').classList.add('hidden');
+    document.querySelectorAll('[id^="page-"]').forEach(p => p.classList.add('hidden'));
+    document.getElementById('bottomNav').classList.add('hidden');
+  }
+});
+
+async function loadSettings() {
+  const doc = await db.collection("settings").doc("config").get();
+  if(doc.exists) {
+    appSettings = {...appSettings,...doc.data()};
+    document.getElementById('usdtAddress').innerText = appSettings.wallet;
+
+    if(doc.data().showRedDot && currentUser?.phone!== ADMIN_PHONE) {
+      document.getElementById('noticeRedDot')?.classList.remove('hidden');
+    } else {
+      document.getElementById('noticeRedDot')?.classList.add('hidden');
+    }
+  }
+}
+
+// ========== AUTH ==========
+async function handleAuth() {
+  const countryCode = document.getElementById('countryCode').value;
+  const phone = document.getElementById('phone').value;
+  const password = document.getElementById('password').value;
+  const name = document.getElementById('name').value;
+  const refCode = document.getElementById('refCode').value;
+  const fullPhone = countryCode + phone;
+
+  if(!phone ||!password || (isRegistering &&!name)) { showError('Fill all fields'); return; }
+  if(password.length < 6) { showError('Password min 6 chars'); return; }
+
+  try {
+    const email = fullPhone.replace('+', '') + '@agrofarm.com';
+    if(isRegistering) {
+      const userCred = await auth.createUserWithEmailAndPassword(email, password);
+      await db.collection("users").doc(userCred.user.uid).set({
+        name, phone: fullPhone, refCode: generateRefCode(), refBy: refCode || '',
+        balance: 0, vip: 0, vipExpiry: null, totalRecharge: 0, totalWithdraw: 0,
+        spinCount: 3, lastSpinDate: new Date().toDateString(),
+        createdAt: new Date(), password: password, bankCard: '', bankCardLocked: false
+      });
+      if(refCode) {
+        const refUser = await db.collection("users").where("refCode", "==", refCode).get();
+        if(!refUser.empty) {
+          await db.collection("users").doc(refUser.docs[0].id).update({
+            balance: firebase.firestore.FieldValue.increment(2)
+          });
+        }
+      }
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+    }
+  } catch(e) { showError(e.message); }
+}
+
+function toggleAuth() {
+  isRegistering =!isRegistering;
+  document.getElementById('formTitle').innerText = isRegistering? 'Create Account' : 'Login';
+  document.getElementById('authBtn').innerText = isRegistering? 'Register' : 'Login';
+  document.getElementById('switchBtn').innerText = isRegistering? 'Already have account? Login' : 'New user? Register';
+  document.getElementById('name').style.display = isRegistering? 'block' : 'none';
+  document.getElementById('refCode').style.display = isRegistering? 'block' : 'none';
+}
+
+function generateRefCode() { return Math.random().toString(36).substring(2, 8).toUpperCase(); }
+function showError(msg) { const el = document.getElementById('errorMsg'); el.innerText = msg; el.classList.remove('hidden'); setTimeout(() => el.classList.add('hidden'), 3000); }
+function logout() { auth.signOut(); }
+
+// ========== USER DATA ==========
+async function loadUserData() {
+  if(!currentUser) return;
+  const doc = await db.collection("users").doc(currentUser.uid).get();
+  if(!doc.exists) return;
+  userData = doc.data();
+  document.getElementById('userName').innerText = userData.name || 'User';
+  document.getElementById('myName').innerText = userData.name || 'User';
+  document.getElementById('myPhone').innerText = userData.phone || '';
+  document.getElementById('balance').innerText = (userData.balance || 0).toFixed(2);
+  document.getElementById('myRecharge').innerText = (userData.totalRecharge || 0).toFixed(2);
+  document.getElementById('myWithdraw').innerText = (userData.totalWithdraw || 0).toFixed(2);
+  document.getElementById('avatarInitial').innerText = (userData.name || 'U').charAt(0).toUpperCase();
+  document.getElementById('myVip').innerText = (userData.vip || 0) > 0? `VIP ${userData.vip}` : 'Free User';
+}
+
+function switchPage(page) {
+  ['home','job','task','earnings','invite','teamreport','rechargerecord','withdrawrecord','my'].forEach(p => {
+    const el = document.getElementById(`page-${p}`);
+    if(el) el.classList.add('hidden');
+  });
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  const pageEl = document.getElementById(`page-${page}`);
+  if(pageEl) pageEl.classList.remove('hidden');
+
+  const navMap = {'home':0,'job':1,'task':2,'my':3};
+  if(navMap[page]!== undefined) document.querySelectorAll('.nav-item')[navMap[page]].classList.add('active');
+
+  if(page === 'invite') loadInvitePage();
+  if(page === 'job') loadVipPackages();
+  if(page === 'task') loadTasks();
+  if(page === 'earnings') loadEarnings();
+  if(page === 'teamreport') loadTeamReport();
+  if(page === 'rechargerecord') loadRechargeRecord();
+  if(page === 'withdrawrecord') loadWithdrawRecord();
+  if(page === 'my') loadBankCard();
+}
+
+// ========== VIP PACKAGES - FIXED ==========
+async function loadVipPlans() {
+  try {
+    const snap = await db.collection("vipPlans").where("active", "==", true).orderBy("level").get();
+    vipPlans = [];
+    snap.forEach(doc => vipPlans.push({id: doc.id,...doc.data()}));
+    if(vipPlans.length === 0) {
+      vipPlans = [
+        {id:'1',level:1,name:'VIP 1',price:50,daily:2,days:30,icon:'🥉',active:true},
+        {id:'2',level:2,name:'VIP 2',price:200,daily:9,days:30,icon:'🥈',active:true},
+        {id:'3',level:3,name:'VIP 3',price:500,daily:25,days:30,icon:'🥇',active:true},
+        {id:'4',level:4,name:'VIP 4',price:1000,daily:55,days:30,icon:'💎',active:true}
+      ];
+    }
+  } catch(e) {
+    console.log('VIP Load Error:', e);
+    vipPlans = [
+      {id:'1',level:1,name:'VIP 1',price:50,daily:2,days:30,icon:'🥉',active:true},
+      {id:'2',level:2,name:'VIP 2',price:200,daily:9,days:30,icon:'🥈',active:true},
+      {id:'3',level:3,name:'VIP 3',price:500,daily:25,days:30,icon:'🥇',active:true},
+      {id:'4',level:4,name:'VIP 4',price:1000,daily:55,days:30,icon:'💎',active:true}
+    ];
+  }
+}
+
+function loadVipPackages() {
+  let html = '';
+  const currentVipLevel = userData?.vip || 0;
+  vipPlans.forEach(vip => {
+    const owned = currentVipLevel >= (vip.level || 0);
+    html += `<div class="card mb-3 relative"><div class="vip-badge">${vip.icon} ${vip.name}</div><h3 class="text-xl font-bold mb-2">${vip.name}</h3><p class="text-3xl font-bold text-yellow-400 mb-2">$${vip.price}</p><div class="space-y-1 text-sm text-gray-300 mb-4"><p>✓ Daily Income: $${vip.daily}</p><p>✓ Duration: ${vip.days} Days</p><p>✓ Total Return: $${vip.daily * vip.days}</p></div><button onclick="buyVip('${vip.id}', ${vip.level || 0})" class="${owned?'btn-outline':'btn-yellow'}" ${owned?'disabled':''}>${owned?'Owned':'Buy Now'}</button></div>`;
+  });
+  document.getElementById('vipPackages').innerHTML = html || '<p class="text-center text-gray-400 py-4">No VIP packages available</p>';
+}
+
+async function buyVip(vipId, vipLevel) {
+  const vip = vipPlans.find(v => v.id === vipId);
+  if(!vip) return showToast('VIP not found', 'error');
+  if((userData.balance || 0) < vip.price) { showToast('Insufficient balance! Please recharge.', 'error'); return; }
+  if((userData.vip || 0) >= vipLevel) { showToast('You already own this or higher VIP', 'error'); return; }
+
+  if(confirm(`Buy ${vip.name} for $${vip.price}?`)) {
+    const expiry = new Date();
+    expiry.setDate(expiry.getDate() + vip.days);
+    await db.collection("users").doc(currentUser.uid).update({
+      balance: firebase.firestore.FieldValue.increment(-vip.price),
+      vip: vipLevel,
+      vipExpiry: expiry,
+      totalRecharge: firebase.firestore.FieldValue.increment(vip.price)
+    });
+    await db.collection("earnings").add({
+      uid: currentUser.uid, type: 'vip_purchase', amount: -vip.price, vipId, vipLevel, createdAt: new Date()
+    });
+    showToast('VIP Purchased Successfully!', 'success');
+    await loadUserData();
+    loadVipPackages();
+  }
+}
+
+// ========== TASKS ==========
+async function loadTasks() {
+  try {
+    const snap = await db.collection("tasks").get();
+    let html = '';
+    const today = new Date().toDateString();
+
+    for(const doc of snap.docs) {
+      const task = {id: doc.id,...doc.data()};
+      const doneSnap = await db.collection("userTasks").where("uid","==",currentUser.uid).where("taskId","==",task.id).where("date","==",today).get();
+      const done =!doneSnap.empty;
+
+      html += `<div class="card mb-3"><div class="flex justify-between items-start mb-2"><div><h4 class="font-bold">${task.title}</h4><p class="text-sm text-gray-400">${task.desc}</p></div><span class="text-green-400 font-bold">+$${task.reward}</span></div><button onclick="completeTask('${task.id}',${task.reward})" class="${done?'btn-outline':'btn-green'}" ${done?'disabled':''}>${done?'✓ Completed':'Complete Task'}</button></div>`;
+    }
+    document.getElementById('taskList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No tasks available</p>';
+  } catch(e) { console.log('Task Error:', e); }
+}
+
+async function completeTask(taskId, reward) {
+  try {
+    const today = new Date().toDateString();
+    const doneSnap = await db.collection("userTasks").where("uid","==",currentUser.uid).where("taskId","==",taskId).where("date","==",today).get();
+    if(!doneSnap.empty) { showToast('Already completed today!', 'error'); return; }
+
+    await db.collection("userTasks").add({uid: currentUser.uid, taskId, date: today, createdAt: new Date()});
+    await db.collection("users").doc(currentUser.uid).update({balance: firebase.firestore.FieldValue.increment(reward)});
+    await db.collection("earnings").add({uid: currentUser.uid, type: 'task', amount: reward, taskId, createdAt: new Date()});
+    showToast(`+$${reward} Added to balance!`, 'success');
+    await loadUserData();
+    loadTasks();
+  } catch(e) { showToast('Error: ' + e.message, 'error'); }
+}
+
+// ========== EARNINGS ==========
+async function loadEarnings() {
+  try {
+    const snap = await db.collection("earnings").where("uid","==",currentUser.uid).orderBy("createdAt","desc").limit(50).get();
+    let today = 0, week = 0, total = 0;
+    const now = new Date();
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(now.getTime() - 7 * 24 * 60 * 1000);
+    let html = '';
+
+    snap.forEach(doc => {
+      const e = doc.data();
+      const date = e.createdAt.toDate();
+      if(e.amount > 0) {
+        total += e.amount;
+        if(date >= todayStart) today += e.amount;
+        if(date >= weekStart) week += e.amount;
+      }
+      const typeIcon = e.type === 'vip'?'💼':e.type === 'task'?'✅':e.type === 'spin'?'🎰':e.type === 'ref'?'👥':'💰';
+      html += `<div class="card mb-2"><div class="flex justify-between items-center"><div><p class="font-bold">${typeIcon} ${e.type.toUpperCase()}</p><p class="text-xs text-gray-400">${date.toLocaleString()}</p></div><p class="font-bold ${e.amount>0?'text-green-400':'text-red-400'}">${e.amount>0?'+':'-'}$${Math.abs(e.amount).toFixed(2)}</p></div></div>`;
+    });
+
+    document.getElementById('todayEarn').innerText = '$' + today.toFixed(2);
+    document.getElementById('weekEarn').innerText = '$' + week.toFixed(2);
+    document.getElementById('totalEarn').innerText = '$' + total.toFixed(2);
+    document.getElementById('earningsList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No earnings yet</p>';
+  } catch(e) { console.log('Earnings Error:', e); }
+}
+
+// ========== DAILY INCOME ==========
+async function checkDailyIncome() {
+  if(!userData || (userData.vip || 0) === 0 ||!userData.vipExpiry) return;
+  const now = new Date();
+  const expiry = userData.vipExpiry.toDate();
+  if(now > expiry) return;
+
+  const lastIncome = localStorage.getItem(`lastIncome_${currentUser.uid}`);
+  const today = now.toDateString();
+  if(lastIncome === today) return;
+
+  const vip = vipPlans.find(v => (v.level || 0) === userData.vip);
+  if(!vip) return;
+
+  await db.collection("users").doc(currentUser.uid).update({
+    balance: firebase.firestore.FieldValue.increment(vip.daily)
+  });
+  await db.collection("earnings").add({
+    uid: currentUser.uid, type: 'vip', amount: vip.daily, createdAt: new Date()
+  });
+  localStorage.setItem(`lastIncome_${currentUser.uid}`, today);
+  showToast(`Daily Income: +$${vip.daily}`, 'success');
+  await loadUserData();
+}
+
+// ========== INVITE ==========
+async function loadInvitePage() {
+  const refLink = window.location.origin + '?ref=' + userData.refCode;
+  document.getElementById('refLinkText').innerText = refLink;
+  const snap = await db.collection("users").where("refBy", "==", userData.refCode).get();
+  document.getElementById('totalRefers').innerText = snap.size;
+  let html = '';
+  snap.forEach(doc => {
+    const u = doc.data();
+    html += `<div class="bg-[#2c2c2c] p-3 rounded mb-2"><p class="font-bold text-sm">${u.name}</p><p class="text-xs text-gray-400">${u.phone}</p><p class="text-xs text-green-400">VIP ${u.vip || 0} | Recharged: $${(u.totalRecharge || 0).toFixed(0)}</p></div>`;
+  });
+  document.getElementById('referList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No referrals yet. Share your link!</p>';
+}
+function copyRefLink() {
+  navigator.clipboard.writeText(document.getElementById('refLinkText').innerText);
+  showToast('Referral link copied!', 'success');
+}
+
+// ========== TEAM REPORT ==========
+async function loadTeamReport() {
+  try {
+    const snap = await db.collection("users").where("refBy", "==", userData.refCode).get();
+    const members = [];
+    snap.forEach(doc => members.push(doc.data()));
+    document.getElementById('teamTotal').innerText = members.length;
+    let totalRecharge = 0;
+    members.forEach(m => totalRecharge += (m.totalRecharge || 0));
+    document.getElementById('teamRecharge').innerText = '$' + totalRecharge.toFixed(2);
+    let html = '';
+    members.forEach(m => {
+      html += `<div class="card mb-2"><div class="flex justify-between items-center"><div><p class="font-bold">${m.name}</p><p class="text-xs text-gray-400">${m.phone}</p></div><div class="text-right"><p class="text-xs text-gray-400">VIP ${m.vip || 0}</p><p class="font-bold text-green-400">$${(m.totalRecharge || 0).toFixed(0)}</p></div></div></div>`;
+    });
+    document.getElementById('teamList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No team members yet</p>';
+  } catch(e) { console.log('Team Error:', e); }
+}
+
+// ========== RECHARGE/WITHDRAW RECORD ==========
+async function loadRechargeRecord() {
+  try {
+    const snap = await db.collection("recharges").where("uid", "==", currentUser.uid).orderBy("timestamp","desc").get();
+    let html = '';
+    snap.forEach(doc => {
+      const r = doc.data();
+      const statusColor = r.status === 'approved'?'text-green-400':r.status === 'pending'?'text-yellow-400':'text-red-400';
+      html += `<div class="card mb-2"><div class="flex justify-between items-center"><div><p class="font-bold">$${r.amount} USDT</p><p class="text-xs text-gray-400">${r.date}</p></div><span class="text-xs font-bold ${statusColor}">${r.status.toUpperCase()}</span></div></div>`;
+    });
+    document.getElementById('rechargeRecordList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No recharge records</p>';
+  } catch(e) { console.log('Recharge Record Error:', e); }
+}
+
+async function loadWithdrawRecord() {
+  try {
+    const snap = await db.collection("withdrawals").where("uid", "==", currentUser.uid).orderBy("timestamp","desc").get();
+    let html = '';
+    snap.forEach(doc => {
+      const w = doc.data();
+      const statusColor = w.status === 'success'?'text-green-400':w.status === 'pending'?'text-yellow-400':'text-red-400';
+      html += `<div class="card mb-2"><div class="flex justify-between items-center"><div><p class="font-bold">$${w.amount} USDT</p><p class="text-xs text-gray-400">${w.date}</p></div><span class="text-xs font-bold ${statusColor}">${w.status.toUpperCase()}</span></div></div>`;
+    });
+    document.getElementById('withdrawRecordList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No withdrawal records</p>';
+  } catch(e) { console.log('Withdraw Record Error:', e); }
+}
+
+// ========== RECHARGE/WITHDRAW PAGES ==========
+function openRechargePage() {
+  document.getElementById('page-recharge').classList.remove('hidden');
+  document.getElementById('bottomNav').classList.add('hidden');
+  document.getElementById('usdtAddress').innerText = appSettings.wallet;
+  loadRechargeHistoryBox();
+}
+function closeRechargePage() {
+  document.getElementById('page-recharge').classList.add('hidden');
+  document.getElementById('bottomNav').classList.remove('hidden');
+}
+function openWithdrawPage() {
+  document.getElementById('page-withdraw').classList.remove('hidden');
+  document.getElementById('bottomNav').classList.add('hidden');
+  document.getElementById('withdrawBalance').innerText = (userData.balance || 0).toFixed(2);
+  loadWithdrawHistoryBox();
+}
+function closeWithdrawPage() {
+  document.getElementById('page-withdraw').classList.add('hidden');
+  document.getElementById('bottomNav').classList.remove('hidden');
+}
+function copyAddress() {
+  navigator.clipboard.writeText(document.getElementById('usdtAddress').innerText);
+  showToast('Wallet address copied!', 'success');
+}
+function downloadApk() {
+  if(appSettings.apkLink && appSettings.apkLink!== '#') {
+    window.open(appSettings.apkLink, '_blank');
+  } else {
+    showToast('APK not available yet!', 'error');
+  }
+}
+
+// ========== ORDER HISTORY ==========
+async function showOrderHistory() {
+  document.getElementById('orderHistoryModal').classList.remove('hidden');
+  await loadOrderHistory();
+}
+function closeOrderHistory() {
+  document.getElementById('orderHistoryModal').classList.add('hidden');
+}
+async function loadOrderHistory() {
+  try {
+    const snap = await db.collection('recharges').where('uid', '==', currentUser.uid).orderBy('timestamp', 'desc').get();
+    if(snap.empty) {
+      document.getElementById('orderHistoryList').innerHTML = `<div class="text-center py-12 text-gray-400"><div class="text-6xl mb-4">📭</div><p>No orders yet</p></div>`;
+      return;
+    }
+    let html = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const statusColor = d.status === 'approved'? 'text-green-500' : d.status === 'rejected'? 'text-red-500' : 'text-yellow-500';
+      const statusBg = d.status === 'approved'? 'bg-green-500/20' : d.status === 'rejected'? 'bg-red-500/20' : 'bg-yellow-500/20';
+      html += `<div class="glass rounded-xl p-4 mb-3 border-l-4 ${statusBg}"><div class="flex justify-between items-start mb-3"><div><p class="font-bold text-lg text-yellow-400">$${d.amount}</p><p class="text-xs text-gray-400">${d.date}</p></div><span class="text-xs font-bold px-3 py-1 rounded-full ${statusBg} ${statusColor}">${d.status.toUpperCase()}</span></div><div class="space-y-2 text-sm"><div class="flex justify-between"><span class="text-gray-400">Order ID:</span><span class="font-bold font-mono">${d.orderId}</span></div><div class="flex justify-between"><span class="text-gray-400">Amount:</span><span class="font-bold">$${d.amount} USDT</span></div></div>${d.screenshotUrl? `<div class="mt-3"><p class="text-xs text-gray-400 mb-2">Payment Proof:</p><img src="${d.screenshotUrl}" class="w-full h-32 object-cover rounded-lg cursor-pointer" onclick="window.open('${d.screenshotUrl}')"></div>` : ''}</div>`;
+    });
+    document.getElementById('orderHistoryList').innerHTML = html;
+  } catch(error) {
+    document.getElementById('orderHistoryList').innerHTML = `<div class="text-center py-8 text-red-400"><p>Error loading orders</p></div>`;
+  }
+}
+async function loadRechargeHistoryBox() {
+  const snap = await db.collection('recharges').where('uid', '==', currentUser.uid).orderBy('timestamp', 'desc').limit(3).get();
+  let html = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const statusColor = d.status === 'approved'? 'text-green-500' : d.status === 'rejected'? 'text-red-500' : 'text-yellow-500';
+    html += `<div class="glass rounded-xl p-3 text-sm mb-2"><div class="flex justify-between mb-1"><span>Order:</span><span class="font-mono">${d.orderId}</span></div><div class="flex justify-between mb-1"><span>Amount:</span><span class="font-bold">$${d.amount}</span></div><div class="flex justify-between"><span>Status:</span><span class="${statusColor} font-bold">${d.status}</span></div></div>`;
+  });
+  document.getElementById('rechargeHistoryBox').innerHTML = html;
+}
+
+// ========== WITHDRAW HISTORY ==========
+async function showWithdrawHistory() {
+  document.getElementById('withdrawHistoryModal').classList.remove('hidden');
+  await loadWithdrawHistory();
+}
+function closeWithdrawHistory() {
+  document.getElementById('withdrawHistoryModal').classList.add('hidden');
+}
+async function loadWithdrawHistory() {
+  try {
+    const snap = await db.collection('withdrawals').where('uid', '==', currentUser.uid).orderBy('timestamp', 'desc').get();
+    if(snap.empty) {
+      document.getElementById('withdrawHistoryList').innerHTML = `<div class="text-center py-12 text-gray-400"><div class="text-6xl mb-4">📭</div><p>No withdrawals yet</p></div>`;
+      return;
+    }
+    let html = '';
+    snap.forEach(doc => {
+      const d = doc.data();
+      const statusColor = d.status === 'success'? 'text-green-500' : d.status === 'failed'? 'text-red-500' : 'text-yellow-500';
+      const statusBg = d.status === 'success'? 'bg-green-500/20' : d.status === 'failed'? 'bg-red-500/20' : 'bg-yellow-500/20';
+      html += `<div class="glass rounded-xl p-4 mb-3 border-l-4 ${statusBg}"><div class="flex justify-between items-start mb-3"><div><p class="font-bold text-lg text-yellow-400">$${d.amount}</p><p class="text-xs text-gray-400">${d.date}</p></div><span class="text-xs font-bold px-3 py-1 rounded-full ${statusBg} ${statusColor}">${d.status.toUpperCase()}</span></div><div class="space-y-2 text-sm"><div class="flex justify-between"><span class="text-gray-400">Order ID:</span><span class="font-bold font-mono">${d.orderId}</span></div><div class="flex justify-between"><span class="text-gray-400">Amount:</span><span class="font-bold">$${d.amount} USDT</span></div><div class="flex justify-between"><span class="text-gray-400">Address:</span><span class="font-mono text-xs">${d.address.substring(0,10)}...${d.address.substring(d.address.length-6)}</span></div></div></div>`;
+    });
+    document.getElementById('withdrawHistoryList').innerHTML = html;
+  } catch(error) {
+    document.getElementById('withdrawHistoryList').innerHTML = `<div class="text-center py-8 text-red-400"><p>Error loading withdrawals</p></div>`;
+  }
+}
+async function loadWithdrawHistoryBox() {
+  const snap = await db.collection('withdrawals').where('uid', '==', currentUser.uid).orderBy('timestamp', 'desc').limit(3).get();
+  let html = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const statusColor = d.status === 'success'? 'text-green-500' : d.status === 'failed'? 'text-red-500' : 'text-yellow-500';
+    html += `<div class="glass rounded-xl p-3 text-sm mb-2"><div class="flex justify-between mb-1"><span>Order:</span><span class="font-mono">${d.orderId}</span></div><div class="flex justify-between mb-1"><span>Amount:</span><span class="font-bold">$${d.amount}</span></div><div class="flex justify-between"><span>Status:</span><span class="${statusColor} font-bold">${d.status}</span></div></div>`;
+  });
+  document.getElementById('withdrawHistoryBox').innerHTML = html;
+}
+
+// ========== SUBMIT RECHARGE - ImgBB ==========
+async function submitRecharge() {
+  const amount = parseFloat(document.getElementById('rechargeAmount').value);
+  const fileInput = document.getElementById('rechargeScreenshot');
+  if(!amount || amount < 10) { showToast('Minimum 10 USDT required', 'error'); return; }
+  if(!fileInput.files[0]) { showToast('Upload payment screenshot', 'error'); return; }
+
+  const btn = document.getElementById('submitRechargeBtn');
+  btn.disabled = true;
+  btn.innerText = 'Uploading...';
+
+  try {
+    const file = fileInput.files[0];
+    const formData = new FormData();
+    formData.append('image', file);
+    const imgbbApiKey = '678a270a1d2cf7566aa66499566d434b';
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${imgbbApiKey}`, { method: 'POST', body: formData });
+    const result = await response.json();
+    if(!result.success) throw new Error('Image upload failed');
+    const screenshotUrl = result.data.url;
+
+    const orderId = 'RC' + Date.now() + Math.random().toString(36).substr(2, 3).toUpperCase();
+    const now = new Date();
+    const dateStr = now.toLocaleString('en-BD', { timeZone: 'Asia/Dhaka', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+    await db.collection('recharges').doc(orderId).set({
+      orderId: orderId, uid: currentUser.uid, name: userData.name, phone: userData.phone,
+      amount: amount, screenshotUrl: screenshotUrl, status: 'pending', date: dateStr,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(), balanceBefore: userData.balance || 0
+    });
+
+    showToast('Recharge Order Submitted!', 'success');
+    document.getElementById('rechargeAmount').value = '';
+    fileInput.value = '';
+    loadRechargeHistoryBox();
+    setTimeout(() => { showOrderHistory(); }, 1000);
+  } catch(error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerText = 'Submit Recharge';
+}
+
+// ========== SUBMIT WITHDRAW ==========
+async function submitWithdraw() {
+  const amount = parseFloat(document.getElementById('withdrawAmount').value);
+  const address = document.getElementById('withdrawAddress').value.trim();
+  if(!amount || amount < 10) { showToast('Minimum 10 USDT required', 'error'); return; }
+  if(!address) { showToast('Enter wallet address', 'error'); return; }
+  if(amount > (userData.balance || 0)) { showToast('Insufficient balance', 'error'); return; }
+
+  const btn = document.getElementById('submitWithdrawBtn');
+  btn.disabled = true;
+  btn.innerText = 'Processing...';
+
+  try {
+    const orderId = 'WD' + Date.now() + Math.random().toString(36).substr(2, 3).toUpperCase();
+    const now = new Date();
+    const dateStr = now.toLocaleString('en-BD', { timeZone: 'Asia/Dhaka', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+    await db.collection("withdrawals").add({
+      orderId, uid: currentUser.uid, phone: userData.phone, name: userData.name,
+      amount, address, status: 'pending', date: dateStr,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection("users").doc(currentUser.uid).update({ balance: firebase.firestore.FieldValue.increment(-amount) });
+    showToast('Withdraw request submitted!', 'success');
+    document.getElementById('withdrawAmount').value = '';
+    document.getElementById('withdrawAddress').value = '';
+    await loadUserData();
+    loadWithdrawHistoryBox();
+    setTimeout(() => { showWithdrawHistory(); }, 1000);
+  } catch(error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerText = 'Submit Withdraw';
+}
+
+// ========== ADMIN FUNCTIONS ==========
+async function loadAdminDashboard() {
+  try {
+    const usersSnap = await db.collection("users").get();
+    document.getElementById('totalUsers').innerText = usersSnap.size - 1;
+    const rechargeSnap = await db.collection("recharges").where("status", "==", "approved").get();
+    let totalRecharge = 0;
+    rechargeSnap.forEach(doc => totalRecharge += doc.data().amount);
+    document.getElementById('totalRecharge').innerText = '$' + totalRecharge.toFixed(2);
+    const withdrawSnap = await db.collection("withdrawals").where("status", "==", "success").get();
+    let totalWithdraw = 0;
+    withdrawSnap.forEach(doc => totalWithdraw += doc.data().amount);
+    document.getElementById('totalWithdraw').innerText = '$' + totalWithdraw.toFixed(2);
+    const pendingRech = await db.collection("recharges").where("status", "==", "pending").get();
+    const pendingWith = await db.collection("withdrawals").where("status", "==", "pending").get();
+    document.getElementById('pendingCount').innerText = pendingRech.size + pendingWith.size;
+  } catch(e) { console.log('Admin Dashboard Error:', e); }
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  ['dashboard', 'users', 'vip', 'teamreport', 'recharge', 'withdraw', 'tasks', 'settings'].forEach(t => {
+    document.getElementById(`content-${t}`).classList.add('hidden');
+  });
+  document.getElementById(`content-${tab}`).classList.remove('hidden');
+
+  if(tab === 'users') loadAdminUsers();
+  if(tab === 'vip') loadAdminVip();
+  if(tab === 'teamreport') loadAdminTeamReport();
+  if(tab === 'recharge') loadAdminRecharges();
+  if(tab === 'withdraw') loadAdminWithdrawals();
+  if(tab === 'tasks') loadAdminTasks();
+  if(tab === 'settings') {
+    document.getElementById('adminWalletInput').value = appSettings.wallet;
+    document.getElementById('apkLinkInput').value = appSettings.apkLink;
+  }
+}
+
+async function loadAdminUsers() {
+  try {
+    const snap = await db.collection("users").orderBy("createdAt","desc").get();
+    let html = '';
+    for(const doc of snap.docs) {
+      const u = doc.data();
+      if(u.phone === ADMIN_PHONE) continue;
+      const refSnap = await db.collection("users").where("refBy", "==", u.refCode).get();
+      const totalRefer = refSnap.size;
+      let rechargeReferCount = 0;
+      refSnap.forEach(refDoc => {
+        if((refDoc.data().totalRecharge || 0) > 0) rechargeReferCount++;
+      });
+      html += `<div class="card mb-2"><div class="flex justify-between items-start"><div class="flex-1"><p class="font-bold">${u.name} ${u.locked ? '🔒' : ''}</p><p class="text-xs text-gray-400">${u.phone} | Ref: ${u.refCode}</p><div class="grid grid-cols-3 gap-2 mt-2 text-xs"><div class="bg-[#2c2c2c] p-2 rounded text-center"><p class="text-gray-400">Refer</p><p class="font-bold text-yellow-400">${totalRefer}</p></div><div class="bg-[#2c2c2c] p-2 rounded text-center"><p class="text-gray-400">Active</p><p class="font-bold text-green-400">${rechargeReferCount}</p></div><div class="bg-[#2c2c2c] p-2 rounded text-center"><p class="text-gray-400">Balance</p><p class="font-bold">$${(u.balance || 0).toFixed(0)}</p></div></div>${u.locked ? `<p class="text-xs text-red-400 mt-2">🔒 Locked: ${u.lockReason || 'No reason'}</p>` : ''}</div><div class="flex flex-col gap-1 ml-2"><button onclick="toggleLockUser('${doc.id}', ${u.locked || false}, '${u.name}')" class="${u.locked ? 'btn-green' : 'btn-red'} px-3 py-1 rounded text-xs">${u.locked ? 'Unlock' : 'Lock'}</button><button onclick="editUserBalance('${doc.id}')" class="bg-[#3c3c3c] px-3 py-1 rounded text-xs">Balance</button><button onclick="editUser('${u.phone}')" class="bg-blue-600 px-3 py-1 rounded text-xs">Edit User</button></div></div></div>`;
+    }
+    document.getElementById('allUsers').innerHTML = html || '<p class="text-center text-gray-400 py-4">No users</p>';
+  } catch(e) { 
+    console.log('Admin Users Error:', e);
+    showToast('Error loading users', 'error');
+  }
+}
+
+async function toggleLockUser(uid, currentLock, userName) {
+  let reason = '';
+  if(!currentLock) {
+    reason = prompt(`Lock reason for ${userName}:`);
+    if(!reason) return;
+  } else {
+    if(!confirm(`Unlock ${userName}?`)) return;
+  }
+  
+  await db.collection("users").doc(uid).update({
+    locked: !currentLock,
+    lockReason: reason,
+    lockedAt: currentLock ? null : new Date()
+  });
+  
+  showToast(currentLock ? 'User Unlocked' : 'User Locked', 'success');
+  loadAdminUsers();
+}
+
+async function editUserBalance(uid) {
+  const amount = prompt('Enter amount to add/subtract. Use - for deduct:');
+  if(amount === null || isNaN(amount)) return;
+  
+  const numAmount = parseFloat(amount);
+  await db.collection("users").doc(uid).update({
+    balance: firebase.firestore.FieldValue.increment(numAmount)
+  });
+  
+  await db.collection("adminLogs").add({
+    type: 'balance_edit',
+    uid: uid,
+    amount: numAmount,
+    admin: currentUser.uid,
+    timestamp: new Date()
+  });
+  
+  showToast(`Balance ${numAmount >= 0 ? 'added' : 'deducted'}!`, 'success');
+  loadAdminUsers();
+}
+
+function loadAdminVip() {
+  let html = '';
+  vipPlans.forEach(vip => {
+    html += `<div class="card mb-2"><div class="flex justify-between items-start"><div><p class="font-bold">${vip.icon} ${vip.name} - $${vip.price}</p><p class="text-xs text-gray-400">Level: ${vip.level || 0} | Daily: $${vip.daily} | Days: ${vip.days} | ${vip.active?'Active':'Inactive'}</p></div><div class="flex gap-1"><button onclick="editVipPlan('${vip.id}')" class="bg-blue-600 px-3 py-1 rounded text-xs">Edit</button><button onclick="deleteVip('${vip.id}')" class="btn-red px-3 py-1 rounded text-xs">Delete</button></div></div></div>`;
+  });
+  document.getElementById('adminVipList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No VIP plans</p>';
+}
+
+async function saveVipPlan() {
+  const id = document.getElementById('editVipId').value;
+  const name = document.getElementById('vipNameInput').value.trim();
+  const level = parseInt(document.getElementById('vipLevelInput').value);
+  const price = parseFloat(document.getElementById('vipPriceInput').value);
+  const daily = parseFloat(document.getElementById('vipDailyInput').value);
+  const days = parseInt(document.getElementById('vipDaysInput').value);
+  const icon = document.getElementById('vipIconInput').value.trim() || '⭐';
+  const active = document.getElementById('vipActiveInput').checked;
+  
+  if(!name || isNaN(level) || isNaN(price) || isNaN(daily) || isNaN(days)) {
+    showToast('Fill all fields correctly', 'error');
+    return;
+  }
+  
+  const data = {name, level, price, daily, days, icon, active};
+  
+  if(id) {
+    await db.collection("vipPlans").doc(id).update(data);
+    showToast('VIP Updated!', 'success');
+  } else {
+    await db.collection("vipPlans").add(data);
+    showToast('VIP Added!', 'success');
+  }
+  
+  clearVipForm();
+  await loadVipPlans();
+  loadAdminVip();
+}
+
+function editVipPlan(id) {
+  const vip = vipPlans.find(v => v.id === id);
+  if(!vip) return;
+  document.getElementById('editVipId').value = id;
+  document.getElementById('vipNameInput').value = vip.name;
+  document.getElementById('vipLevelInput').value = vip.level || 0;
+  document.getElementById('vipPriceInput').value = vip.price;
+  document.getElementById('vipDailyInput').value = vip.daily;
+  document.getElementById('vipDaysInput').value = vip.days;
+  document.getElementById('vipIconInput').value = vip.icon;
+  document.getElementById('vipActiveInput').checked = vip.active !== false;
+}
+
+function clearVipForm() {
+  document.getElementById('editVipId').value = '';
+  document.getElementById('vipNameInput').value = '';
+  document.getElementById('vipLevelInput').value = '';
+  document.getElementById('vipPriceInput').value = '';
+  document.getElementById('vipDailyInput').value = '';
+  document.getElementById('vipDaysInput').value = '';
+  document.getElementById('vipIconInput').value = '';
+  document.getElementById('vipActiveInput').checked = true;
+}
+
+async function deleteVip(id) {
+  if(confirm('Delete this VIP? Users who bought it will keep it.')) {
+    await db.collection("vipPlans").doc(id).delete();
+    showToast('Deleted!', 'success');
+    await loadVipPlans();
+    loadAdminVip();
+  }
+}
+
+async function loadAdminTeamReport() {
+  try {
+    const snap = await db.collection("users").get();
+    let totalMembers = 0, totalTeamRecharge = 0;
+    let html = '';
+    snap.forEach(doc => {
+      const u = doc.data();
+      if(u.phone === ADMIN_PHONE) return;
+      totalMembers++;
+      totalTeamRecharge += (u.totalRecharge || 0);
+      html += `<div class="card mb-2"><div class="flex justify-between items-center"><div><p class="font-bold">${u.name}</p><p class="text-xs text-gray-400">${u.phone}</p><p class="text-xs">Ref: ${u.refCode} | Team: ${u.refBy || 'None'}</p></div><div class="text-right"><p class="text-xs text-gray-400">VIP ${u.vip || 0}</p><p class="font-bold text-green-400">$${(u.totalRecharge || 0).toFixed(0)}</p></div></div></div>`;
+    });
+    document.getElementById('adminTotalMembers').innerText = totalMembers;
+    document.getElementById('adminTotalTeamRecharge').innerText = '$' + totalTeamRecharge.toFixed(2);
+    document.getElementById('adminTeamReportList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No users</p>';
+  } catch(e) { console.log('Admin Team Error:', e); }
+}
+
+async function loadAdminRecharges() {
+  try {
+    const snap = await db.collection("recharges").where("status", "==", "pending").orderBy("timestamp","desc").get();
+    let html = '';
+    snap.forEach(doc => {
+      const r = doc.data();
+      html += `<div class="card mb-3"><div class="flex justify-between items-start mb-3"><div><p class="font-bold text-lg">$${r.amount} USDT</p><p class="text-xs text-gray-400">${r.name} - ${r.phone}</p><p class="text-xs text-gray-400">${r.date}</p><p class="text-xs font-mono text-yellow-400 mt-1">ID: ${r.orderId}</p></div></div>${r.screenshotUrl? `<img src="${r.screenshotUrl}" class="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer" onclick="window.open('${r.screenshotUrl}')">` : ''}<div class="flex gap-2"><button onclick="approveRecharge('${doc.id}', '${r.uid}', ${r.amount})" class="btn-green text-xs px-3 py-2 flex-1">Approve</button><button onclick="rejectRecharge('${doc.id}')" class="btn-red text-xs px-3 py-2 flex-1">Reject</button></div></div>`;
+    });
+    document.getElementById('pendingRecharges').innerHTML = html || '<p class="text-center text-gray-400 py-4">No pending recharges</p>';
+  } catch(e) { console.log('Admin Recharge Error:', e); }
+}
+
+async function approveRecharge(id, uid, amount) {
+  if(!confirm('Approve this recharge?')) return;
+  try {
+    const userRef = db.collection('users').doc(uid);
+    const userDoc = await userRef.get();
+    const newBalance = (userDoc.data().balance || 0) + amount;
+    await userRef.update({
+      balance: newBalance,
+      totalRecharge: firebase.firestore.FieldValue.increment(amount)
+    });
+    await db.collection("recharges").doc(id).update({
+      status: 'approved',
+      balanceAfter: newBalance,
+      approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    await db.collection("earnings").add({uid, type: 'recharge', amount, createdAt: new Date()});
+    showToast('Recharge Approved!', 'success');
+    loadAdminRecharges();
+    loadAdminDashboard();
+  } catch(error) {
+    showToast('Error: ' + error.message, 'error');
+  }
+}
+
+async function rejectRecharge(id) {
+  if(!confirm('Reject this recharge?')) return;
+  await db.collection("recharges").doc(id).update({status: 'rejected', rejectedAt: new Date()});
+  showToast('Recharge Rejected', 'info');
+  loadAdminRecharges();
+}
+
+async function loadAdminWithdrawals() {
+  try {
+    const snap = await db.collection("withdrawals").where("status", "==", "pending").orderBy("timestamp","desc").get();
+    let html = '';
+    snap.forEach(doc => {
+      const w = doc.data();
+      html += `<div class="card mb-3"><div class="mb-3"><p class="font-bold text-lg">$${w.amount} USDT</p><p class="text-xs text-gray-400">${w.name} - ${w.phone}</p><p class="text-xs text-gray-400 break-all mt-1">To: ${w.address}</p><p class="text-xs text-gray-400">${w.date}</p><p class="text-xs font-mono text-yellow-400 mt-1">ID: ${w.orderId}</p></div><div class="flex gap-2"><button onclick="approveWithdraw('${doc.id}', '${w.uid}', ${w.amount})" class="btn-green text-xs px-3 py-2 flex-1">Approve</button><button onclick="rejectWithdraw('${doc.id}', '${w.uid}', ${w.amount})" class="btn-red text-xs px-3 py-2 flex-1">Reject</button></div></div>`;
+    });
+    document.getElementById('pendingWithdrawals').innerHTML = html || '<p class="text-center text-gray-400 py-4">No pending withdrawals</p>';
+  } catch(e) { console.log('Admin Withdraw Error:', e); }
+}
+
+async function approveWithdraw(id, uid, amount) {
+  if(!confirm('Approve this withdrawal?')) return;
+  await db.collection("withdrawals").doc(id).update({status: 'success', approvedAt: new Date()});
+  await db.collection("users").doc(uid).update({totalWithdraw: firebase.firestore.FieldValue.increment(amount)});
+  showToast('Withdrawal Approved!', 'success');
+  loadAdminWithdrawals();
+  loadAdminDashboard();
+}
+
+async function rejectWithdraw(id, uid, amount) {
+  if(!confirm('Reject and refund this withdrawal?')) return;
+  await db.collection("withdrawals").doc(id).update({status: 'failed', rejectedAt: new Date()});
+  await db.collection("users").doc(uid).update({balance: firebase.firestore.FieldValue.increment(amount)});
+  showToast('Withdrawal Rejected & Refunded', 'info');
+  loadAdminWithdrawals();
+}
+
+async function loadAdminTasks() {
+  try {
+    const snap = await db.collection("tasks").get();
+    let html = '';
+    snap.forEach(doc => {
+      const t = doc.data();
+      html += `<div class="card mb-2"><p class="font-bold">${t.title}</p><p class="text-xs text-gray-400">${t.desc}</p><p class="text-xs text-green-400">Reward: $${t.reward}</p><button onclick="deleteTask('${doc.id}')" class="btn-red text-xs px-3 py-1 mt-2">Delete</button></div>`;
+    });
+    document.getElementById('adminTaskList').innerHTML = html || '<p class="text-center text-gray-400 py-4">No tasks</p>';
+  } catch(e) { console.log('Admin Tasks Error:', e); }
+}
+
+function addNewTask() {
+  const title = prompt('Task Title:');
+  const desc = prompt('Task Description:');
+  const reward = prompt('Reward Amount:');
+  if(title && desc && reward) {
+    db.collection("tasks").add({title, desc, reward: parseFloat(reward)});
+    showToast('Task Added!', 'success');
+    loadAdminTasks();
+  }
+}
+
+async function deleteTask(id) {
+  if(confirm('Delete this task?')) {
+    await db.collection("tasks").doc(id).delete();
+    showToast('Deleted!', 'success');
+    loadAdminTasks();
+  }
+}
+
+async function saveSettings() {
+  const wallet = document.getElementById('adminWalletInput').value.trim();
+  if(!wallet) { showToast('Enter wallet address', 'error'); return; }
+  await db.collection("settings").doc("config").set({wallet}, {merge: true});
+  appSettings.wallet = wallet;
+  showToast('Wallet address saved!', 'success');
+}
+
+async function saveApkLink() {
+  const apkLink = document.getElementById('apkLinkInput').value.trim();
+  await db.collection("settings").doc("config").set({apkLink}, {merge: true});
+  appSettings.apkLink = apkLink;
+  showToast('APK link saved!', 'success');
+}
+
+// ========== SLIDER ==========
+let currentSlide = 0;
+const totalSlides = 5;
+function initSlider() {
+  try {
+    const dotsContainer = document.getElementById('sliderDots');
+    if(!dotsContainer) return;
+    dotsContainer.innerHTML = '';
+    for (let i = 0; i < totalSlides; i++) {
+      const dot = document.createElement('div');
+      dot.style.cssText = `width:${i===0?'20px':'6px'};height:6px;border-radius:3px;background:${i===0?'#facc15':'rgba(255,255,255,0.5)'};cursor:pointer;transition:all 0.3s`;
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    }
+    setInterval(nextSlide, 3000);
+  } catch(e) { console.log('Slider Init Error:', e); }
+}
+function goToSlide(n) {
+  try {
+    currentSlide = n;
+    const wrapper = document.getElementById('sliderWrapper');
+    if(wrapper) wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+    document.querySelectorAll('#sliderDots > div').forEach((dot, i) => {
+      dot.style.width = i === currentSlide ? '20px' : '6px';
+      dot.style.background = i === currentSlide ? '#facc15' : 'rgba(255,255,255,0.5)';
+    });
+  } catch(e) { console.log('Slider Go Error:', e); }
+}
+function nextSlide() {
+  currentSlide = (currentSlide + 1) % totalSlides;
+  goToSlide(currentSlide);
+}
+
+// ========== MODAL & NOTICE ==========
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+async function showNotice() {
+  const doc = await db.collection("settings").doc("config").get();
+  const notice = doc.data()?.notice || 'Welcome to AgroFarm Pro!';
+  document.getElementById('modalTitle').innerText = '📢 Notice';
+  document.getElementById('modalContent').innerHTML = `<div class="space-y-3"><p>${notice}</p></div>`;
+  document.getElementById('modal').classList.remove('hidden');
+  await db.collection("settings").doc("config").update({showRedDot: false});
+  document.getElementById('noticeRedDot')?.classList.add('hidden');
+}
+async function saveNotice() {
+  const notice = document.getElementById('adminNoticeInput').value.trim();
+  if(!notice) { showToast('Notice খালি রাখা যাবে না', 'error'); return; }
+  await db.collection("settings").doc("config").set({
+    notice: notice, 
+    showRedDot: true,
+    updatedAt: new Date()
+  }, {merge: true});
+  showToast('Notice updated! সব ইউজার দেখতে পাবে', 'success');
+  document.getElementById('adminNoticeInput').value = '';
+}
+
+// ========== BANK CARD ==========
+async function loadBankCard() {
+  if(!currentUser) return;
+  const doc = await db.collection("users").doc(currentUser.uid).get();
+  if(!doc.exists) return;
+  const data = doc.data();
+  const input = document.getElementById('bankCardInput');
+  const btn = document.getElementById('saveBankCardBtn');
+  const status = document.getElementById('bankCardStatus');
+  if(data.bankCard) {
+    input.value = data.bankCard;
+    if(data.bankCardLocked) {
+      input.disabled = true;
+      btn.disabled = true;
+      btn.innerText = 'লকড - এডমিনের সাথে যোগাযোগ করুন';
+      btn.classList.add('bg-gray-600');
+      btn.classList.remove('btn-yellow');
+      status.innerText = 'পরিবর্তন করতে এডমিনকে বলুন';
+      status.style.color = '#ff6b6b';
+    } else {
+      status.innerText = 'আপনি ১ বার পরিবর্তন করতে পারবেন';
+    }
+  }
+}
+
+async function saveBankCard() {
+  const card = document.getElementById('bankCardInput').value.trim();
+  if(!card) return alert('নাম্বার দিন');
+  await db.collection("users").doc(currentUser.uid).update({
+    bankCard: card,
+    bankCardLocked: true
+  });
+  alert('সেভ হয়েছে। এখন এডমিন ছাড়া চেঞ্জ হবে না');
+  loadBankCard();
+}
+
+// ========== EDIT USER - ADMIN ==========
+function editUser(phone) {
+  db.collection("users").where("phone", "==", phone).get().then(snap => {
+    if (snap.empty) return alert('ইউজার পাওয়া যায়নি');
+    const doc = snap.docs[0];
+    const u = doc.data();
+    const newPass = prompt(`পাসওয়ার্ড পরিবর্তন:\n\nইউজার: ${u.name}\nফোন: ${phone}\nবর্তমান পাসওয়ার্ড: ${u.password || 'N/A'}\n\nনতুন পাসওয়ার্ড দিন:`, u.password || '');
+    if(newPass === null) return;
+    if(newPass.trim() === '') return alert('পাসওয়ার্ড ফাঁকা রাখা যাবে না');
+    const newCard = prompt(`ব্যাংক কার্ড পরিবর্তন:\n\nবর্তমান: ${u.bankCard || 'সেট করা নাই'}\n\nনতুন নাম্বার দিন:`, u.bankCard || '');
+    if(newCard === null) return;
+    db.collection("users").doc(doc.id).update({
+      password: newPass.trim(),
+      bankCard: newCard.trim(),
+      bankCardLocked: true
+    }).then(() => {
+      alert('ইউজার আপডেট হয়ে গেছে');
+      loadAdminUsers();
+    }).catch(err => {
+      alert('এরর: ' + err.message);
+    });
+  });
+}
+</script>
+
+</body>
+</html>
