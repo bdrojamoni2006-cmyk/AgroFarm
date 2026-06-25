@@ -1,3 +1,4 @@
+console.log('Bot started with token:', process.env.BOT_TOKEN ? 'Token OK' : 'Token Missing');
 import { Telegraf } from 'telegraf';
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
